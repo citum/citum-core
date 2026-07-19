@@ -51,8 +51,9 @@ text, must be replicated at every point where punctuation enters output
 (component render, citation-cluster wrap, citation-spec wrap —
 `MULTILINGUAL.md` §3.2a documents "why three insertion points" as a
 coordination burden), and only works in one direction. The missing
-half-width → full-width direction is why bean `csl26-kneq` blocks the
-calendar-note feature. Each new script that opts in multiplies this. It works
+half-width → full-width direction is what blocks the calendar-note feature
+(`csl26-0kqf`); that work is the first increment of `csl26-k2kp`. Each new
+script that opts in multiplies this. It works
 for GB/T 7714; it will not compose. The mixed-script compound-citation edge
 (first item's language stands in for the whole cluster) is a symptom of the
 same shape (bean `csl26-p05x`).
@@ -92,10 +93,12 @@ English-first design never sees it (bean `csl26-uzkj`).
 ### (e) Case mapping is not locale-tailored
 
 `text_case.rs` uses Rust's `to_uppercase()`/`to_lowercase()` (Unicode default
-mappings). Turkish `i`↔`İ` / `ı`↔`I` is the classic casualty — ironic given
-tr-TR is one of the best-developed locales. Title-casing is correctly gated
-to English; lowercase/uppercase/sentence transforms are the exposure (bean
-`csl26-11wh`).
+mappings). Turkish `i`↔`İ` / `ı`↔`I` is the classic casualty. The sting is
+that Citum's own embedded `tr-TR` locale file is among the most complete in
+the tree (schema-v2 structure, full MF2 message coverage) — locale-data
+investment offers no protection against an engine-level casing gap.
+Title-casing is correctly gated to English; lowercase/uppercase/sentence
+transforms are the exposure (bean `csl26-11wh`).
 
 ### (f) No number-system model
 
@@ -148,7 +151,7 @@ this audit is about.
 |---|---|---|
 | Language/script tags, variants, `sort-as`, `calendar-note` | Data model | Already right; keep it purely descriptive |
 | Terms, messages, date patterns, quote chars, spacing, collision policy, digit system | Locale data | `grammar-options` is the right home and precedent; digit system is the missing field |
-| *Which view* to render, opt-ins (sorting mode, partitioning, note-wrap), per-script overrides | Style schema | Styles express *intent*, never glyphs where a semantic name exists |
+| *Which view* to render, opt-ins (sorting mode, partitioning, note-wrap), per-script overrides | Style schema | Styles express *intent* wherever a semantic name exists; literal glyphs remain the escape hatch |
 | Effective-language/script resolution, realization of semantic delimiters into glyphs, bidi isolation, collation execution | Renderer | Renderer *resolves and realizes*; it does not *decide policy* |
 
 The test to apply to every future feature: **the data model describes, the
@@ -168,6 +171,9 @@ repairs the Latin ones afterward. The general abstraction inverts this:
 (`FieldSeparator`, `Wrap(Parentheses)`, `SubfieldDelimiter`, …) **and is
 realized into glyphs late, by a table keyed on (role, effective script,
 locale)** — CLDR-informed defaults, locale-overridable, style-overridable.
+Authority runs downward: a style guide's own punctuation rules, expressed as
+style overrides, outrank locale conventions, which outrank the CLDR-informed
+engine defaults — CLDR informs the defaults, it never overrules a style.
 GB/T 7714 then declares "wrap issue numbers in parentheses; separate with
 commas" *once*, and each item's script yields `（），` or `(), ` respectively.
 `CALENDAR_DATE_ANNOTATIONS.md` already states the principle — "the width of
@@ -212,8 +218,9 @@ Normative design: [`PUNCTUATION_REALIZATION.md`](../../specs/PUNCTUATION_REALIZA
 
 - The parallel-metadata model, `sort-as`/sorting chain, partitioning, MF2
   messages, disambiguation-on-rendered-strings — all sound.
-- The opaque `calendar-note` decision — resist any pull toward calendar
-  conversion or era tables; opaque text is the right boundary.
+- The opaque `calendar-note` decision — calendar conversion and era tables
+  stay out of scope for now, not forbidden in principle; opaque text is the
+  right boundary until concrete demand says otherwise.
 - `citation.locales[]` layout branches — keep for genuinely structural
   per-language differences; they just should not remain the *only* per-item
   locale mechanism.
@@ -234,6 +241,7 @@ Epic `csl26-0ugp` — *Multilingual architecture hardening* — parents:
 | `csl26-838l` | Per-item term localization (autolang) |
 | `csl26-p05x` | Investigate mixed-script compound citations under shared wrap |
 
-`csl26-k2kp` is blocked by `csl26-kneq` (script-aware wrap rendering), which
-proceeds independently as the realization layer's first increment so the
-calendar-annotation chain (`csl26-0kqf`) stays unblocked.
+`csl26-k2kp` absorbs the script-aware wrap rendering work (formerly tracked
+as draft bean `csl26-kneq`) as its first increment; the calendar-annotation
+feature (`csl26-0kqf`) depends on that increment alone, not on the full
+layer.
