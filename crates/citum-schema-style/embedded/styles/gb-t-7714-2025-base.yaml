@@ -11,9 +11,11 @@ info:
 options:
   processing: numeric
   multilingual:
+    realization-default: cjk
     scripts:
-      latin:
-        punctuation: latin
+      cjk:
+        realization:
+          brackets: [ '[', ']' ]
   messages:
     gb-t-7714-type-code: |-
       .match {$type :select} {$carrier :select}
@@ -111,7 +113,7 @@ bibliography:
         use-first: 3
         and-others: et-al
         delimiter-precedes-last: contextual
-      delimiter: ，
+      delimiter: { mark: comma }
     separator: ''
   template:
   - number: citation-number
@@ -121,7 +123,7 @@ bibliography:
   - contributor: author
     form: long
     name-order: family-first
-    delimiter: ，
+    delimiter: { mark: comma }
     sort-separator: ' '
     and: none
   - variable: archive-location
@@ -130,13 +132,12 @@ bibliography:
     suppress: true
     strip-periods-all: true
   - number: issue
-    prefix: （
-    suffix: ）
+    wrap: parentheses
     suppress: true
   - contributor: container-author
     form: long
     name-order: family-first
-    delimiter: ，
+    delimiter: { mark: comma }
     sort-separator: ' '
     suppress: true
   - variable: archive
@@ -159,7 +160,7 @@ bibliography:
   - contributor: translator
     form: long
     name-order: family-first
-    delimiter: ，
+    delimiter: { mark: comma }
     sort-separator: ' '
   - group:
     - number: edition
@@ -181,7 +182,7 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      delimiter: ，
+      delimiter: { mark: comma }
       sort-separator: ' '
       shorten:
         min: 4
@@ -196,13 +197,12 @@ bibliography:
       suppress: true
       strip-periods-all: true
     - number: issue
-      prefix: （
-      suffix: ）
+      wrap: parentheses
       suppress: true
     - contributor: container-author
       form: long
       name-order: family-first
-      delimiter: ，
+      delimiter: { mark: comma }
       sort-separator: ' '
       shorten:
         min: 4
@@ -243,7 +243,7 @@ bibliography:
     - contributor: translator
       form: long
       name-order: family-first
-      delimiter: ，
+      delimiter: { mark: comma }
       sort-separator: ' '
       shorten:
         min: 4
@@ -271,7 +271,7 @@ bibliography:
       - contributor: author
         form: long
         name-order: family-first
-        delimiter: ，
+        delimiter: { mark: comma }
         sort-separator: ' '
         suffix: '. '
       - group:
@@ -287,19 +287,19 @@ bibliography:
         - contributor: translator
           form: long
           name-order: family-first
-          delimiter: ，
+          delimiter: { mark: comma }
           sort-separator: ' '
           label:
             term: translator
             form: short
             placement: suffix
-            prefix: ，
+            prefix: { mark: comma }
         delimiter: '. '
         suffix: //
       - contributor: container-author
         form: long
         name-order: family-first
-        delimiter: ，
+        delimiter: { mark: comma }
         sort-separator: ' '
         strip-periods: true
         suffix: '. '
@@ -307,7 +307,7 @@ bibliography:
         - title: container-title
         - number: volume
           when-numeric: short
-        delimiter: ：
+        delimiter: { mark: colon }
         suffix: '. '
       - group:
         - number: edition
@@ -318,13 +318,13 @@ bibliography:
             - group:
               - variable: publisher-place
               - variable: publisher
-              delimiter: ：
+              delimiter: { mark: colon }
             - date: issued
               form: year
               fallback: []
-            delimiter: ，
+            delimiter: { mark: comma }
           - number: pages
-          delimiter: ：
+          delimiter: { mark: colon }
         delimiter: '. '
       - variable: url
         prefix: '. '
@@ -339,7 +339,7 @@ bibliography:
       - contributor: author
         form: long
         name-order: family-first
-        delimiter: ，
+        delimiter: { mark: comma }
         sort-separator: ' '
         suffix: '. '
       - group:
@@ -349,7 +349,7 @@ bibliography:
             when-numeric: short
           - variable: volume-title
           delimiter: ' '
-        delimiter: ：
+        delimiter: { mark: colon }
       - variable: scale
         prefix: '. '
       - message: gb-t-7714-type-code
@@ -362,13 +362,13 @@ bibliography:
       - contributor: translator
         form: long
         name-order: family-first
-        delimiter: ，
+        delimiter: { mark: comma }
         sort-separator: ' '
         label:
           term: translator
           form: short
           placement: suffix
-          prefix: ，
+          prefix: { mark: comma }
         suffix: '. '
       - group:
         - number: edition
@@ -379,7 +379,7 @@ bibliography:
             - group:
               - variable: publisher-place
               - variable: publisher
-              delimiter: ：
+              delimiter: { mark: colon }
             - date: issued
               form: year
               fallback:
@@ -387,9 +387,9 @@ bibliography:
                 form: year
                 wrap:
                   punctuation: brackets
-            delimiter: ，
+            delimiter: { mark: comma }
           - number: pages
-          delimiter: ：
+          delimiter: { mark: colon }
         delimiter: '. '
       - variable: dimensions
         prefix: '. '
@@ -410,7 +410,7 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      delimiter: ，
+      delimiter: { mark: comma }
       sort-separator: ' '
       shorten:
         min: 4
@@ -425,13 +425,12 @@ bibliography:
       suppress: true
       strip-periods-all: true
     - number: issue
-      prefix: （
-      suffix: ）
+      wrap: parentheses
       suppress: true
     - contributor: container-author
       form: long
       name-order: family-first
-      delimiter: ，
+      delimiter: { mark: comma }
       sort-separator: ' '
       shorten:
         min: 4
@@ -472,7 +471,7 @@ bibliography:
     - contributor: translator
       form: long
       name-order: family-first
-      delimiter: ，
+      delimiter: { mark: comma }
       sort-separator: ' '
       shorten:
         min: 4
@@ -499,7 +498,7 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      delimiter: ，
+      delimiter: { mark: comma }
       sort-separator: ' '
       suffix: '. '
     - title: primary
@@ -518,8 +517,7 @@ bibliography:
     - date: issued
       form: year-month-day
       fallback: []
-      prefix: （
-      suffix: ）
+      wrap: parentheses
     - date: accessed
       form: year-month-day
       wrap:
@@ -537,7 +535,7 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      delimiter: ，
+      delimiter: { mark: comma }
       sort-separator: ' '
       suffix: '. '
     - title: primary
@@ -551,13 +549,13 @@ bibliography:
     - contributor: translator
       form: long
       name-order: family-first
-      delimiter: ，
+      delimiter: { mark: comma }
       sort-separator: ' '
       label:
         term: translator
         form: short
         placement: suffix
-        prefix: ，
+        prefix: { mark: comma }
       suffix: '. '
     - group:
       - group:
@@ -579,15 +577,14 @@ bibliography:
             render-when:
               field-absent: volume-or-issue
           - number: volume
-          delimiter: ，
+          delimiter: { mark: comma }
         - number: issue
-          prefix: （
-          suffix: ）
+          wrap: parentheses
         delimiter: ''
       - number: pages
-      delimiter: ：
+      delimiter: { mark: colon }
     - number: number
-      prefix: ：
+      prefix: { mark: colon }
     - variable: url
       prefix: '. '
     - identifier: cstr
@@ -601,7 +598,7 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      delimiter: ，
+      delimiter: { mark: comma }
       sort-separator: ' '
       suffix: '. '
     - title: primary
@@ -615,23 +612,22 @@ bibliography:
     - contributor: translator
       form: long
       name-order: family-first
-      delimiter: ，
+      delimiter: { mark: comma }
       sort-separator: ' '
       label:
         term: translator
         form: short
         placement: suffix
-        prefix: ，
+        prefix: { mark: comma }
       suffix: '. '
     - title: container-title
       strip-periods-all: true
-      suffix: ，
+      suffix: { mark: comma }
     - date: issued
       form: year-month-day
       fallback: []
     - number: pages
-      prefix: （
-      suffix: ）
+      wrap: parentheses
     - variable: url
       prefix: '. '
     - identifier: cstr
@@ -645,7 +641,7 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      delimiter: ，
+      delimiter: { mark: comma }
       sort-separator: ' '
       suffix: '. '
     - group:
@@ -661,19 +657,19 @@ bibliography:
       - contributor: translator
         form: long
         name-order: family-first
-        delimiter: ，
+        delimiter: { mark: comma }
         sort-separator: ' '
         label:
           term: translator
           form: short
           placement: suffix
-          prefix: ，
+          prefix: { mark: comma }
       delimiter: '. '
       suffix: //
     - contributor: container-author
       form: long
       name-order: family-first
-      delimiter: ，
+      delimiter: { mark: comma }
       sort-separator: ' '
       strip-periods: true
       suffix: '. '
@@ -681,7 +677,7 @@ bibliography:
       - title: container-title
       - number: volume
         when-numeric: short
-      delimiter: ：
+      delimiter: { mark: colon }
       suffix: '. '
     - group:
       - number: edition
@@ -691,13 +687,13 @@ bibliography:
           - group:
             - variable: publisher-place
             - variable: publisher
-            delimiter: ：
+            delimiter: { mark: colon }
           - date: issued
             form: year
             fallback: []
-          delimiter: ，
+          delimiter: { mark: comma }
         - number: pages
-        delimiter: ：
+        delimiter: { mark: colon }
       delimiter: '. '
     - variable: url
       prefix: '. '
@@ -712,7 +708,7 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      delimiter: ，
+      delimiter: { mark: comma }
       sort-separator: ' '
       suffix: '. '
     - title: primary
@@ -729,11 +725,11 @@ bibliography:
       - group:
         - variable: publisher-place
         - variable: publisher
-        delimiter: ：
+        delimiter: { mark: colon }
       - date: issued
         form: year
         fallback: []
-      delimiter: ，
+      delimiter: { mark: comma }
     - variable: url
       prefix: '. '
     - identifier: cstr
@@ -747,13 +743,13 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      delimiter: ，
+      delimiter: { mark: comma }
       sort-separator: ' '
       suffix: '. '
     - group:
       - title: primary
       - variable: archive-location
-      delimiter: ：
+      delimiter: { mark: colon }
     - message: gb-t-7714-type-code
       args:
         type: { reference-type: key }
@@ -765,7 +761,7 @@ bibliography:
       - group:
         - variable: archive-place
         - variable: archive
-        delimiter: ：
+        delimiter: { mark: colon }
       - date: issued
         form: year-month-day
         fallback:
@@ -773,7 +769,7 @@ bibliography:
           form: year-month-day
           wrap:
             punctuation: brackets
-      delimiter: ，
+      delimiter: { mark: comma }
     - variable: url
       prefix: '. '
     - identifier: cstr
@@ -787,7 +783,7 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      delimiter: ，
+      delimiter: { mark: comma }
       sort-separator: ' '
       suffix: '. '
     - group:
@@ -797,7 +793,7 @@ bibliography:
           when-numeric: short
         - variable: volume-title
         delimiter: ' '
-      delimiter: ：
+      delimiter: { mark: colon }
     - variable: scale
       prefix: '. '
     - message: gb-t-7714-type-code
@@ -810,13 +806,13 @@ bibliography:
     - contributor: translator
       form: long
       name-order: family-first
-      delimiter: ，
+      delimiter: { mark: comma }
       sort-separator: ' '
       label:
         term: translator
         form: short
         placement: suffix
-        prefix: ，
+        prefix: { mark: comma }
       suffix: '. '
     - group:
       - number: edition
@@ -826,7 +822,7 @@ bibliography:
           - group:
             - variable: publisher-place
             - variable: publisher
-            delimiter: ：
+            delimiter: { mark: colon }
           # `book`/`thesis`/`map` route through this imprint position even
           # without a publisher (unlike `software`, which has no matching
           # branch at all and falls to the generic online-resource shape
@@ -858,9 +854,9 @@ bibliography:
               form: year
               wrap:
                 punctuation: brackets
-          delimiter: ，
+          delimiter: { mark: comma }
         - number: pages
-        delimiter: ：
+        delimiter: { mark: colon }
       delimiter: '. '
     - variable: dimensions
       prefix: '. '
@@ -877,7 +873,7 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      delimiter: ，
+      delimiter: { mark: comma }
       sort-separator: ' '
       suffix: '. '
     - title: primary
@@ -891,8 +887,7 @@ bibliography:
     - date: issued
       form: year-month-day
       fallback: []
-      prefix: （
-      suffix: ）
+      wrap: parentheses
     - date: accessed
       form: year-month-day
       wrap:
@@ -910,7 +905,7 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      delimiter: ，
+      delimiter: { mark: comma }
       sort-separator: ' '
       suffix: '. '
     - title: primary
@@ -924,7 +919,7 @@ bibliography:
     - contributor: container-author
       form: long
       name-order: family-first
-      delimiter: ，
+      delimiter: { mark: comma }
       sort-separator: ' '
       suffix: '. '
     - title: container-title
@@ -936,14 +931,14 @@ bibliography:
           - group:
             - variable: publisher-place
             - variable: publisher
-            delimiter: ：
+            delimiter: { mark: colon }
           delimiter: ''
         - date: issued
           form: year
           fallback: []
-        delimiter: ，
+        delimiter: { mark: comma }
       - number: pages
-      delimiter: ：
+      delimiter: { mark: colon }
     - variable: url
       prefix: '. '
     - identifier: cstr
@@ -957,12 +952,12 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      delimiter: ，
+      delimiter: { mark: comma }
       sort-separator: ' '
       suffix: '. '
     - title: primary
     - number: patent-number
-      prefix: ：
+      prefix: { mark: colon }
     - message: gb-t-7714-type-code
       args:
         type: { reference-type: key }
@@ -974,7 +969,7 @@ bibliography:
       form: year-month-day
       fallback: []
     - number: pages
-      prefix: ：
+      prefix: { mark: colon }
     - variable: url
       prefix: '. '
     - identifier: cstr
@@ -988,7 +983,7 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      delimiter: ，
+      delimiter: { mark: comma }
       sort-separator: ' '
       suffix: '. '
     - title: primary
@@ -1002,8 +997,7 @@ bibliography:
     - date: issued
       form: year-month-day
       fallback: []
-      prefix: （
-      suffix: ）
+      wrap: parentheses
     - date: accessed
       form: year-month-day
       wrap:
@@ -1021,7 +1015,7 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      delimiter: ，
+      delimiter: { mark: comma }
       sort-separator: ' '
       suffix: '. '
     - title: primary
@@ -1035,8 +1029,7 @@ bibliography:
     - date: issued
       form: year-month-day
       fallback: []
-      prefix: （
-      suffix: ）
+      wrap: parentheses
     - date: accessed
       form: year-month-day
       wrap:
@@ -1054,12 +1047,12 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      delimiter: ，
+      delimiter: { mark: comma }
       sort-separator: ' '
       suffix: '. '
     - title: primary
     - number: report-number
-      prefix: ：
+      prefix: { mark: colon }
     - message: gb-t-7714-type-code
       args:
         type: { reference-type: key }
@@ -1072,13 +1065,13 @@ bibliography:
         - group:
           - variable: publisher-place
           - variable: publisher
-          delimiter: ：
+          delimiter: { mark: colon }
         - date: issued
           form: year-month-day
           fallback: []
-        delimiter: ，
+        delimiter: { mark: comma }
       - number: pages
-      delimiter: ：
+      delimiter: { mark: colon }
     - variable: url
       prefix: '. '
     - identifier: cstr
@@ -1092,7 +1085,7 @@ bibliography:
     - contributor: author
       form: long
       name-order: family-first
-      delimiter: ，
+      delimiter: { mark: comma }
       sort-separator: ' '
       suffix: '. '
     - number: standard-number

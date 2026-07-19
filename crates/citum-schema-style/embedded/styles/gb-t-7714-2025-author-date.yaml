@@ -29,7 +29,7 @@ options:
       use-first: 3
       and-others: et-al
       delimiter-precedes-last: contextual
-    delimiter: ，
+    delimiter: { mark: comma }
     demote-non-dropping-particle: never
     name-form: initials
   dates:
@@ -52,7 +52,7 @@ citation:
         use-first: 1
         and-others: et-al
         delimiter-precedes-last: contextual
-      delimiter: ，
+      delimiter: { mark: comma }
       and: text
   template:
   - contributor: author
@@ -85,10 +85,9 @@ citation:
       and: text
     - date: issued
       form: year
-  prefix: （
-  suffix: ）
-  delimiter: ，
-  multi-cite-delimiter: ；
+  wrap: parentheses
+  delimiter: { mark: comma }
+  multi-cite-delimiter: { mark: semicolon }
 bibliography:
   options:
     contributors:
@@ -327,8 +326,7 @@ bibliography:
     - variable: publisher
     - date: issued
       form: full
-      prefix: （
-      suffix: ）
+      wrap: parentheses
     - identifier: cstr
       prefix: 'CSTR:'
     - variable: doi
@@ -350,8 +348,7 @@ bibliography:
       form: full
     - number: volume
     - number: issue
-      prefix: （
-      suffix: ）
+      wrap: parentheses
     - number: pages
     - number: number
     - identifier: cstr
@@ -372,8 +369,7 @@ bibliography:
     - date: issued
       form: full
     - number: pages
-      prefix: （
-      suffix: ）
+      wrap: parentheses
     - identifier: cstr
       prefix: 'CSTR:'
     - variable: doi
@@ -482,8 +478,7 @@ bibliography:
     - variable: medium
     - date: issued
       form: full
-      prefix: （
-      suffix: ）
+      wrap: parentheses
     - date: accessed
       form: full
       wrap:
