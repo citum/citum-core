@@ -60,6 +60,11 @@ use citum_schema::reference::types::Title;
 use citum_schema::template::{TemplateComponent, TitleType};
 use std::sync::Arc;
 
+thread_local! {
+    static EXTENDED_LOCALE_EXPANDER: icu_locale::LocaleExpander =
+        const { icu_locale::LocaleExpander::new_extended() };
+}
+
 pub use contributor::format_contributors_short;
 pub use date::int_to_letter;
 
@@ -374,7 +379,7 @@ pub fn resolve_language_script(lang: Option<&str>) -> Option<String> {
         return None;
     }
 
-    icu_locale::LocaleExpander::new_extended().maximize(&mut langid);
+    EXTENDED_LOCALE_EXPANDER.with(|expander| expander.maximize(&mut langid));
     langid.script.map(|script| script.to_string())
 }
 
