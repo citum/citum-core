@@ -345,59 +345,46 @@ pub fn effective_component_language(
     }
 }
 
-/// Whether a BCP 47 language tag's script is Latin, for `options.multilingual.scripts.latin`
-/// punctuation mapping.
+/// Resolve a BCP 47 language tag to its effective ISO 15924 script code.
 ///
-/// Prefers an explicit script subtag (e.g. `zh-Latn`, `ja-Hani`) when present; otherwise falls
-/// back to a lookup of primary language subtags for scripts commonly found in bilingual
-/// bibliographic corpora (CJK, Cyrillic, Arabic, Hebrew, Greek, Devanagari). Returns `false` for
-/// an absent or unrecognized tag so punctuation is only remapped on positive evidence of a
-/// Latin-script item.
+/// An explicit script subtag takes precedence. Otherwise, the tag's language
+/// and region are expanded with CLDR likely-subtags data. Missing, malformed,
+/// private-use-only, and unrecognized language evidence resolves to `None`;
+/// this function never supplies a default script.
 #[must_use]
-pub fn is_latin_script_language(lang: Option<&str>) -> bool {
-    const NON_LATIN_SCRIPT_SUBTAGS: &[&str] = &[
-        "hans", "hant", "hani", "jpan", "kore", "hang", "cyrl", "arab", "hebr", "grek", "deva",
-    ];
-    const NON_LATIN_PRIMARY_LANGUAGES: &[&str] = &[
-        // CJK
-        "zh", "ja", "ko", "yue", "wuu", "nan", "hak", "cjy", "cmn", "hsn", // Cyrillic
-        "ru", "be", "bg", "mk", "sr", "uk", // Arabic
-        "ar", "fa", "ur", // Hebrew / Yiddish
-        "he", "yi", // Greek
-        "el", // Devanagari
-        "hi", "mr", "ne",
-    ];
+pub fn resolve_language_script(lang: Option<&str>) -> Option<String> {
+    use std::borrow::Cow;
 
-    let Some(lang) = lang else {
-        return false;
-    };
-    let mut subtags = lang.split(['-', '_']).map(str::to_ascii_lowercase);
-    let Some(primary) = subtags.next().filter(|tag| !tag.is_empty()) else {
-        return false;
-    };
-    if !is_meaningful_language_primary(&primary) {
-        return false;
+    let lang = lang?.trim();
+    if lang.is_empty() {
+        return None;
     }
 
-    for subtag in subtags {
-        if subtag == "latn" {
-            return true;
-        }
-        if NON_LATIN_SCRIPT_SUBTAGS.contains(&subtag.as_str()) {
-            return false;
-        }
+    let normalized = if lang.contains('_') {
+        Cow::Owned(lang.replace('_', "-"))
+    } else {
+        Cow::Borrowed(lang)
+    };
+    let mut langid = normalized.parse::<icu_locale::Locale>().ok()?.id;
+
+    if let Some(script) = langid.script {
+        return Some(script.to_string());
+    }
+    if langid.language.is_unknown() || matches!(langid.language.as_str(), "mul" | "zxx") {
+        return None;
     }
 
-    !NON_LATIN_PRIMARY_LANGUAGES.contains(&primary.as_str())
+    icu_locale::LocaleExpander::new_extended().maximize(&mut langid);
+    langid.script.map(|script| script.to_string())
 }
 
-/// Whether a primary BCP 47 language subtag can provide script evidence.
-fn is_meaningful_language_primary(primary: &str) -> bool {
-    !matches!(primary, "und" | "mul" | "zxx")
-        && (2..=8).contains(&primary.len())
-        && primary
-            .chars()
-            .all(|character| character.is_ascii_alphabetic())
+/// Whether a BCP 47 language tag resolves to the Latin script.
+///
+/// This compatibility adapter preserves the positive-evidence behavior used
+/// by the Latin punctuation remapping call sites.
+#[must_use]
+pub fn is_latin_script_language(lang: Option<&str>) -> bool {
+    resolve_language_script(lang).as_deref() == Some("Latn")
 }
 
 /// Select a structured name from transliteration maps using priority-list then script-match rules.

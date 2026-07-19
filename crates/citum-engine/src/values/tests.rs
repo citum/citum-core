@@ -36,18 +36,51 @@ fn make_config() -> Config {
 }
 
 #[test]
-fn latin_script_language_detection_requires_meaningful_language_evidence() {
-    for language in ["en", "en-US", "zh-Latn", "ja-Latn"] {
-        assert!(
-            super::is_latin_script_language(Some(language)),
+fn language_script_resolution_prefers_explicit_script_evidence() {
+    for (language, expected) in [
+        ("zh-Latn", "Latn"),
+        ("ja-Hani", "Hani"),
+        ("sr-Latn-RS", "Latn"),
+        ("en-Cyrl", "Cyrl"),
+        ("und-Arab", "Arab"),
+    ] {
+        assert_eq!(
+            super::resolve_language_script(Some(language)).as_deref(),
+            Some(expected),
             "{language}"
         );
     }
+}
 
+#[test]
+fn language_script_resolution_uses_likely_subtags_for_recognized_languages() {
+    for (language, expected) in [
+        ("en", "Latn"),
+        ("en_US", "Latn"),
+        ("en-u-ca-gregory", "Latn"),
+        ("ru-RU", "Cyrl"),
+        ("ar", "Arab"),
+        ("he", "Hebr"),
+        ("el", "Grek"),
+        ("hi", "Deva"),
+        ("zh", "Hans"),
+        ("zh-TW", "Hant"),
+        ("ja", "Jpan"),
+        ("ko", "Kore"),
+    ] {
+        assert_eq!(
+            super::resolve_language_script(Some(language)).as_deref(),
+            Some(expected),
+            "{language}"
+        );
+    }
+}
+
+#[test]
+fn language_script_resolution_requires_positive_language_evidence() {
     for language in [
-        "zh",
-        "zh-Hans",
-        "ru-RU",
+        "",
+        " ",
         "und",
         "mul",
         "zxx",
@@ -56,7 +89,26 @@ fn latin_script_language_detection_requires_meaningful_language_evidence() {
         "e",
         "1en",
         "123",
+        "zz",
     ] {
+        assert_eq!(
+            super::resolve_language_script(Some(language)),
+            None,
+            "{language} must not resolve to a default script"
+        );
+    }
+    assert_eq!(super::resolve_language_script(None), None);
+}
+
+#[test]
+fn latin_script_adapter_matches_only_resolved_latin_script() {
+    for language in ["en", "en-US", "zh-Latn", "ja-Latn"] {
+        assert!(
+            super::is_latin_script_language(Some(language)),
+            "{language}"
+        );
+    }
+    for language in ["zh", "zh-Hans", "ru-RU", "und", "zz"] {
         assert!(
             !super::is_latin_script_language(Some(language)),
             "{language} must not trigger Latin punctuation remapping"
