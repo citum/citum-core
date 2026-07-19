@@ -724,6 +724,49 @@ fn format_single_date(
     }
 }
 
+/// Apply a fallback date component's own `wrap`/`prefix`/`suffix` rendering.
+///
+/// `component.values()` only resolves the raw date string — it does not go
+/// through the generic per-component dispatch that normally applies a
+/// component's own rendering (that happens one layer up, outside the
+/// recursive fallback call in [`TemplateDate::values`]). This applies it
+/// directly so e.g. `wrap: brackets` on a fallback `accessed` date isn't
+/// silently dropped.
+fn apply_fallback_component_rendering<F: crate::render::format::OutputFormat<Output = String>>(
+    fmt: &F,
+    value: &str,
+    pre_formatted: bool,
+    rendering: &citum_schema::template::Rendering,
+    reference: &Reference,
+    options: &RenderOptions<'_>,
+) -> F::Output {
+    let mut output = if pre_formatted {
+        fmt.join(vec![value.to_string()], "")
+    } else {
+        fmt.text(value)
+    };
+    if let Some(wrap_config) = rendering.wrap.as_ref() {
+        let default_script =
+            crate::values::realization_default_script_class(options.config.multilingual.as_ref());
+        let script = crate::values::wrap_script_class(
+            crate::values::effective_item_language(reference).as_deref(),
+            default_script,
+        );
+        output = fmt.wrap_punctuation(
+            &wrap_config.punctuation,
+            output,
+            &crate::render::format::QuoteMarks::default(),
+            script,
+        );
+    }
+    let prefix = rendering.prefix.as_deref().unwrap_or_default();
+    let suffix = rendering.suffix.as_deref().unwrap_or_default();
+    if !prefix.is_empty() || !suffix.is_empty() {
+        output = fmt.affix(prefix, output, suffix);
+    }
+    output
+}
+
 impl ComponentValues for TemplateDate {
     fn values<F: crate::render::format::OutputFormat<Output = String>>(
         &self,
@@ -747,32 +790,14 @@ impl ComponentValues for TemplateDate {
             if let Some(fallbacks) = &self.fallback {
                 for component in fallbacks {
                     if let Some(values) = component.values::<F>(reference, hints, options) {
-                        // `component.values()` only resolves the raw date
-                        // string — it does not go through the generic
-                        // per-component dispatch that normally applies a
-                        // component's own `wrap`/`prefix`/`suffix` (that
-                        // happens one layer up, outside this recursive
-                        // call). Apply the fallback component's own
-                        // rendering here so e.g. `wrap: brackets` on a
-                        // fallback `accessed` date isn't silently dropped.
-                        let fallback_rendering = component.rendering();
-                        let mut output = if values.pre_formatted {
-                            fmt.join(vec![values.value.clone()], "")
-                        } else {
-                            fmt.text(&values.value)
-                        };
-                        if let Some(wrap_config) = fallback_rendering.wrap.as_ref() {
-                            output = fmt.wrap_punctuation(
-                                &wrap_config.punctuation,
-                                output,
-                                &crate::render::format::QuoteMarks::default(),
-                            );
-                        }
-                        let prefix = fallback_rendering.prefix.as_deref().unwrap_or_default();
-                        let suffix = fallback_rendering.suffix.as_deref().unwrap_or_default();
-                        if !prefix.is_empty() || !suffix.is_empty() {
-                            output = fmt.affix(prefix, output, suffix);
-                        }
+                        let output = apply_fallback_component_rendering(
+                            &fmt,
+                            &values.value,
+                            values.pre_formatted,
+                            component.rendering(),
+                            reference,
+                            options,
+                        );
                         return Some(ProcValues {
                             value: output,
                             prefix: None,

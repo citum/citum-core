@@ -5,7 +5,8 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 
 //! HTML output format.
 
-use super::format::{OutputFormat, QuoteMarks, SemanticAttribute};
+use super::format::{OutputFormat, QuoteMarks, SemanticAttribute, realize_wrap};
+use crate::values::ScriptClass;
 use citum_schema::template::WrapPunctuation;
 use std::fmt::Write;
 
@@ -122,11 +123,11 @@ impl OutputFormat for Html {
         wrap: &WrapPunctuation,
         content: Self::Output,
         marks: &QuoteMarks,
+        script: ScriptClass,
     ) -> Self::Output {
-        match wrap {
-            WrapPunctuation::Parentheses => format!("({content})"),
-            WrapPunctuation::Brackets => format!("[{content}]"),
-            WrapPunctuation::Quotes => self.quote(content, marks),
+        match realize_wrap(wrap, script) {
+            Some((open, close)) => format!("{open}{content}{close}"),
+            None => self.quote(content, marks),
         }
     }
 

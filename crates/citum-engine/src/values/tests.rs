@@ -117,6 +117,59 @@ fn latin_script_adapter_matches_only_resolved_latin_script() {
     assert!(!super::is_latin_script_language(None));
 }
 
+#[test]
+fn script_class_partitions_cjk_scripts_from_other_resolved_scripts() {
+    for language in ["zh", "zh-Hans", "zh-Hant", "ja", "ko", "yue-Bopo"] {
+        assert_eq!(
+            super::script_class(Some(language)),
+            Some(super::ScriptClass::Cjk),
+            "{language}"
+        );
+    }
+    for language in ["en", "ru-RU", "ar", "he", "el"] {
+        assert_eq!(
+            super::script_class(Some(language)),
+            Some(super::ScriptClass::Latin),
+            "{language}"
+        );
+    }
+    for language in ["", "und", "mul", "zxx"] {
+        assert_eq!(super::script_class(Some(language)), None, "{language}");
+    }
+    assert_eq!(super::script_class(None), None);
+}
+
+#[test]
+fn wrap_script_class_gates_evidence_override_on_the_declared_default() {
+    // Latin default (unset `realization-default`, every existing style today):
+    // no item language, regardless of script evidence, overrides it. This is
+    // what keeps romanized citations of non-Latin sources (Chicago's
+    // "romanized + original-script [translation]" mode) from picking up
+    // full-width punctuation despite a CJK `language` field.
+    for language in [None, Some("zh"), Some("ja"), Some("en")] {
+        assert_eq!(
+            super::wrap_script_class(language, super::ScriptClass::Latin),
+            super::ScriptClass::Latin,
+            "{language:?}"
+        );
+    }
+
+    // CJK default (`realization-default: cjk`, style opted in): evidence
+    // overrides in both directions; absence of evidence keeps the default.
+    assert_eq!(
+        super::wrap_script_class(Some("zh"), super::ScriptClass::Cjk),
+        super::ScriptClass::Cjk
+    );
+    assert_eq!(
+        super::wrap_script_class(Some("en"), super::ScriptClass::Cjk),
+        super::ScriptClass::Latin
+    );
+    assert_eq!(
+        super::wrap_script_class(None, super::ScriptClass::Cjk),
+        super::ScriptClass::Cjk
+    );
+}
+
 /// A `make_config` variant declaring the APA role-label defaults bundle,
 /// for tests that exercise other behavior through the editor suffix.
 fn make_config_with_apa_role_defaults() -> Config {

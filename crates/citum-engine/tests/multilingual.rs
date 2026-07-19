@@ -376,3 +376,108 @@ bibliography:
 
     assert_eq!(rendered, "New York：Wiley");
 }
+
+/// A book fixture with an optional `language` field, for the
+/// `realization-default` gate tests below — untagged items must omit the
+/// field entirely (a JSON-null `language` is not the same as no evidence).
+fn realization_test_book(
+    id: &str,
+    title: &str,
+    language: Option<&str>,
+    publisher_place: &str,
+) -> InputReference {
+    let mut fixture = serde_json::json!({
+        "id": id,
+        "type": "book",
+        "title": title,
+        "publisher-place": publisher_place,
+        "issued": { "date-parts": [[1988]] },
+    });
+    if let Some(language) = language {
+        fixture["language"] = serde_json::Value::String(language.to_string());
+    }
+    let legacy: csl_legacy::csl_json::Reference =
+        serde_json::from_value(fixture).expect("realization test fixture should parse");
+    legacy.into()
+}
+
+/// Style used by the `realization-default` gate tests: opts in to CJK
+/// realization and wraps `publisher-place` with the semantic
+/// `wrap: parentheses` token so its rendered width follows each item's
+/// effective script (docs/specs/PUNCTUATION_REALIZATION.md, increment 1).
+const REALIZATION_DEFAULT_CJK_GATE_STYLE_YAML: &str = r#"
+info:
+  id: realization-default-gate-test
+  title: Realization Default Gate Test
+  default-locale: en-US
+options:
+  multilingual:
+    realization-default: cjk
+bibliography:
+  template:
+    - variable: publisher-place
+      wrap: parentheses
+"#;
+
+#[test]
+fn realization_default_cjk_wraps_cjk_script_item_full_width() {
+    announce_behavior(
+        "options.multilingual.realization-default: cjk makes wrap: parentheses realize \
+         full-width for a CJK-script item — csl26-k2kp increment 1.",
+    );
+    let style: Style = serde_yaml::from_str(REALIZATION_DEFAULT_CJK_GATE_STYLE_YAML)
+        .expect("realization-default gate-test style should parse");
+    let bibliography = IndexMap::from([(
+        "cjk-book".to_string(),
+        realization_test_book("cjk-book", "银行业的未来与人工智能", Some("zh"), "Beijing"),
+    )]);
+
+    let processor = Processor::new(style, bibliography);
+    let rendered = processor.render_bibliography();
+
+    assert_eq!(rendered, "（Beijing）");
+}
+
+#[test]
+fn realization_default_cjk_still_wraps_latin_evidence_item_half_width() {
+    announce_behavior(
+        "options.multilingual.realization-default: cjk still realizes half-width for a \
+         positively Latin-script item — evidence overrides the style's declared default.",
+    );
+    let style: Style = serde_yaml::from_str(REALIZATION_DEFAULT_CJK_GATE_STYLE_YAML)
+        .expect("realization-default gate-test style should parse");
+    let bibliography = IndexMap::from([(
+        "latin-book".to_string(),
+        realization_test_book(
+            "latin-book",
+            "AI and the future of banking",
+            Some("en"),
+            "New York",
+        ),
+    )]);
+
+    let processor = Processor::new(style, bibliography);
+    let rendered = processor.render_bibliography();
+
+    assert_eq!(rendered, "(New York)");
+}
+
+#[test]
+fn realization_default_cjk_wraps_untagged_item_full_width() {
+    announce_behavior(
+        "options.multilingual.realization-default: cjk applies to an untagged item with no \
+         usable script evidence — the positive-evidence rule: absence of evidence never \
+         moves an item away from the style's declared default.",
+    );
+    let style: Style = serde_yaml::from_str(REALIZATION_DEFAULT_CJK_GATE_STYLE_YAML)
+        .expect("realization-default gate-test style should parse");
+    let bibliography = IndexMap::from([(
+        "untagged-book".to_string(),
+        realization_test_book("untagged-book", "Untitled Work", None, "Unknown"),
+    )]);
+
+    let processor = Processor::new(style, bibliography);
+    let rendered = processor.render_bibliography();
+
+    assert_eq!(rendered, "（Unknown）");
+}

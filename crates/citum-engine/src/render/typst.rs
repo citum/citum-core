@@ -7,8 +7,9 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 
 use std::ops::Range;
 
-use super::format::{OutputFormat, QuoteMarks};
+use super::format::{OutputFormat, QuoteMarks, realize_wrap};
 use super::visible_scan::{RunBuilder, skip_balanced};
+use crate::values::ScriptClass;
 use citum_schema::template::WrapPunctuation;
 
 /// Typst renderer.
@@ -125,11 +126,11 @@ impl OutputFormat for Typst {
         wrap: &WrapPunctuation,
         content: Self::Output,
         marks: &QuoteMarks,
+        script: ScriptClass,
     ) -> Self::Output {
-        match wrap {
-            WrapPunctuation::Parentheses => format!("({content})"),
-            WrapPunctuation::Brackets => format!("[{content}]"),
-            WrapPunctuation::Quotes => self.quote(content, marks),
+        match realize_wrap(wrap, script) {
+            Some((open, close)) => format!("{open}{content}{close}"),
+            None => self.quote(content, marks),
         }
     }
 

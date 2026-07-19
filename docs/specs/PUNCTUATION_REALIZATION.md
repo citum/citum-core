@@ -1,7 +1,7 @@
 # Punctuation Realization Layer Specification
 
-**Status:** Draft
-**Version:** 1.1
+**Status:** Active (increment 1 implemented; increments 2–3 remain Draft)
+**Version:** 1.2
 **Date:** 2026-07-19
 **Related:** [`MULTILINGUAL.md`](./MULTILINGUAL.md) §3.2a,
 [`PUNCTUATION_NORMALIZATION.md`](./PUNCTUATION_NORMALIZATION.md),
@@ -203,9 +203,10 @@ The script selector is the effective item script from the unified ISO
 primary-language lookup. Until that bean lands, the existing boolean
 `is_latin_script_language` serves as an interim two-class adapter.
 
-**The positive-evidence rule is preserved, with a style-declared default.**
-Items with no usable script evidence realize through the style's declared
-default context:
+**The positive-evidence rule is preserved, with a style-declared default —
+and per-item evidence only overrides that default once the style has opted
+into CJK realization.** Items with no usable script evidence realize
+through the style's declared default context:
 
 ```yaml
 options:
@@ -213,16 +214,31 @@ options:
     realization-default: cjk   # GB/T 7714; unset defaults to latin
 ```
 
-- For GB/T, an untagged item realizes full-width — byte-identical to
-  today's literal-authored output and to citeproc-js.
-- For every style that does not set `realization-default`, untagged items
-  realize Latin half-width — byte-identical to today's `wrap: parentheses`
-  output.
+- For GB/T (`realization-default: cjk`), an untagged item realizes
+  full-width — byte-identical to today's literal-authored output and to
+  citeproc-js. A positively-Latin-script item in the same style realizes
+  half-width, overriding the default.
+- For every style that does not set `realization-default` (every existing
+  style today), wrap punctuation realizes Latin half-width
+  **unconditionally** — byte-identical to today's `wrap: parentheses`
+  output, regardless of the item's language.
 
-Evidence moves an item *away* from the declared default; absence of
-evidence never does. This is the same governing rule as `MULTILINGUAL.md`
-§3.2a, generalized from "never remap without evidence" to "never leave the
-declared default without evidence."
+The unconditional Latin case is deliberate, not merely the absence-of-evidence
+fallback: raw item language is not the same as the item's *rendered* script.
+A style can romanize a non-Latin source — e.g. Chicago's "romanized +
+original-script [translation]" mode for East Asian references — so the
+citation displays as Latin-script prose even though the reference's
+`language` is `zh`/`ja`/`ko`. If CJK language evidence overrode the default
+in *every* style, such a romanized citation would incorrectly pick up
+full-width punctuation around otherwise entirely Latin-script prose. Gating
+the override on `realization-default: cjk` confines it to styles that have
+declared themselves CJK-oriented, where per-item evidence genuinely means
+"this item differs from the style's norm" rather than "this reference's
+source language happens to differ from its rendered script."
+
+This is the same governing rule as `MULTILINGUAL.md` §3.2a, generalized from
+"never remap without evidence" to "never leave the declared default without
+evidence" — scoped to styles that have declared a default worth leaving.
 
 ### 6. Pipeline position
 
@@ -306,10 +322,12 @@ Non-normative pointers:
 
 - [ ] `wrap: parentheses` and `wrap: brackets` render full-width for
   CJK-script items and half-width for Latin-script items in one bilingual
-  style (increment 1).
+  style that sets `realization-default: cjk` (increment 1).
 - [ ] Byte-for-byte parity for all existing styles that set neither
   `realization-default` nor a `realization` override, including untagged
-  items.
+  *and* CJK-script items — item language never overrides an unset (Latin)
+  default, so romanized citations of non-Latin sources (Chicago's
+  "romanized + original-script [translation]" mode) are unaffected.
 - [ ] `realization-default: cjk` makes untagged items realize full-width;
   positive Latin evidence still realizes half-width in the same style.
 - [ ] `delimiter: { mark: comma }` renders `，` for CJK items and `, ` for
@@ -328,6 +346,17 @@ Non-normative pointers:
 
 ## Changelog
 
+- v1.2 (2026-07-19): Increment 1 implementation revision. Per-item script
+  evidence overrides the realization default only in styles that set
+  `realization-default: cjk`; styles that have not opted in realize Latin
+  wrap punctuation unconditionally, regardless of item language. Raw item
+  language is not the same as an item's *rendered* script — romanized
+  citations of non-Latin sources (Chicago's "romanized + original-script
+  [translation]" mode) render as Latin-script prose despite a non-Latin
+  `language` field, and unconditional evidence-based override was found to
+  incorrectly force full-width punctuation onto such citations. Confirmed
+  via `citum-engine/tests/multilingual.rs` regressions during
+  implementation.
 - v1.1 (2026-07-19): Review revisions. Semantic marks stated as preference
   with a literal/override escape hatch, not a mandate; explicit
   style-over-locale-over-CLDR authority order; spacing made an explicit

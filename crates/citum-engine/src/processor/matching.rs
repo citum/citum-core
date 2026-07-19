@@ -42,7 +42,7 @@ impl<'a> Matcher<'a> {
     /// Check if primary contributors (authors/editors) match between two references.
     ///
     /// Delegates to the shared effective-primary resolver
-    /// ([`crate::values::contributor::substitute::effective_primary_names`]) so
+    /// (`crate::values::contributor::substitute::effective_primary_names`) so
     /// matching honors type overrides and merged-role candidates identically to
     /// rendering, sorting, and disambiguation. Two references match only when
     /// both resolve non-empty, equal name lists; a title-substitute result

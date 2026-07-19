@@ -7,8 +7,9 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 
 use std::ops::Range;
 
-use super::format::{OutputFormat, QuoteMarks};
+use super::format::{OutputFormat, QuoteMarks, realize_wrap};
 use super::visible_scan::{RunBuilder, find_matching, skip_balanced};
+use crate::values::ScriptClass;
 use citum_schema::template::WrapPunctuation;
 
 #[derive(Default, Clone)]
@@ -85,11 +86,11 @@ impl OutputFormat for Djot {
         wrap: &WrapPunctuation,
         content: Self::Output,
         marks: &QuoteMarks,
+        script: ScriptClass,
     ) -> Self::Output {
-        match wrap {
-            WrapPunctuation::Parentheses => format!("({content})"),
-            WrapPunctuation::Brackets => format!("[{content}]"),
-            WrapPunctuation::Quotes => self.quote(content, marks),
+        match realize_wrap(wrap, script) {
+            Some((open, close)) => format!("{open}{content}{close}"),
+            None => self.quote(content, marks),
         }
     }
 
@@ -274,13 +275,40 @@ mod tests {
         let fmt = Djot;
         let marks = QuoteMarks::default();
 
-        for (wrap, input, expected) in [
-            (WrapPunctuation::Parentheses, "text", "(text)"),
-            (WrapPunctuation::Brackets, "text", "[text]"),
-            (WrapPunctuation::Quotes, "text", "\u{201C}text\u{201D}"),
+        for (wrap, script, input, expected) in [
+            (
+                WrapPunctuation::Parentheses,
+                ScriptClass::Latin,
+                "text",
+                "(text)",
+            ),
+            (
+                WrapPunctuation::Brackets,
+                ScriptClass::Latin,
+                "text",
+                "[text]",
+            ),
+            (
+                WrapPunctuation::Quotes,
+                ScriptClass::Latin,
+                "text",
+                "\u{201C}text\u{201D}",
+            ),
+            (
+                WrapPunctuation::Parentheses,
+                ScriptClass::Cjk,
+                "text",
+                "\u{ff08}text\u{ff09}",
+            ),
+            (
+                WrapPunctuation::Brackets,
+                ScriptClass::Cjk,
+                "text",
+                "\u{3010}text\u{3011}",
+            ),
         ] {
             assert_eq!(
-                fmt.wrap_punctuation(&wrap, input.to_string(), &marks),
+                fmt.wrap_punctuation(&wrap, input.to_string(), &marks, script),
                 expected
             );
         }

@@ -178,7 +178,13 @@ pub(super) fn format_wrapped_role_term<F: crate::render::format::OutputFormat<Ou
         wrap.inner_suffix.as_deref().unwrap_or_default(),
     );
     let marks = crate::render::format::QuoteMarks::from(&options.locale.grammar_options);
-    let content = fmt.wrap_punctuation(&wrap.punctuation, content, &marks);
+    // No per-item script evidence is threaded this deep into role-label
+    // formatting (would require passing the reference through `place_explicit_term`
+    // and its callers); the style-declared realization default applies, matching
+    // the positive-evidence rule (no evidence -> style default, never a remap).
+    let script =
+        crate::values::realization_default_script_class(options.config.multilingual.as_ref());
+    let content = fmt.wrap_punctuation(&wrap.punctuation, content, &marks, script);
     format!("{}{content}{}", fmt.text(prefix), fmt.text(suffix))
 }
 

@@ -392,6 +392,74 @@ pub fn is_latin_script_language(lang: Option<&str>) -> bool {
     resolve_language_script(lang).as_deref() == Some("Latn")
 }
 
+/// Script partition used to select semantic wrap-punctuation glyphs
+/// (`docs/specs/PUNCTUATION_REALIZATION.md`, increment 1). Extends by adding
+/// variants (`Cyrillic`, `Arabic`, …) as later increments broaden coverage;
+/// v1 covers the two classes the embedded bilingual styles need.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ScriptClass {
+    /// Latin-script realization: half-width delimiters (`(`, `[`, …).
+    Latin,
+    /// CJK-script realization: full-width delimiters (`（`, `【`, …).
+    Cjk,
+}
+
+/// Resolve the effective script class from positive script evidence only.
+///
+/// Returns `None` when the language tag carries no usable script evidence —
+/// the positive-evidence rule (`MULTILINGUAL.md` §3.2a). Callers realizing
+/// wrap punctuation should fall back to the style-declared default via
+/// [`wrap_script_class`] rather than treating `None` as a script itself.
+#[must_use]
+pub fn script_class(lang: Option<&str>) -> Option<ScriptClass> {
+    match resolve_language_script(lang).as_deref() {
+        Some("Hani" | "Hans" | "Hant" | "Jpan" | "Kore" | "Hang" | "Bopo") => {
+            Some(ScriptClass::Cjk)
+        }
+        Some(_) => Some(ScriptClass::Latin),
+        None => None,
+    }
+}
+
+/// Resolve the script class to realize semantic wrap punctuation as.
+///
+/// Per-item script evidence only overrides the style-declared `default` when
+/// that default is [`ScriptClass::Cjk`] — i.e. the style has opted in via
+/// `options.multilingual.realization-default: cjk`. A style that has not
+/// opted in (`default` is [`ScriptClass::Latin`], which includes every
+/// existing style today) realizes Latin wrap punctuation unconditionally,
+/// regardless of the item's language.
+///
+/// This gate exists because raw item language is not the same as the
+/// item's *rendered* script: a style can romanize a non-Latin source (e.g.
+/// Chicago's "romanized + original-script \[translation\]" mode for East Asian
+/// references) so the citation displays as Latin-script prose even though
+/// the reference's `language` is `zh`/`ja`/`ko`. Without the gate, such an
+/// item's CJK language evidence would incorrectly force full-width wrap
+/// punctuation onto an otherwise entirely Latin-script citation. See
+/// `docs/specs/PUNCTUATION_REALIZATION.md` §5.
+#[must_use]
+pub fn wrap_script_class(lang: Option<&str>, default: ScriptClass) -> ScriptClass {
+    match default {
+        ScriptClass::Latin => ScriptClass::Latin,
+        ScriptClass::Cjk => script_class(lang).unwrap_or(ScriptClass::Cjk),
+    }
+}
+
+/// Resolve the style-declared realization-default script class from
+/// `options.multilingual.realization-default`, defaulting to
+/// [`ScriptClass::Latin`] when unset — today's `wrap: parentheses`/`brackets`
+/// behavior, byte-for-byte.
+#[must_use]
+pub fn realization_default_script_class(
+    multilingual: Option<&citum_schema::options::MultilingualConfig>,
+) -> ScriptClass {
+    match multilingual.map(|ml| ml.realization_default) {
+        Some(citum_schema::options::RealizationDefault::Cjk) => ScriptClass::Cjk,
+        _ => ScriptClass::Latin,
+    }
+}
+
 /// Select a structured name from transliteration maps using priority-list then script-match rules.
 fn select_by_transliteration<'a>(
     m: &'a citum_schema::reference::contributor::MultilingualName,

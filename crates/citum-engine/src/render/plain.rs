@@ -5,7 +5,8 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 
 //! Plain text output format.
 
-use super::format::{OutputFormat, QuoteMarks};
+use super::format::{OutputFormat, QuoteMarks, realize_wrap};
+use crate::values::ScriptClass;
 use citum_schema::template::WrapPunctuation;
 
 #[derive(Default, Clone)]
@@ -78,11 +79,11 @@ impl OutputFormat for PlainText {
         wrap: &WrapPunctuation,
         content: Self::Output,
         marks: &QuoteMarks,
+        script: ScriptClass,
     ) -> Self::Output {
-        match wrap {
-            WrapPunctuation::Parentheses => format!("({content})"),
-            WrapPunctuation::Brackets => format!("[{content}]"),
-            WrapPunctuation::Quotes => self.quote(content, marks),
+        match realize_wrap(wrap, script) {
+            Some((open, close)) => format!("{open}{content}{close}"),
+            None => self.quote(content, marks),
         }
     }
 

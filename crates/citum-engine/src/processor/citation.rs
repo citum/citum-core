@@ -575,7 +575,8 @@ impl Processor {
                 output
             };
             let marks = crate::render::format::QuoteMarks::from(&self.locale.grammar_options);
-            fmt.wrap_punctuation(&wrap.punctuation, inner_wrapped, &marks)
+            let script = self.citation_wrap_script_class(citation);
+            fmt.wrap_punctuation(&wrap.punctuation, inner_wrapped, &marks, script)
         } else if !spec_prefix.is_empty() || !spec_suffix.is_empty() {
             fmt.affix(spec_prefix, output, spec_suffix)
         } else {
@@ -609,6 +610,23 @@ impl Processor {
                     )
                 })
             })
+    }
+
+    /// Resolve the script class to realize the citation-spec-level `wrap`
+    /// punctuation as, based on the citation's first item's effective
+    /// language (mirroring [`Self::wants_latin_punctuation_for_citation`]'s
+    /// approximation for mixed compound citations), falling back to the
+    /// style-declared `options.multilingual.realization-default`.
+    fn citation_wrap_script_class(&self, citation: &Citation) -> crate::values::ScriptClass {
+        let default_script = crate::values::realization_default_script_class(
+            self.get_config().multilingual.as_ref(),
+        );
+        let lang = citation.items.first().and_then(|item| {
+            self.bibliography
+                .get(&item.id)
+                .and_then(crate::values::effective_item_language)
+        });
+        crate::values::wrap_script_class(lang.as_deref(), default_script)
     }
 
     /// Render a single citation to plain text.

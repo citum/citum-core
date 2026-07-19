@@ -5,7 +5,8 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 
 //! Org-mode output format.
 
-use super::format::{OutputFormat, QuoteMarks};
+use super::format::{OutputFormat, QuoteMarks, realize_wrap};
+use crate::values::ScriptClass;
 use citum_schema::template::WrapPunctuation;
 
 /// Renders processed citations and bibliography entries as org-mode markup.
@@ -94,11 +95,11 @@ impl OutputFormat for OrgOutputFormat {
         wrap: &WrapPunctuation,
         content: Self::Output,
         marks: &QuoteMarks,
+        script: ScriptClass,
     ) -> Self::Output {
-        match wrap {
-            WrapPunctuation::Parentheses => format!("({content})"),
-            WrapPunctuation::Brackets => format!("[{content}]"),
-            WrapPunctuation::Quotes => self.quote(content, marks),
+        match realize_wrap(wrap, script) {
+            Some((open, close)) => format!("{open}{content}{close}"),
+            None => self.quote(content, marks),
         }
     }
 
