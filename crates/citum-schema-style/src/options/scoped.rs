@@ -167,7 +167,7 @@ fn apply_citation_options_recursive(citation: &mut CitationSpec) {
 
     if let Some(options) = options {
         if let Some(delimiter) = options.group_delimiter {
-            citation.multi_cite_delimiter = Some(delimiter.as_str().to_string());
+            citation.multi_cite_delimiter = Some(delimiter.as_str().into());
         }
         if let Some(wrap) = options.label_wrap {
             if citation.template.is_none() && citation.template_ref.is_some() {
@@ -456,7 +456,10 @@ fn update_title_terminator(template: Option<&mut Template>, terminator: TitleTer
         if let TemplateComponent::Title(title) = component
             && title.title == crate::template::TitleType::Primary
         {
-            title.rendering.suffix = terminator.as_suffix().map(ToString::to_string);
+            title.rendering.suffix = terminator
+                .as_suffix()
+                .map(ToString::to_string)
+                .map(Into::into);
         }
     }
 }

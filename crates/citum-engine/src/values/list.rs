@@ -72,11 +72,24 @@ impl ComponentValues for TemplateGroup {
         }
 
         // Join with delimiter
-        let delimiter = self
-            .delimiter
-            .as_ref()
-            .unwrap_or(&DelimiterPunctuation::Comma)
-            .to_string_with_space();
+        let default_delimiter = DelimiterPunctuation::Comma;
+        let punctuation = self.delimiter.as_ref().unwrap_or(&default_delimiter);
+        let (script, realization) = crate::values::punctuation_realization_context(
+            crate::values::effective_item_language(reference).as_deref(),
+            options.config.multilingual.as_ref(),
+        );
+        let delimiter = crate::render::format::realize_punctuation(
+            punctuation,
+            script,
+            realization,
+            crate::render::format::PunctuationPosition::Separator,
+        );
+
+        let delimiter = if punctuation.is_semantic() {
+            fmt.text(&delimiter)
+        } else {
+            delimiter.into_owned()
+        };
 
         Some(ProcValues {
             value: fmt.join(values, &delimiter),

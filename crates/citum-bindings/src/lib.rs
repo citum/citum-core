@@ -147,7 +147,7 @@ pub fn ensure_style_has_templates(style: &mut Style) {
             template.push(TemplateComponent::Variable(TemplateVariable {
                 variable: SimpleVariable::Locator,
                 rendering: Rendering {
-                    prefix: Some(", ".to_string()),
+                    prefix: Some(", ".into()),
                     ..Default::default()
                 },
                 ..Default::default()

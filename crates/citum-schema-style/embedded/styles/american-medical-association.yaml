@@ -46,7 +46,7 @@ options:
   punctuation-in-quote: true
 citation:
   template:
-  - delimiter: none
+  - delimiter: ""
     group:
     - number: citation-number
     - variable: locator
@@ -71,7 +71,7 @@ bibliography:
     - title: primary
     - title: parent-serial
       form: short
-    - delimiter: none
+    - delimiter: ""
       group:
       - date: issued
         form: year
@@ -117,7 +117,7 @@ bibliography:
             delimiter: " "
     - variable: publisher
       suffix: "; "
-    - delimiter: none
+    - delimiter: ""
       group:
       - date: issued
         form: year
@@ -182,7 +182,7 @@ bibliography:
     - number: volume
     - variable: publisher
       suffix: "; "
-    - delimiter: none
+    - delimiter: ""
       group:
       - date: issued
         form: year
@@ -219,7 +219,7 @@ bibliography:
       form: long
       name-order: family-first
     - title: primary
-    - delimiter: none
+    - delimiter: ""
       group:
       - message: pattern.published-online-date
         args:
@@ -251,7 +251,7 @@ bibliography:
       name-order: family-first
     - title: primary
     - title: parent-serial
-    - delimiter: none
+    - delimiter: ""
       group:
       - message: pattern.published-online-date
         args:
@@ -283,7 +283,7 @@ bibliography:
       form: long
       name-order: family-first
     - title: primary
-    - delimiter: none
+    - delimiter: ""
       group:
       - message: pattern.published-online-date
         args:
@@ -332,7 +332,7 @@ bibliography:
     - variable: url
     hearing:
     - title: primary
-    - delimiter: none
+    - delimiter: ""
       group:
       - message: pattern.published-online-date
         args:
@@ -342,7 +342,7 @@ bibliography:
     - variable: url
     standard:
     - title: primary
-    - delimiter: none
+    - delimiter: ""
       group:
       - message: pattern.published-online-date
         args:
@@ -361,7 +361,7 @@ bibliography:
     regulation:
     - title: primary
     - variable: code
-    - delimiter: none
+    - delimiter: ""
       group:
       - date: issued
         form: year

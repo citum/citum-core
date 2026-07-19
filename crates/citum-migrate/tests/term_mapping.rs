@@ -340,8 +340,8 @@ fn test_template_compiler_preserves_strip_periods_through_compilation() {
 fn csl_m_cstr_variable_compiles_to_a_canonical_identifier_component() {
     let legacy_node = CslNode::Text(Text {
         variable: Some("CSTR".to_string()),
-        prefix: Some("CSTR: ".to_string()),
-        suffix: Some(".".to_string()),
+        prefix: Some("CSTR: ".into()),
+        suffix: Some(".".into()),
         formatting: Formatting::default(),
         value: None,
         macro_name: None,

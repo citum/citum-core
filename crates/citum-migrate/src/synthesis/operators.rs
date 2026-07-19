@@ -282,7 +282,7 @@ mod tests {
 
     fn suffixed_variable(variable: SimpleVariable, suffix: &str) -> TemplateComponent {
         let mut component = self::variable(variable);
-        component.rendering_mut().suffix = Some(suffix.to_string());
+        component.rendering_mut().suffix = Some(suffix.into());
         component
     }
 

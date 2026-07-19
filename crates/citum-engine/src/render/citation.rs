@@ -516,7 +516,7 @@ ENDING IN COMMA
                     title: TitleType::Primary,
                     rendering: Rendering {
                         quote: Some(true),
-                        suffix: Some(suffix.to_string()),
+                        suffix: Some(suffix.into()),
                         ..Default::default()
                     },
                     ..Default::default()

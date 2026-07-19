@@ -218,7 +218,7 @@ mod tests {
 
         match volume.unwrap() {
             TemplateComponent::Number(n) => {
-                assert_eq!(n.rendering.prefix, Some("vol. ".to_string()));
+                assert_eq!(n.rendering.prefix.as_deref(), Some("vol. "));
             }
             _ => unreachable!(),
         }

@@ -22,7 +22,7 @@ pub(super) fn ensure_numeric_locator_citation_component(
     let locator_component = TemplateComponent::Variable(TemplateVariable {
         variable: SimpleVariable::Locator,
         rendering: Rendering {
-            prefix: Some(", ".to_string()),
+            prefix: Some(", ".into()),
             ..Default::default()
         },
         ..Default::default()
@@ -173,7 +173,7 @@ pub(super) fn normalize_author_date_locator_citation_component(
     template.push(TemplateComponent::Variable(TemplateVariable {
         variable: SimpleVariable::Locator,
         rendering: Rendering {
-            prefix: Some(locator_prefix),
+            prefix: Some(locator_prefix.into()),
             ..Default::default()
         },
         ..Default::default()
@@ -258,7 +258,7 @@ fn apply_author_date_locator_formatting(
                     variable.rendering.prefix.as_deref(),
                     locator_prefix,
                 ) {
-                    variable.rendering.prefix = Some(locator_prefix.to_string());
+                    variable.rendering.prefix = Some(locator_prefix.into());
                 }
             }
             TemplateComponent::Group(list) => {

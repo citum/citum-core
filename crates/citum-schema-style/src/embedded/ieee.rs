@@ -36,7 +36,7 @@ pub fn bibliography() -> Vec<TemplateComponent> {
             form: ContributorForm::Long,
             and: Some(AndOptions::Text),
             rendering: crate::template::Rendering {
-                suffix: Some(", ".to_string()),
+                suffix: Some(", ".into()),
                 ..Default::default()
             },
             ..Default::default()
@@ -54,7 +54,7 @@ pub fn bibliography() -> Vec<TemplateComponent> {
             number: NumberVariable::Pages,
             label_form: Some(LabelForm::Short),
             rendering: crate::template::Rendering {
-                suffix: Some(", ".to_string()),
+                suffix: Some(", ".into()),
                 ..Default::default()
             },
             ..Default::default()

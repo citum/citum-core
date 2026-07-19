@@ -747,7 +747,7 @@ mod tests {
             TemplateComponent::Title(TemplateTitle {
                 title: TitleType::Primary,
                 rendering: Rendering {
-                    suffix: Some(".".to_string()),
+                    suffix: Some(".".into()),
                     ..Default::default()
                 },
                 ..Default::default()
@@ -849,7 +849,7 @@ mod tests {
             TemplateComponent::Title(TemplateTitle {
                 title: TitleType::Primary,
                 rendering: Rendering {
-                    suffix: Some(".".to_string()),
+                    suffix: Some(".".into()),
                     ..Default::default()
                 },
                 ..Default::default()
@@ -863,7 +863,7 @@ mod tests {
             TemplateComponent::Title(TemplateTitle {
                 title: TitleType::Primary,
                 rendering: Rendering {
-                    suffix: Some("!".to_string()),
+                    suffix: Some("!".into()),
                     ..Default::default()
                 },
                 ..Default::default()

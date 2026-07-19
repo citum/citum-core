@@ -118,7 +118,7 @@ fn latin_script_adapter_matches_only_resolved_latin_script() {
 }
 
 #[test]
-fn script_class_partitions_cjk_scripts_from_other_resolved_scripts() {
+fn script_class_requires_positive_latin_or_cjk_evidence() {
     for language in ["zh", "zh-Hans", "zh-Hant", "ja", "ko", "yue-Bopo"] {
         assert_eq!(
             super::script_class(Some(language)),
@@ -126,14 +126,14 @@ fn script_class_partitions_cjk_scripts_from_other_resolved_scripts() {
             "{language}"
         );
     }
-    for language in ["en", "ru-RU", "ar", "he", "el"] {
+    for language in ["en", "fr-Latn", "sr-Latn"] {
         assert_eq!(
             super::script_class(Some(language)),
             Some(super::ScriptClass::Latin),
             "{language}"
         );
     }
-    for language in ["", "und", "mul", "zxx"] {
+    for language in ["ru-RU", "ar", "he", "el", "", "und", "mul", "zxx"] {
         assert_eq!(super::script_class(Some(language)), None, "{language}");
     }
     assert_eq!(super::script_class(None), None);
@@ -163,6 +163,10 @@ fn wrap_script_class_gates_evidence_override_on_the_declared_default() {
     assert_eq!(
         super::wrap_script_class(Some("en"), super::ScriptClass::Cjk),
         super::ScriptClass::Latin
+    );
+    assert_eq!(
+        super::wrap_script_class(Some("ru"), super::ScriptClass::Cjk),
+        super::ScriptClass::Cjk
     );
     assert_eq!(
         super::wrap_script_class(None, super::ScriptClass::Cjk),
@@ -2307,7 +2311,7 @@ fn test_et_al_uses_configured_delimiter() {
 
     let mut config = make_config();
     if let Some(ref mut contributors) = config.contributors {
-        contributors.delimiter = Some("; ".to_string());
+        contributors.delimiter = Some("; ".into());
         contributors.shorten = Some(ShortenListOptions {
             min: 3,
             use_first: 2,
@@ -4177,7 +4181,7 @@ fn test_suffix_uses_sort_separator_not_space() {
     let name = FlatName {
         family: Some("Smith".to_string()),
         given: Some("J.".to_string()),
-        suffix: Some("Jr.".to_string()),
+        suffix: Some("Jr.".into()),
         ..Default::default()
     };
 
@@ -4197,7 +4201,7 @@ fn katakana_names_use_script_delimiter_in_original_order() {
     let scripts = std::collections::HashMap::from([(
         "katakana".to_string(),
         ScriptConfig {
-            delimiter: Some("・".to_string()),
+            delimiter: Some("・".into()),
             ..Default::default()
         },
     )]);
@@ -4220,7 +4224,7 @@ fn katakana_names_use_script_sort_separator_when_inverted() {
     let scripts = std::collections::HashMap::from([(
         "katakana".to_string(),
         ScriptConfig {
-            delimiter: Some("・".to_string()),
+            delimiter: Some("・".into()),
             sort_separator: Some("、".to_string()),
             ..Default::default()
         },
@@ -4255,7 +4259,7 @@ fn katakana_name_renders_correctly_in_both_orders() {
     let scripts = std::collections::HashMap::from([(
         "katakana".to_string(),
         ScriptConfig {
-            delimiter: Some("・".to_string()),
+            delimiter: Some("・".into()),
             sort_separator: Some("、".to_string()),
             ..Default::default()
         },
@@ -4318,7 +4322,7 @@ fn latin_names_ignore_unmatched_script_separators() {
     let scripts = std::collections::HashMap::from([(
         "katakana".to_string(),
         ScriptConfig {
-            delimiter: Some("・".to_string()),
+            delimiter: Some("・".into()),
             sort_separator: Some("、".to_string()),
             ..Default::default()
         },
@@ -4375,7 +4379,7 @@ fn mixed_kana_names_match_kana_config() {
     let scripts = std::collections::HashMap::from([(
         "kana".to_string(),
         ScriptConfig {
-            delimiter: Some("・".to_string()),
+            delimiter: Some("・".into()),
             ..Default::default()
         },
     )]);
@@ -4931,7 +4935,7 @@ fn test_structured_title_primary_delimiter_separates_main_from_subtitle() {
 
     let config = make_config_with_titles(TitlesConfig {
         monograph: Some(TitleRendering {
-            primary_delimiter: Some(". ".to_string()),
+            primary_delimiter: Some(". ".into()),
             ..Default::default()
         }),
         ..Default::default()
@@ -4957,8 +4961,8 @@ fn test_structured_title_subtitle_delimiter_separates_subtitle_parts() {
 
     let config = make_config_with_titles(TitlesConfig {
         monograph: Some(TitleRendering {
-            primary_delimiter: Some(": ".to_string()),
-            subtitle_delimiter: Some(". ".to_string()),
+            primary_delimiter: Some(": ".into()),
+            subtitle_delimiter: Some(". ".into()),
             ..Default::default()
         }),
         ..Default::default()
@@ -4984,8 +4988,8 @@ fn test_structured_title_default_title_options_apply_delimiters_to_all_categorie
 
     let config = make_config_with_titles(TitlesConfig {
         default: Some(TitleRendering {
-            primary_delimiter: Some(". ".to_string()),
-            subtitle_delimiter: Some(" / ".to_string()),
+            primary_delimiter: Some(". ".into()),
+            subtitle_delimiter: Some(" / ".into()),
             ..Default::default()
         }),
         ..Default::default()
@@ -5012,13 +5016,13 @@ fn test_structured_title_locale_override_can_change_delimiters() {
 
     let config = make_config_with_titles(TitlesConfig {
         monograph: Some(TitleRendering {
-            primary_delimiter: Some(": ".to_string()),
-            subtitle_delimiter: Some(": ".to_string()),
+            primary_delimiter: Some(": ".into()),
+            subtitle_delimiter: Some(": ".into()),
             locale_overrides: Some(HashMap::from([(
                 "de".to_string(),
                 TitleRendering {
-                    primary_delimiter: Some(". ".to_string()),
-                    subtitle_delimiter: Some("; ".to_string()),
+                    primary_delimiter: Some(". ".into()),
+                    subtitle_delimiter: Some("; ".into()),
                     ..Default::default()
                 },
             )])),
@@ -5050,8 +5054,8 @@ fn test_structured_title_form_short_ignores_configured_delimiters() {
 
     let config = make_config_with_titles(TitlesConfig {
         monograph: Some(TitleRendering {
-            primary_delimiter: Some(". ".to_string()),
-            subtitle_delimiter: Some("; ".to_string()),
+            primary_delimiter: Some(". ".into()),
+            subtitle_delimiter: Some("; ".into()),
             ..Default::default()
         }),
         ..Default::default()

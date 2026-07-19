@@ -8,7 +8,8 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 use crate::values::{ProcHints, RenderOptions};
 use citum_schema::options::contributors::NameForm;
 use citum_schema::options::{
-    AndOptions, AndOtherOptions, DemoteNonDroppingParticle, DisplayAsSort, ShortenListOptions,
+    AndOptions, AndOtherOptions, ContributorConfig, DemoteNonDroppingParticle, DisplayAsSort,
+    ShortenListOptions,
 };
 use citum_schema::template::{ContributorForm, NameOrder};
 use unicode_script::{Script, UnicodeScript};
@@ -49,6 +50,8 @@ pub struct NamesOverrides<'a> {
     pub name_order: Option<&'a NameOrder>,
     /// Override for the sort separator (e.g. `","` or `" "`).
     pub sort_separator: Option<&'a String>,
+    /// Override for the semantic or literal delimiter between names.
+    pub delimiter: Option<&'a citum_schema::template::DelimiterPunctuation>,
     /// Override for et-al shortening options.
     pub shorten: Option<&'a ShortenListOptions>,
     /// Override for the "and" conjunction between names.
@@ -63,6 +66,8 @@ pub struct NamesOverrides<'a> {
     /// so a suffix immediately followed by a list delimiter doesn't read as
     /// double-punctuated ("Jr.，" instead of "Jr，").
     pub strip_periods: Option<bool>,
+    /// Effective item language used to realize semantic contributor delimiters.
+    pub item_language: Option<String>,
 }
 
 /// Prefix and suffix attached to a selected name before list joining.
@@ -328,10 +333,6 @@ fn apply_et_al(
 /// violating that invariant can trigger indexing or `unwrap()` panics in later
 /// formatting branches.
 #[must_use]
-#[allow(
-    clippy::too_many_lines,
-    reason = "linear context-building pipeline; no clean split point"
-)]
 pub fn format_names(
     names: &[crate::reference::FlatName],
     form: &ContributorForm,
@@ -342,8 +343,35 @@ pub fn format_names(
     format_names_decorated(names, form, options, overrides, hints, &[])
 }
 
+fn resolve_contributor_delimiter(
+    config: Option<&ContributorConfig>,
+    override_delimiter: Option<&citum_schema::template::DelimiterPunctuation>,
+    options: &RenderOptions<'_>,
+    item_language: Option<&str>,
+) -> String {
+    let default = citum_schema::template::DelimiterPunctuation::Comma;
+    let punctuation = override_delimiter
+        .or_else(|| config.and_then(|config| config.delimiter.as_ref()))
+        .unwrap_or(&default);
+    let (script, realization) = crate::values::punctuation_realization_context(
+        item_language,
+        options.config.multilingual.as_ref(),
+    );
+    crate::render::format::realize_punctuation(
+        punctuation,
+        script,
+        realization,
+        crate::render::format::PunctuationPosition::Separator,
+    )
+    .into_owned()
+}
+
 /// Format names with per-entry decorations applied before list joining.
 #[must_use]
+#[allow(
+    clippy::too_many_lines,
+    reason = "linear context-building pipeline; no clean split point"
+)]
 pub(super) fn format_names_decorated(
     names: &[crate::reference::FlatName],
     form: &ContributorForm,
@@ -414,7 +442,12 @@ pub(super) fn format_names_decorated(
             .unwrap_or(false),
     };
 
-    let delimiter = config.and_then(|c| c.delimiter.as_deref()).unwrap_or(", ");
+    let delimiter = resolve_contributor_delimiter(
+        config,
+        overrides.delimiter,
+        options,
+        overrides.item_language.as_deref(),
+    );
 
     let (formatted_first, formatted_last) = format_selected_names(
         names,
@@ -426,13 +459,14 @@ pub(super) fn format_names_decorated(
         decorations,
     );
 
-    // Determine "and" setting: use override if provided, else global config
-    let and_option = overrides
-        .and
-        .or_else(|| config.and_then(|c| c.and.as_ref()));
-
-    let and_str =
-        resolve_name_conjunction(and_option, locale, use_et_al, !formatted_last.is_empty());
+    let and_str = resolve_name_conjunction(
+        overrides
+            .and
+            .or_else(|| config.and_then(|config| config.and.as_ref())),
+        locale,
+        use_et_al,
+        !formatted_last.is_empty(),
+    );
 
     // Check if delimiter should precede last name (Oxford comma)
     let delimiter_precedes_last = config.and_then(|c| c.delimiter_precedes_last.as_ref());
@@ -444,7 +478,7 @@ pub(super) fn format_names_decorated(
         join_names_with_conjunction(
             &formatted_first,
             and_str,
-            delimiter,
+            &delimiter,
             delimiter_precedes_last,
             first_names.len(),
             &ctx,
@@ -461,7 +495,7 @@ pub(super) fn format_names_decorated(
         &formatted_last,
         EtAlContext {
             and_others,
-            delimiter,
+            delimiter: &delimiter,
             delimiter_precedes: config.and_then(|c| c.delimiter_precedes_et_al.as_ref()),
             first_count: first_names.len(),
         },
@@ -1058,11 +1092,13 @@ pub fn format_contributors_short(
         &NamesOverrides {
             name_order: None,
             sort_separator: None,
+            delimiter: None,
             shorten: None,
             and: None,
             initialize_with: None,
             name_form: None,
             strip_periods: None,
+            item_language: None,
         },
         &ProcHints::default(),
     )

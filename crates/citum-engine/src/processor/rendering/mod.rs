@@ -595,7 +595,7 @@ impl<'a> Renderer<'a> {
         Ok(UngroupedItemRenderState {
             reference,
             template,
-            delimiter: spec.delimiter.as_deref().unwrap_or(intra_delimiter),
+            delimiter: intra_delimiter,
         })
     }
 

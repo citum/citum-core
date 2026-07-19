@@ -35,7 +35,7 @@ impl TemplateCompiler {
         if let Some(p) = rendering.prefix {
             new_prefix.push_str(&p);
         }
-        rendering.prefix = Some(new_prefix);
+        rendering.prefix = Some(new_prefix.into());
         set_component_rendering(&mut next_comp, rendering);
 
         // Apply inherited wrap if applicable

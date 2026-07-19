@@ -121,7 +121,7 @@ citation:
     prefix: ": "
   - number: number
     prefix: ", Patent "
-  - delimiter: none
+  - delimiter: ""
     group:
     - date: issued
       form: month-day
@@ -129,7 +129,7 @@ citation:
     - date: issued
       form: year
       prefix: ", "
-  - delimiter: none
+  - delimiter: ""
     prefix: ", "
     group:
     - date: issued

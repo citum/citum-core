@@ -68,8 +68,8 @@ pub(super) fn convert_formatting(fmt: &FormattingOptions) -> Rendering {
         // Quote rendering is owned by the `wrap: quotes` path above; emitting
         // it here as well caused doubled quotation marks (`““Title””`).
         quote: None,
-        prefix,
-        suffix,
+        prefix: prefix.map(Into::into),
+        suffix: suffix.map(Into::into),
         wrap,
         suppress: None,
         initialize_with: None,
@@ -162,10 +162,10 @@ pub(super) fn apply_wrap_to_component(
         // If no wrap is being applied, affixes are outer.
         if wrap_punct.is_none() {
             if rendering.prefix.is_none() && prefix.is_some() {
-                rendering.prefix = prefix.clone();
+                rendering.prefix = prefix.clone().map(Into::into);
             }
             if rendering.suffix.is_none() && suffix.is_some() {
-                rendering.suffix = suffix.clone();
+                rendering.suffix = suffix.clone().map(Into::into);
             }
         }
     };

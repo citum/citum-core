@@ -387,14 +387,11 @@ impl Renderer<'_> {
                     .unwrap_or("");
                 let inner = fmt.inner_affix(inner_prefix, joined, inner_suffix);
                 let marks = crate::render::format::QuoteMarks::from(&self.locale.grammar_options);
-                let default_script = crate::values::realization_default_script_class(
+                let (script, realization) = crate::values::punctuation_realization_context(
+                    crate::values::effective_item_language(first_ref).as_deref(),
                     self.config.multilingual.as_ref(),
                 );
-                let script = crate::values::wrap_script_class(
-                    crate::values::effective_item_language(first_ref).as_deref(),
-                    default_script,
-                );
-                Some(fmt.wrap_punctuation(wrap_punct, inner, &marks, script))
+                Some(fmt.wrap_punctuation(wrap_punct, inner, &marks, script, realization))
             } else {
                 None
             };
@@ -559,8 +556,12 @@ impl Renderer<'_> {
             && matches!(params.mode, citum_schema::citation::CitationMode::Integral);
         for (index, item) in group.iter().enumerate() {
             let state = self.resolve_item_render_state(item, params.spec)?;
+            let (script, realization) = crate::values::punctuation_realization_context(
+                crate::values::effective_item_language(state.reference).as_deref(),
+                self.config.multilingual.as_ref(),
+            );
             let (mut filtered_template, leading_affix, strip_item_delimiter) =
-                filter_author_from_template(&state.template);
+                filter_author_from_template::<F>(&state.template, script, realization, fmt);
             if collapse_group {
                 if index == 0 {
                     // Capture the full WrapConfig from the first remaining component
@@ -1164,11 +1165,23 @@ impl Renderer<'_> {
         let fmt = F::default();
         let mut group_tracker = tracker.clone();
         let values = self.render_group_child_values(&fmt, ctx, group, &mut group_tracker)?;
-        let delimiter = group
-            .delimiter
-            .as_ref()
-            .unwrap_or(&citum_schema::template::DelimiterPunctuation::Comma)
-            .to_string_with_space();
+        let default_delimiter = citum_schema::template::DelimiterPunctuation::Comma;
+        let punctuation = group.delimiter.as_ref().unwrap_or(&default_delimiter);
+        let (script, realization) = crate::values::punctuation_realization_context(
+            crate::values::effective_item_language(ctx.reference).as_deref(),
+            ctx.options.config.multilingual.as_ref(),
+        );
+        let delimiter = crate::render::format::realize_punctuation(
+            punctuation,
+            script,
+            realization,
+            crate::render::format::PunctuationPosition::Separator,
+        );
+        let delimiter = if punctuation.is_semantic() {
+            fmt.text(&delimiter)
+        } else {
+            delimiter.into_owned()
+        };
         tracker.merge_from(group_tracker);
         let group_component = TemplateComponent::Group(group.clone());
         Some(ProcTemplateComponent {
@@ -1357,9 +1370,15 @@ pub(super) fn template_uses_first_ref_note_number(template: &[TemplateComponent]
     })
 }
 
-pub(super) fn filter_author_from_template(
+pub(super) fn filter_author_from_template<F>(
     template: &[TemplateComponent],
-) -> (Vec<TemplateComponent>, Option<String>, bool) {
+    script: crate::values::ScriptClass,
+    realization: Option<&citum_schema::options::PunctuationRealization>,
+    fmt: &F,
+) -> (Vec<TemplateComponent>, Option<String>, bool)
+where
+    F: crate::render::format::OutputFormat<Output = String>,
+{
     // The author part rendered by `render_author_for_grouping_with_format`
     // is the first grouping component of the leading template component —
     // any contributor role, not just author. Strip that exact contributor
@@ -1386,11 +1405,15 @@ pub(super) fn filter_author_from_template(
             filtered.insert(0, remaining);
         }
     }
-    let stripped_leading_affix = filtered.first().and_then(leading_group_affix);
+    let stripped_leading_affix = filtered
+        .first()
+        .and_then(|first| leading_group_affix(first, script, realization, fmt));
     let leading_affix = stripped_leading_affix.clone().or_else(|| {
-        filtered
-            .first()
-            .and_then(|_| template.first().and_then(author_group_delimiter_affix))
+        filtered.first().and_then(|_| {
+            template
+                .first()
+                .and_then(|first| author_group_delimiter_affix(first, script, realization, fmt))
+        })
     });
     if let Some(first) = filtered.first_mut() {
         strip_leading_group_affixes(first);
@@ -1398,7 +1421,15 @@ pub(super) fn filter_author_from_template(
     (filtered, leading_affix, stripped_leading_affix.is_some())
 }
 
-fn author_group_delimiter_affix(component: &TemplateComponent) -> Option<String> {
+fn author_group_delimiter_affix<F>(
+    component: &TemplateComponent,
+    script: crate::values::ScriptClass,
+    realization: Option<&citum_schema::options::PunctuationRealization>,
+    fmt: &F,
+) -> Option<String>
+where
+    F: crate::render::format::OutputFormat<Output = String>,
+{
     let TemplateComponent::Group(group) = component else {
         return None;
     };
@@ -1408,7 +1439,19 @@ fn author_group_delimiter_affix(component: &TemplateComponent) -> Option<String>
         .is_some_and(component_starts_with_author)
         .then_some(group.delimiter.as_ref())
         .flatten()
-        .map(citum_schema::template::DelimiterPunctuation::to_string_with_space)
+        .map(|punctuation| {
+            let realized = crate::render::format::realize_punctuation(
+                punctuation,
+                script,
+                realization,
+                crate::render::format::PunctuationPosition::Separator,
+            );
+            if punctuation.is_semantic() {
+                fmt.text(&realized)
+            } else {
+                realized.into_owned()
+            }
+        })
         .filter(|delimiter| !delimiter.is_empty())
 }
 
@@ -1446,7 +1489,12 @@ mod tests {
         });
 
         // when resolving the leading author-group delimiter affix
-        let affix = author_group_delimiter_affix(&group);
+        let affix = author_group_delimiter_affix(
+            &group,
+            crate::values::ScriptClass::Latin,
+            None,
+            &crate::render::plain::PlainText,
+        );
 
         // then the merged component is recognized as starting with author
         assert_eq!(affix, Some(", ".to_string()));
@@ -1466,7 +1514,12 @@ mod tests {
         });
 
         // when resolving the leading author-group delimiter affix
-        let affix = author_group_delimiter_affix(&group);
+        let affix = author_group_delimiter_affix(
+            &group,
+            crate::values::ScriptClass::Latin,
+            None,
+            &crate::render::plain::PlainText,
+        );
 
         // then no affix is produced since the group does not start with author
         assert_eq!(affix, None);

@@ -252,7 +252,7 @@ bibliography:
         - date: issued
           form: year
           prefix: ", "
-        delimiter: none
+        delimiter: ''
         prefix: " "
       delimiter: ""
       prefix: ", "

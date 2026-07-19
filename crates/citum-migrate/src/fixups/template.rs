@@ -142,7 +142,7 @@ pub(super) fn scrub_inferred_literal_artifacts(component: &mut TemplateComponent
                 && let Some(prefix) = title.rendering.prefix.as_ref()
                 && let Some(cleaned) = scrub_year_only_prefix(prefix)
             {
-                title.rendering.prefix = Some(cleaned);
+                title.rendering.prefix = Some(cleaned.into());
             }
         }
         TemplateComponent::Number(number) if number.number == NumberVariable::Pages => {
@@ -151,7 +151,7 @@ pub(super) fn scrub_inferred_literal_artifacts(component: &mut TemplateComponent
             } else if let Some(prefix) = number.rendering.prefix.as_ref()
                 && let Some(cleaned) = scrub_pages_year_literal_prefix(prefix)
             {
-                number.rendering.prefix = Some(cleaned);
+                number.rendering.prefix = Some(cleaned.into());
             }
         }
         TemplateComponent::Group(list) => {
@@ -200,18 +200,20 @@ fn scrub_pages_year_literal_prefix(prefix: &str) -> Option<String> {
     None
 }
 
-fn scrub_literal_page_label_prefix(prefix: &mut Option<String>) -> bool {
+fn scrub_literal_page_label_prefix(
+    prefix: &mut Option<citum_schema::template::DelimiterPunctuation>,
+) -> bool {
     match prefix.as_deref() {
         Some("pp. ") => {
             *prefix = None;
             true
         }
         Some(", pp. ") => {
-            *prefix = Some(", ".to_string());
+            *prefix = Some(", ".into());
             true
         }
         Some(" pp. ") => {
-            *prefix = Some(" ".to_string());
+            *prefix = Some(" ".into());
             true
         }
         _ => false,
@@ -388,7 +390,7 @@ mod tests {
         let mut component = TemplateComponent::Number(TemplateNumber {
             number: NumberVariable::Pages,
             rendering: citum_schema::template::Rendering {
-                prefix: Some("pp. ".to_string()),
+                prefix: Some("pp. ".into()),
                 ..Default::default()
             },
             ..Default::default()
@@ -408,7 +410,7 @@ mod tests {
         let mut component = TemplateComponent::Number(TemplateNumber {
             number: NumberVariable::Pages,
             rendering: citum_schema::template::Rendering {
-                prefix: Some(", pp. ".to_string()),
+                prefix: Some(", pp. ".into()),
                 ..Default::default()
             },
             ..Default::default()
@@ -419,7 +421,7 @@ mod tests {
         let TemplateComponent::Number(number) = component else {
             panic!("component should remain a number");
         };
-        assert_eq!(number.rendering.prefix, Some(", ".to_string()));
+        assert_eq!(number.rendering.prefix.as_deref(), Some(", "));
         assert_eq!(number.label_form, Some(LabelForm::Short));
     }
 }

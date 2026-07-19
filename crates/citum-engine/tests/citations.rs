@@ -79,8 +79,8 @@ fn build_title_year_citation_style(sort: Vec<GroupSortKey>) -> Style {
                 citum_schema::tc_title!(Primary),
                 citum_schema::tc_date!(Issued, Year),
             ]),
-            delimiter: Some(" ".to_string()),
-            multi_cite_delimiter: Some("; ".to_string()),
+            delimiter: Some(" ".into()),
+            multi_cite_delimiter: Some("; ".into()),
             ..Default::default()
         }),
         ..Default::default()
@@ -500,8 +500,8 @@ fn disambiguation_two_level_author_collisions_get_distinct_suffixes() {
                 wrap = citum_schema::template::WrapPunctuation::Parentheses
             ),
         ]),
-        delimiter: Some(" ".to_string()),
-        multi_cite_delimiter: Some("; ".to_string()),
+        delimiter: Some(" ".into()),
+        multi_cite_delimiter: Some("; ".into()),
         ..Default::default()
     });
 
@@ -1042,7 +1042,7 @@ fn subsequent_et_al_thresholds_shorten_the_repeat_citation() {
                     wrap = citum_schema::template::WrapPunctuation::Parentheses
                 ),
             ]),
-            multi_cite_delimiter: Some("; ".to_string()),
+            multi_cite_delimiter: Some("; ".into()),
             ..Default::default()
         }),
         ..Default::default()
@@ -1709,7 +1709,7 @@ fn chicago_notes_prefixed_ibid_remains_mid_sentence() {
             ..Default::default()
         }],
         position: Some(citum_schema::citation::Position::Ibid),
-        prefix: Some("See".to_string()),
+        prefix: Some("See".into()),
         ..Default::default()
     };
 
@@ -2707,7 +2707,7 @@ fn test_personal_communication_citation_rendering_is_style_driven() {
                 citum_schema::tc_term!(PersonalCommunication),
                 citum_schema::tc_date!(Issued, Full),
             ]),
-            delimiter: Some(", ".to_string()),
+            delimiter: Some(", ".into()),
             wrap: Some(citum_schema::template::WrapPunctuation::Parentheses.into()),
             ..Default::default()
         }),
@@ -2918,7 +2918,7 @@ fn test_sentence_start_capitalizes_lowercase_prefix() {
 
     let citation = Citation {
         mode: CitationMode::Integral,
-        prefix: Some("see also".to_string()),
+        prefix: Some("see also".into()),
         sentence_start: true,
         items: vec![CitationItem {
             id: "smith2020".to_string(),
@@ -2986,7 +2986,7 @@ fn test_sentence_start_false_leaves_output_unchanged() {
 
     let citation = Citation {
         mode: CitationMode::Integral,
-        prefix: Some("see also".to_string()),
+        prefix: Some("see also".into()),
         sentence_start: false,
         items: vec![CitationItem {
             id: "smith2020".to_string(),

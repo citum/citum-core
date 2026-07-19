@@ -612,7 +612,7 @@ mod tests {
                 citum_schema::template::TemplateVariable {
                     variable: citum_schema::template::SimpleVariable::PublisherPlace,
                     rendering: Rendering {
-                        prefix: Some(". ".to_string()),
+                        prefix: Some(". ".into()),
                         ..Default::default()
                     },
                     ..Default::default()
@@ -831,7 +831,7 @@ mod tests {
         let config = Config::default();
         let bibliography_config = BibliographyConfig {
             separator: Some(". ".to_string()),
-            entry_suffix: Some(".".to_string()),
+            entry_suffix: Some(".".into()),
             ..Default::default()
         };
 
@@ -840,7 +840,7 @@ mod tests {
                 citum_schema::template::TemplateContributor {
                     contributor: citum_schema::template::ContributorRole::Author.into(),
                     rendering: Rendering {
-                        suffix: Some(", ".to_string()),
+                        suffix: Some(", ".into()),
                         ..Default::default()
                     },
                     ..Default::default()
@@ -864,7 +864,7 @@ mod tests {
             template_component: TemplateComponent::Date(citum_schema::template::TemplateDate {
                 date: citum_schema::template::DateVariable::Issued,
                 rendering: Rendering {
-                    suffix: Some(".".to_string()),
+                    suffix: Some(".".into()),
                     ..Default::default()
                 },
                 ..Default::default()
@@ -908,7 +908,7 @@ mod tests {
             template_component: TemplateComponent::Date(citum_schema::template::TemplateDate {
                 date: citum_schema::template::DateVariable::Issued,
                 rendering: Rendering {
-                    suffix: Some(", ".to_string()),
+                    suffix: Some(", ".into()),
                     ..Default::default()
                 },
                 ..Default::default()
@@ -1004,8 +1004,8 @@ mod tests {
             template_component: TemplateComponent::Number(TemplateNumber {
                 number: NumberVariable::Pages,
                 rendering: Rendering {
-                    prefix: Some(", ".to_string()),
-                    suffix: Some(".".to_string()),
+                    prefix: Some(", ".into()),
+                    suffix: Some(".".into()),
                     ..Default::default()
                 },
                 ..Default::default()
@@ -1028,7 +1028,7 @@ mod tests {
             template_component: TemplateComponent::Variable(TemplateVariable {
                 variable: SimpleVariable::Doi,
                 rendering: Rendering {
-                    prefix: Some("https://doi.org/".to_string()),
+                    prefix: Some("https://doi.org/".into()),
                     ..Default::default()
                 },
                 ..Default::default()

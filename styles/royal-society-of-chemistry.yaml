@@ -104,7 +104,7 @@ bibliography:
           before:
             variable: publisher-place
     dataset:
-    - delimiter: none
+    - delimiter: ""
       group:
       - number: citation-number
       - contributor: author
@@ -134,13 +134,13 @@ bibliography:
         - match:
             title: primary
     standard:
-    - delimiter: none
+    - delimiter: ""
       group:
       - number: citation-number
       - date: issued
         form: year
     thesis:
-    - delimiter: none
+    - delimiter: ""
       group:
       - number: citation-number
       - contributor: author
@@ -163,7 +163,7 @@ bibliography:
           date: accessed
           form: full
     legal_case:
-    - delimiter: none
+    - delimiter: ""
       group:
       - number: citation-number
       - title: primary
@@ -173,7 +173,7 @@ bibliography:
     - number: volume
       prefix: "vol. "
     patent:
-    - delimiter: none
+    - delimiter: ""
       group:
       - number: citation-number
       - variable: authority

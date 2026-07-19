@@ -83,6 +83,7 @@ pub(super) fn values<F: OutputFormat<Output = String>>(
                 .effective_role_name_order(primary_role)
         }),
         sort_separator: component.sort_separator.as_ref(),
+        delimiter: component.delimiter.as_ref(),
         shorten: component
             .shorten
             .as_ref()
@@ -91,6 +92,7 @@ pub(super) fn values<F: OutputFormat<Output = String>>(
         initialize_with: effective_rendering.initialize_with.as_ref(),
         name_form: component.name_form.or(effective_rendering.name_form),
         strip_periods: effective_rendering.strip_periods,
+        item_language: crate::values::effective_item_language(reference),
     };
     let selected_indices =
         super::names::selected_name_indices(names.len(), name_overrides.shorten, hints);
@@ -514,9 +516,14 @@ fn resolve_entry_label<F: OutputFormat<Output = String>>(
         });
     }
 
-    let Some(presentation) =
-        label_presentation(context.component, primary_role, explicit, context.options)
-    else {
+    let item_language = crate::values::effective_item_language(context.reference);
+    let Some(presentation) = label_presentation(
+        context.component,
+        primary_role,
+        explicit,
+        context.options,
+        item_language.as_deref(),
+    ) else {
         return (None, None);
     };
     let term = resolve_combined_term(
@@ -539,6 +546,7 @@ fn resolve_entry_label<F: OutputFormat<Output = String>>(
         context.effective_rendering,
         context.options,
         context.fmt,
+        item_language.as_deref(),
     )
 }
 
@@ -573,15 +581,35 @@ fn label_presentation(
     role: &ContributorRole,
     explicit: Option<&RoleLabel>,
     options: &RenderOptions<'_>,
+    item_language: Option<&str>,
 ) -> Option<LabelPresentation> {
     if let Some(label) = explicit {
+        let (default_before, default_after) = match (&label.placement, &label.wrap) {
+            (LabelPlacement::Suffix, Some(_)) => (" ", ""),
+            (LabelPlacement::Prefix, _) => ("", " "),
+            (LabelPlacement::Suffix, None) => (", ", ""),
+        };
+        let before = super::labels::realize_label_affix(
+            label.prefix.as_ref(),
+            default_before,
+            options,
+            item_language,
+            crate::render::format::PunctuationPosition::Prefix,
+        );
+        let after = super::labels::realize_label_affix(
+            label.suffix.as_ref(),
+            default_after,
+            options,
+            item_language,
+            crate::render::format::PunctuationPosition::Suffix,
+        );
         return Some(structural_label_presentation(
             label.form.clone(),
             label.placement.clone(),
             label.text_case,
             label.wrap.as_deref(),
-            label.prefix.as_deref(),
-            label.suffix.as_deref(),
+            Some(&before),
+            Some(&after),
         ));
     }
 
@@ -722,6 +750,7 @@ fn place_term<F: OutputFormat<Output = String>>(
     effective_rendering: &Rendering,
     options: &RenderOptions<'_>,
     fmt: &F,
+    item_language: Option<&str>,
 ) -> (Option<String>, Option<String>) {
     let placed = term.map(|term| {
         super::format_wrapped_role_term::<F>(
@@ -729,9 +758,9 @@ fn place_term<F: OutputFormat<Output = String>>(
             fmt,
             effective_rendering,
             options,
-            &presentation.before,
-            &presentation.after,
+            (&presentation.before, &presentation.after),
             presentation.wrap.as_ref(),
+            item_language,
         )
     });
     match presentation.placement {

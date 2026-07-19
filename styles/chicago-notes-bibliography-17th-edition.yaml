@@ -131,7 +131,7 @@ citation:
   - variable: doi
   - number: number
     prefix: ", Patent "
-  - delimiter: none
+  - delimiter: ""
     group:
     - date: issued
       form: month-day

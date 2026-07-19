@@ -145,7 +145,7 @@ bibliography:
   - number: number
   - group:
     - variable: medium
-    delimiter: slash
+    delimiter: '/'
     wrap:
       punctuation: brackets
   - date: issued
@@ -163,7 +163,7 @@ bibliography:
     sort-separator: ' '
   - group:
     - number: edition
-    delimiter: space
+    delimiter: ' '
   - identifier: cstr
     prefix: 'CSTR:'
   - variable: doi
@@ -218,7 +218,7 @@ bibliography:
       suppress: false
     - group:
       - variable: medium
-      delimiter: slash
+      delimiter: '/'
       wrap:
         punctuation: brackets
       suppress: false
@@ -254,7 +254,7 @@ bibliography:
     - group:
       - number: edition
         form: ordinal
-      delimiter: space
+      delimiter: ' '
       suppress: false
     - variable: url
       suppress: false
@@ -283,7 +283,7 @@ bibliography:
               carrier: { carrier: { online: OL, absent: '-' } }
             wrap:
               punctuation: brackets
-          delimiter: none
+          delimiter: ''
         - contributor: translator
           form: long
           name-order: family-first
@@ -447,7 +447,7 @@ bibliography:
       suppress: false
     - group:
       - variable: medium
-      delimiter: slash
+      delimiter: '/'
       wrap:
         punctuation: brackets
       suppress: false
@@ -482,7 +482,7 @@ bibliography:
       suppress: false
     - group:
       - number: edition
-      delimiter: space
+      delimiter: ' '
       suppress: false
     - variable: url
       suppress: false
@@ -583,7 +583,7 @@ bibliography:
         - number: issue
           prefix: （
           suffix: ）
-        delimiter: none
+        delimiter: ''
       - number: pages
       delimiter: ：
     - number: number
@@ -657,7 +657,7 @@ bibliography:
             carrier: { carrier: { online: OL, absent: '-' } }
           wrap:
             punctuation: brackets
-        delimiter: none
+        delimiter: ''
       - contributor: translator
         form: long
         name-order: family-first
@@ -937,7 +937,7 @@ bibliography:
             - variable: publisher-place
             - variable: publisher
             delimiter: ：
-          delimiter: none
+          delimiter: ''
         - date: issued
           form: year
           fallback: []

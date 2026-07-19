@@ -159,8 +159,8 @@ impl TitleRendering {
             quote: self.quote,
             strong: self.strong,
             small_caps: self.small_caps,
-            prefix: self.prefix.clone(),
-            suffix: self.suffix.clone(),
+            prefix: self.prefix.clone().map(Into::into),
+            suffix: self.suffix.clone().map(Into::into),
             ..Default::default()
         }
     }

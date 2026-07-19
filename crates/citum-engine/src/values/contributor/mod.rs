@@ -163,10 +163,11 @@ pub(super) fn format_wrapped_role_term<F: crate::render::format::OutputFormat<Ou
     fmt: &F,
     effective_rendering: &citum_schema::template::Rendering,
     options: &RenderOptions<'_>,
-    prefix: &str,
-    suffix: &str,
+    affixes: (&str, &str),
     wrap: Option<&citum_schema::template::WrapConfig>,
+    item_language: Option<&str>,
 ) -> String {
+    let (prefix, suffix) = affixes;
     let Some(wrap) = wrap else {
         return format_role_term(term, fmt, effective_rendering, options, prefix, suffix);
     };
@@ -178,13 +179,11 @@ pub(super) fn format_wrapped_role_term<F: crate::render::format::OutputFormat<Ou
         wrap.inner_suffix.as_deref().unwrap_or_default(),
     );
     let marks = crate::render::format::QuoteMarks::from(&options.locale.grammar_options);
-    // No per-item script evidence is threaded this deep into role-label
-    // formatting (would require passing the reference through `place_explicit_term`
-    // and its callers); the style-declared realization default applies, matching
-    // the positive-evidence rule (no evidence -> style default, never a remap).
-    let script =
-        crate::values::realization_default_script_class(options.config.multilingual.as_ref());
-    let content = fmt.wrap_punctuation(&wrap.punctuation, content, &marks, script);
+    let (script, realization) = crate::values::punctuation_realization_context(
+        item_language,
+        options.config.multilingual.as_ref(),
+    );
+    let content = fmt.wrap_punctuation(&wrap.punctuation, content, &marks, script, realization);
     format!("{}{content}{}", fmt.text(prefix), fmt.text(suffix))
 }
 
@@ -224,6 +223,7 @@ fn format_contributor_names(
     component: &TemplateContributor,
     role: &ContributorRole,
     names_vec: &[crate::reference::FlatName],
+    reference: &Reference,
     effective_rendering: &citum_schema::template::Rendering,
     options: &RenderOptions<'_>,
     hints: &ProcHints,
@@ -249,11 +249,13 @@ fn format_contributor_names(
     let name_overrides = names::NamesOverrides {
         name_order: effective_name_order,
         sort_separator: component.sort_separator.as_ref(),
+        delimiter: component.delimiter.as_ref(),
         shorten: effective_shorten,
         and: component.and.as_ref(),
         initialize_with: effective_rendering.initialize_with.as_ref(),
         name_form: effective_name_form,
         strip_periods: effective_rendering.strip_periods,
+        item_language: crate::values::effective_item_language(reference),
     };
     names::format_names(names_vec, &component.form, options, &name_overrides, hints)
 }
@@ -354,6 +356,7 @@ impl ComponentValues for TemplateContributor {
             &component,
             &role,
             &names_vec,
+            reference,
             &effective_rendering,
             options,
             hints,

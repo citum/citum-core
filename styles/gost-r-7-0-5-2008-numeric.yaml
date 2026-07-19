@@ -28,7 +28,7 @@ options:
 
 citation:
   template:
-  - delimiter: none
+  - delimiter: ""
     wrap:
       punctuation: brackets
     group:

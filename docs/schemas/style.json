@@ -471,9 +471,13 @@
         },
         "delimiter": {
           "description": "Custom delimiter between names (overrides global setting).",
-          "type": [
-            "string",
-            "null"
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DelimiterPunctuation"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "sort-separator": {
@@ -556,17 +560,25 @@
           ]
         },
         "prefix": {
-          "description": "Text to prepend to the rendered value (outside any wrap).",
-          "type": [
-            "string",
-            "null"
+          "description": "Text or a semantic punctuation mark to prepend to the rendered value\n(outside any wrap).",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DelimiterPunctuation"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "suffix": {
-          "description": "Text to append to the rendered value (outside any wrap).",
-          "type": [
-            "string",
-            "null"
+          "description": "Text or a semantic punctuation mark to append to the rendered value\n(outside any wrap).",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DelimiterPunctuation"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "wrap": {
@@ -741,16 +753,24 @@
         },
         "prefix": {
           "description": "Optional affix rendered before the label term, overriding the\nplacement-derived default (a space for a wrapped suffix label, `\", \"`\nfor an unwrapped suffix label, and empty for prefix placement). Mirrors\nCSL 1.0 `cs:label` `prefix` (e.g. `\" (\"` for elsevier's `\" (Eds.)\"`).",
-          "type": [
-            "string",
-            "null"
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DelimiterPunctuation"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "suffix": {
           "description": "Optional affix rendered after the label term, overriding the\nplacement-derived default (empty for suffix placement, `\" \"` for\nprefix placement). Mirrors CSL 1.0 `cs:label` `suffix` (e.g. `\")\"`).",
-          "type": [
-            "string",
-            "null"
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DelimiterPunctuation"
+            },
+            {
+              "type": "null"
+            }
           ]
         }
       },
@@ -853,6 +873,35 @@
         "parentheses",
         "brackets",
         "quotes"
+      ]
+    },
+    "DelimiterPunctuation": {
+      "description": "Literal text or an explicit semantic punctuation mark.",
+      "oneOf": [
+        {
+          "description": "Literal punctuation or text.",
+          "type": "string"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "mark": {
+              "type": "string",
+              "enum": [
+                "comma",
+                "colon",
+                "semicolon",
+                "period",
+                "parentheses",
+                "brackets"
+              ]
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "mark"
+          ]
+        }
       ]
     },
     "ContributorMerge": {
@@ -1308,17 +1357,25 @@
           ]
         },
         "prefix": {
-          "description": "Text to prepend to the rendered value (outside any wrap).",
-          "type": [
-            "string",
-            "null"
+          "description": "Text or a semantic punctuation mark to prepend to the rendered value\n(outside any wrap).",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DelimiterPunctuation"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "suffix": {
-          "description": "Text to append to the rendered value (outside any wrap).",
-          "type": [
-            "string",
-            "null"
+          "description": "Text or a semantic punctuation mark to append to the rendered value\n(outside any wrap).",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DelimiterPunctuation"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "wrap": {
@@ -1523,17 +1580,25 @@
           ]
         },
         "prefix": {
-          "description": "Text to prepend to the rendered value (outside any wrap).",
-          "type": [
-            "string",
-            "null"
+          "description": "Text or a semantic punctuation mark to prepend to the rendered value\n(outside any wrap).",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DelimiterPunctuation"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "suffix": {
-          "description": "Text to append to the rendered value (outside any wrap).",
-          "type": [
-            "string",
-            "null"
+          "description": "Text or a semantic punctuation mark to append to the rendered value\n(outside any wrap).",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DelimiterPunctuation"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "wrap": {
@@ -1732,17 +1797,25 @@
           ]
         },
         "prefix": {
-          "description": "Text to prepend to the rendered value (outside any wrap).",
-          "type": [
-            "string",
-            "null"
+          "description": "Text or a semantic punctuation mark to prepend to the rendered value\n(outside any wrap).",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DelimiterPunctuation"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "suffix": {
-          "description": "Text to append to the rendered value (outside any wrap).",
-          "type": [
-            "string",
-            "null"
+          "description": "Text or a semantic punctuation mark to append to the rendered value\n(outside any wrap).",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DelimiterPunctuation"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "wrap": {
@@ -1916,17 +1989,25 @@
           ]
         },
         "prefix": {
-          "description": "Text to prepend to the rendered value (outside any wrap).",
-          "type": [
-            "string",
-            "null"
+          "description": "Text or a semantic punctuation mark to prepend to the rendered value\n(outside any wrap).",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DelimiterPunctuation"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "suffix": {
-          "description": "Text to append to the rendered value (outside any wrap).",
-          "type": [
-            "string",
-            "null"
+          "description": "Text or a semantic punctuation mark to append to the rendered value\n(outside any wrap).",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DelimiterPunctuation"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "wrap": {
@@ -2040,17 +2121,25 @@
           ]
         },
         "prefix": {
-          "description": "Text to prepend to the rendered value (outside any wrap).",
-          "type": [
-            "string",
-            "null"
+          "description": "Text or a semantic punctuation mark to prepend to the rendered value\n(outside any wrap).",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DelimiterPunctuation"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "suffix": {
-          "description": "Text to append to the rendered value (outside any wrap).",
-          "type": [
-            "string",
-            "null"
+          "description": "Text or a semantic punctuation mark to append to the rendered value\n(outside any wrap).",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DelimiterPunctuation"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "wrap": {
@@ -2270,17 +2359,25 @@
           ]
         },
         "prefix": {
-          "description": "Text to prepend to the rendered value (outside any wrap).",
-          "type": [
-            "string",
-            "null"
+          "description": "Text or a semantic punctuation mark to prepend to the rendered value\n(outside any wrap).",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DelimiterPunctuation"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "suffix": {
-          "description": "Text to append to the rendered value (outside any wrap).",
-          "type": [
-            "string",
-            "null"
+          "description": "Text or a semantic punctuation mark to append to the rendered value\n(outside any wrap).",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DelimiterPunctuation"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "wrap": {
@@ -2550,17 +2647,25 @@
           ]
         },
         "prefix": {
-          "description": "Text to prepend to the rendered value (outside any wrap).",
-          "type": [
-            "string",
-            "null"
+          "description": "Text or a semantic punctuation mark to prepend to the rendered value\n(outside any wrap).",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DelimiterPunctuation"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "suffix": {
-          "description": "Text to append to the rendered value (outside any wrap).",
-          "type": [
-            "string",
-            "null"
+          "description": "Text or a semantic punctuation mark to append to the rendered value\n(outside any wrap).",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DelimiterPunctuation"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "wrap": {
@@ -2739,10 +2844,6 @@
         }
       ]
     },
-    "DelimiterPunctuation": {
-      "description": "Delimiter punctuation options.",
-      "type": "string"
-    },
     "TemplateTerm": {
       "description": "A term component for rendering locale-specific text.",
       "type": "object",
@@ -2824,17 +2925,25 @@
           ]
         },
         "prefix": {
-          "description": "Text to prepend to the rendered value (outside any wrap).",
-          "type": [
-            "string",
-            "null"
+          "description": "Text or a semantic punctuation mark to prepend to the rendered value\n(outside any wrap).",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DelimiterPunctuation"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "suffix": {
-          "description": "Text to append to the rendered value (outside any wrap).",
-          "type": [
-            "string",
-            "null"
+          "description": "Text or a semantic punctuation mark to append to the rendered value\n(outside any wrap).",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DelimiterPunctuation"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "wrap": {
@@ -3128,17 +3237,25 @@
           ]
         },
         "prefix": {
-          "description": "Text to prepend to the rendered value (outside any wrap).",
-          "type": [
-            "string",
-            "null"
+          "description": "Text or a semantic punctuation mark to prepend to the rendered value\n(outside any wrap).",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DelimiterPunctuation"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "suffix": {
-          "description": "Text to append to the rendered value (outside any wrap).",
-          "type": [
-            "string",
-            "null"
+          "description": "Text or a semantic punctuation mark to append to the rendered value\n(outside any wrap).",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DelimiterPunctuation"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "wrap": {
@@ -4295,6 +4412,17 @@
               "type": "null"
             }
           ]
+        },
+        "realization": {
+          "description": "Style-owned glyph overrides for semantic punctuation marks realized for\nthis script class.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PunctuationRealization"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       }
     },
@@ -4312,6 +4440,65 @@
           "const": "full-width"
         }
       ]
+    },
+    "PunctuationRealization": {
+      "description": "Per-script glyph overrides for semantic punctuation marks.\n\nScalar marks use complete separator strings, including spacing. Paired\nmarks use `[open, close]`.",
+      "type": "object",
+      "properties": {
+        "comma": {
+          "description": "Override for the semantic comma mark.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "colon": {
+          "description": "Override for the semantic colon mark.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "semicolon": {
+          "description": "Override for the semantic semicolon mark.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "period": {
+          "description": "Override for the semantic period mark.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "parentheses": {
+          "description": "Override for the semantic parentheses pair.",
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string"
+          },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "brackets": {
+          "description": "Override for the semantic brackets pair.",
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string"
+          },
+          "minItems": 2,
+          "maxItems": 2
+        }
+      },
+      "additionalProperties": false
     },
     "RealizationDefault": {
       "description": "Script class an item with no usable script evidence realizes semantic wrap\npunctuation as. See `options.multilingual.realization-default` and\n`docs/specs/PUNCTUATION_REALIZATION.md` §5.",
@@ -4519,10 +4706,14 @@
           ]
         },
         "delimiter": {
-          "description": "The delimiter between contributors. Defaults to `\", \"` if not specified.\n`None` means \"not configured at this level\" and will not override an inherited value.",
-          "type": [
-            "string",
-            "null"
+          "description": "The delimiter between contributors. Defaults to the semantic `comma` mark.\n`None` means \"not configured at this level\" and will not override an inherited value.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DelimiterPunctuation"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "and": {
@@ -5956,30 +6147,46 @@
         },
         "prefix": {
           "description": "Prefix for the citation (use only when `wrap` doesn't suffice, e.g., \" (\" or \"[Ref \").",
-          "type": [
-            "string",
-            "null"
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DelimiterPunctuation"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "suffix": {
           "description": "Suffix for the citation (use only when `wrap` doesn't suffice).",
-          "type": [
-            "string",
-            "null"
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DelimiterPunctuation"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "delimiter": {
           "description": "Delimiter between components within a single citation item (e.g., \", \" or \" \").\nDefaults to \", \".",
-          "type": [
-            "string",
-            "null"
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DelimiterPunctuation"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "multi-cite-delimiter": {
           "description": "Delimiter between multiple citation items (e.g., \"; \").\nDefaults to \"; \".",
-          "type": [
-            "string",
-            "null"
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DelimiterPunctuation"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "collapse": {
@@ -6569,17 +6776,25 @@
           ]
         },
         "prefix": {
-          "description": "Text to prepend to the rendered value (outside any wrap).",
-          "type": [
-            "string",
-            "null"
+          "description": "Text or a semantic punctuation mark to prepend to the rendered value\n(outside any wrap).",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DelimiterPunctuation"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "suffix": {
-          "description": "Text to append to the rendered value (outside any wrap).",
-          "type": [
-            "string",
-            "null"
+          "description": "Text or a semantic punctuation mark to append to the rendered value\n(outside any wrap).",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DelimiterPunctuation"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "wrap": {

@@ -32,7 +32,7 @@ options:
   punctuation-in-quote: true
 citation:
   template:
-  - delimiter: none
+  - delimiter: ""
     wrap:
       punctuation: brackets
     group:

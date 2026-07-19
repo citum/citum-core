@@ -46,7 +46,7 @@ options:
   dates: long
   titles: humanities
   punctuation-in-quote: true
-  volume-pages-delimiter: comma
+  volume-pages-delimiter: { mark: comma }
 citation:
   template-ref: numeric-citation
   wrap:

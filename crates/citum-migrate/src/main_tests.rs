@@ -218,7 +218,7 @@ fn author_date_locator_prefers_group_delimiter() {
         suffix: None,
         delimiter: None,
         children: vec![CslNode::Group(Group {
-            delimiter: Some(", ".to_string()),
+            delimiter: Some(", ".into()),
             prefix: None,
             suffix: None,
             children: vec![
@@ -283,7 +283,7 @@ fn author_date_locator_prefers_group_delimiter() {
             date: DateVariable::Issued,
             form: citum_schema::template::DateForm::Year,
             rendering: Rendering {
-                prefix: Some(", ".to_string()),
+                prefix: Some(", ".into()),
                 ..Default::default()
             },
             ..Default::default()
@@ -291,7 +291,7 @@ fn author_date_locator_prefers_group_delimiter() {
         TemplateComponent::Variable(TemplateVariable {
             variable: SimpleVariable::Locator,
             rendering: Rendering {
-                prefix: Some(" ".to_string()),
+                prefix: Some(" ".into()),
                 ..Default::default()
             },
             ..Default::default()
@@ -427,14 +427,14 @@ merge:
         term: editor
         form: short
         placement: suffix
-        prefix: ", "
+        prefix: { mark: comma }
     translator:
       labels: collective
       label:
         term: translator
         form: short
         placement: suffix
-        prefix: ", "
+        prefix: { mark: comma }
   combine-same-person: true
 and: text
 suppress: false

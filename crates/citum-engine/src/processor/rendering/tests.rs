@@ -57,7 +57,7 @@ fn grouped_author_date_style() -> Style {
                     date: citum_schema::template::DateVariable::Issued,
                     form: DateForm::Year,
                     rendering: Rendering {
-                        prefix: Some(", ".to_string()),
+                        prefix: Some(", ".into()),
                         ..Default::default()
                     },
                     ..Default::default()
@@ -107,14 +107,14 @@ fn explicit_author_year_group_style() -> Style {
                 TemplateComponent::Variable(TemplateVariable {
                     variable: SimpleVariable::Locator,
                     rendering: Rendering {
-                        prefix: Some(", ".to_string()),
+                        prefix: Some(", ".into()),
                         ..Default::default()
                     },
                     ..Default::default()
                 }),
             ]),
             wrap: Some(WrapPunctuation::Parentheses.into()),
-            delimiter: Some("".to_string()),
+            delimiter: Some("".into()),
             ..Default::default()
         }),
         ..Default::default()
@@ -161,7 +161,7 @@ fn explicit_author_year_group_with_locator_delimiter_style() -> Style {
                 }),
             ]),
             wrap: Some(WrapPunctuation::Parentheses.into()),
-            delimiter: Some(", ".to_string()),
+            delimiter: Some(", ".into()),
             ..Default::default()
         }),
         ..Default::default()
@@ -241,14 +241,14 @@ fn legal_case_style() -> Style {
                     date: citum_schema::template::DateVariable::Issued,
                     form: DateForm::Year,
                     rendering: Rendering {
-                        prefix: Some(", ".to_string()),
+                        prefix: Some(", ".into()),
                         ..Default::default()
                     },
                     ..Default::default()
                 }),
             ]),
             wrap: Some(WrapPunctuation::Parentheses.into()),
-            multi_cite_delimiter: Some("; ".to_string()),
+            multi_cite_delimiter: Some("; ".into()),
             ..Default::default()
         }),
         ..Default::default()
@@ -272,7 +272,7 @@ fn test_variable_key_includes_context() {
         date: citum_schema::template::DateVariable::Issued,
         form: DateForm::Year,
         rendering: Rendering {
-            prefix: Some(", ".to_string()),
+            prefix: Some(", ".into()),
             ..Default::default()
         },
         fallback: None,
@@ -285,7 +285,7 @@ fn test_variable_key_includes_context() {
         date: citum_schema::template::DateVariable::Issued,
         form: DateForm::Year,
         rendering: Rendering {
-            suffix: Some(".".to_string()),
+            suffix: Some(".".into()),
             ..Default::default()
         },
         fallback: None,
@@ -315,7 +315,7 @@ fn test_substituted_contributor_keys_block_contextual_duplicate_components() {
         contributor: ContributorRole::Translator.into(),
         form: ContributorForm::Long,
         rendering: Rendering {
-            suffix: Some(", translator".to_string()),
+            suffix: Some(", translator".into()),
             ..Default::default()
         },
         ..Default::default()
@@ -498,7 +498,7 @@ fn grouped_author_date_preserves_later_item_prefixes() {
             },
             CitationItem {
                 id: "item2".to_string(),
-                prefix: Some("see".to_string()),
+                prefix: Some("see".into()),
                 ..Default::default()
             },
         ],
@@ -794,7 +794,7 @@ fn test_type_specific_rendering() {
                 date: citum_schema::template::DateVariable::Issued,
                 form: DateForm::Year,
                 rendering: Rendering {
-                    prefix: Some(", ".to_string()),
+                    prefix: Some(", ".into()),
                     ..Default::default()
                 },
                 ..Default::default()
@@ -815,7 +815,7 @@ fn test_type_specific_rendering() {
                 title: TitleType::Primary,
                 rendering: Rendering {
                     emph: Some(true),
-                    prefix: Some(", ".to_string()),
+                    prefix: Some(", ".into()),
                     ..Default::default()
                 },
                 links: None,
@@ -826,7 +826,7 @@ fn test_type_specific_rendering() {
                 date: citum_schema::template::DateVariable::Issued,
                 form: DateForm::Year,
                 rendering: Rendering {
-                    prefix: Some(", ".to_string()),
+                    prefix: Some(", ".into()),
                     ..Default::default()
                 },
                 ..Default::default()
@@ -984,7 +984,7 @@ fn test_bibliography_type_specific_rendering() {
                 form: DateForm::Year,
                 rendering: Rendering {
                     wrap: Some(WrapPunctuation::Parentheses.into()),
-                    prefix: Some(" ".to_string()),
+                    prefix: Some(" ".into()),
                     ..Default::default()
                 },
                 ..Default::default()
@@ -993,7 +993,7 @@ fn test_bibliography_type_specific_rendering() {
                 title: TitleType::Primary,
                 rendering: Rendering {
                     emph: Some(true),
-                    prefix: Some(" ".to_string()),
+                    prefix: Some(" ".into()),
                     ..Default::default()
                 },
                 ..Default::default()
@@ -1004,7 +1004,7 @@ fn test_bibliography_type_specific_rendering() {
                 name_order: Some(NameOrder::FamilyFirst),
                 rendering: Rendering {
                     wrap: Some(WrapPunctuation::Parentheses.into()),
-                    prefix: Some(" ".to_string()),
+                    prefix: Some(" ".into()),
                     ..Default::default()
                 },
                 ..Default::default()
@@ -1012,8 +1012,8 @@ fn test_bibliography_type_specific_rendering() {
             TemplateComponent::Variable(TemplateVariable {
                 variable: SimpleVariable::Publisher,
                 rendering: Rendering {
-                    prefix: Some(". ".to_string()),
-                    suffix: Some(".".to_string()),
+                    prefix: Some(". ".into()),
+                    suffix: Some(".".into()),
                     ..Default::default()
                 },
                 ..Default::default()

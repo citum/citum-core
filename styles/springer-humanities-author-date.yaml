@@ -50,7 +50,7 @@ citation:
         min: 3
         use-first: 1
   template:
-  - delimiter: space
+  - delimiter: " "
     group:
     - contributor: author
       form: short

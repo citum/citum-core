@@ -355,6 +355,7 @@ fn resolve_named_substitute<F: OutputFormat<Output = String>>(
             component,
             &ContributorRole::Author,
             &names_vec,
+            reference,
             effective_rendering,
             options,
             hints,
@@ -393,11 +394,13 @@ fn resolve_named_substitute<F: OutputFormat<Output = String>>(
     let name_overrides = super::names::NamesOverrides {
         name_order: effective_name_order,
         sort_separator: component.sort_separator.as_ref(),
+        delimiter: component.delimiter.as_ref(),
         shorten: component.shorten.as_ref(),
         and: component.and.as_ref(),
         initialize_with: effective_rendering.initialize_with.as_ref(),
         name_form: effective_name_form,
         strip_periods: effective_rendering.strip_periods,
+        item_language: crate::values::effective_item_language(reference),
     };
     let formatted =
         super::names::format_names(&names_vec, &component.form, options, &name_overrides, hints);

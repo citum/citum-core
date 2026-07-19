@@ -146,7 +146,7 @@ citation:
       - title: primary
       - number: number
         prefix: ", Patent "
-      - delimiter: none
+      - delimiter: ""
         group:
           - date: issued
             form: month-day
@@ -278,7 +278,7 @@ bibliography:
       - title: primary
       - number: number
         prefix: ', Patent '
-      - delimiter: none
+      - delimiter: ""
         group:
           - date: issued
             form: month-day

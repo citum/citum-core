@@ -14,8 +14,8 @@ use serde::{Deserialize, Serialize};
 use crate::grouping;
 use crate::options::CitationOptions;
 use crate::template::{
-    LocalizedTemplateSpec, ResolvedLocalizedTemplate, Template, TemplateReference,
-    TemplateVariants, matched_localized_template,
+    DelimiterPunctuation, LocalizedTemplateSpec, ResolvedLocalizedTemplate, Template,
+    TemplateReference, TemplateVariants, matched_localized_template,
 };
 
 /// Citation collapse behavior for multi-item citations.
@@ -69,19 +69,19 @@ pub struct CitationSpec {
     pub wrap: Option<crate::template::WrapConfig>,
     /// Prefix for the citation (use only when `wrap` doesn't suffice, e.g., " (" or "[Ref ").
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub prefix: Option<String>,
+    pub prefix: Option<DelimiterPunctuation>,
     /// Suffix for the citation (use only when `wrap` doesn't suffice).
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub suffix: Option<String>,
+    pub suffix: Option<DelimiterPunctuation>,
     /// Delimiter between components within a single citation item (e.g., ", " or " ").
     /// Defaults to ", ".
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub delimiter: Option<String>,
+    pub delimiter: Option<DelimiterPunctuation>,
     /// Delimiter between multiple citation items (e.g., "; ").
     /// Defaults to "; ".
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(rename = "multi-cite-delimiter")]
-    pub multi_cite_delimiter: Option<String>,
+    pub multi_cite_delimiter: Option<DelimiterPunctuation>,
     /// Optional collapse behavior for adjacent multi-item citations.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub collapse: Option<CitationCollapse>,

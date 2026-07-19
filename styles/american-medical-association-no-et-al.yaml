@@ -35,7 +35,7 @@ options:
     range-delimiter: –
 citation:
   template:
-  - delimiter: none
+  - delimiter: ""
     group:
     - number: citation-number
     - variable: locator
@@ -174,7 +174,7 @@ bibliography:
       name-order: family-first
     - title: primary
       prefix: ' '
-    - delimiter: none
+    - delimiter: ""
       group:
       - message: pattern.published-online-date
         args:

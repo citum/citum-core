@@ -10,7 +10,129 @@ use std::ops::Range;
 
 use crate::values::ScriptClass;
 use citum_schema::locale::GrammarOptions;
-use citum_schema::template::WrapPunctuation;
+use citum_schema::options::PunctuationRealization;
+use citum_schema::template::{DelimiterPunctuation, WrapPunctuation};
+
+/// Position in which a semantic punctuation mark is realized.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum PunctuationPosition {
+    /// A separator between rendered values.
+    Separator,
+    /// An affix before rendered content.
+    Prefix,
+    /// An affix after rendered content.
+    Suffix,
+}
+
+/// Realize literal text or a semantic punctuation mark for a script class.
+///
+/// Literal strings are returned unchanged. Style overrides take precedence
+/// over the engine default table.
+#[must_use]
+pub(crate) fn realize_punctuation<'a>(
+    punctuation: &'a DelimiterPunctuation,
+    script: ScriptClass,
+    overrides: Option<&'a PunctuationRealization>,
+    position: PunctuationPosition,
+) -> Cow<'a, str> {
+    use DelimiterPunctuation as Punctuation;
+
+    let override_value = overrides.and_then(|table| match punctuation {
+        Punctuation::Comma => table.comma.as_deref().map(Cow::Borrowed),
+        Punctuation::Colon => table.colon.as_deref().map(Cow::Borrowed),
+        Punctuation::Semicolon => table.semicolon.as_deref().map(Cow::Borrowed),
+        Punctuation::Period => table.period.as_deref().map(Cow::Borrowed),
+        Punctuation::Parentheses => table
+            .parentheses
+            .as_ref()
+            .map(|pair| pair_mark(pair, position)),
+        Punctuation::Brackets => table
+            .brackets
+            .as_ref()
+            .map(|pair| pair_mark(pair, position)),
+        Punctuation::Ampersand
+        | Punctuation::VerticalLine
+        | Punctuation::Slash
+        | Punctuation::Hyphen
+        | Punctuation::Space
+        | Punctuation::None
+        | Punctuation::Custom(_) => None,
+    });
+    if let Some(value) = override_value {
+        return value;
+    }
+
+    let default = match (punctuation, script, position) {
+        (Punctuation::Comma, ScriptClass::Latin, _) => ", ",
+        (Punctuation::Comma, ScriptClass::Cjk, _) => "，",
+        (Punctuation::Colon, ScriptClass::Latin, _) => ": ",
+        (Punctuation::Colon, ScriptClass::Cjk, _) => "：",
+        (Punctuation::Semicolon, ScriptClass::Latin, _) => "; ",
+        (Punctuation::Semicolon, ScriptClass::Cjk, _) => "；",
+        (Punctuation::Period, ScriptClass::Latin, _) => ". ",
+        (Punctuation::Period, ScriptClass::Cjk, _) => "。",
+        (Punctuation::Parentheses, ScriptClass::Latin, PunctuationPosition::Prefix) => "(",
+        (Punctuation::Parentheses, ScriptClass::Latin, PunctuationPosition::Suffix) => ")",
+        (Punctuation::Parentheses, ScriptClass::Cjk, PunctuationPosition::Prefix) => "（",
+        (Punctuation::Parentheses, ScriptClass::Cjk, PunctuationPosition::Suffix) => "）",
+        (Punctuation::Brackets, ScriptClass::Latin, PunctuationPosition::Prefix) => "[",
+        (Punctuation::Brackets, ScriptClass::Latin, PunctuationPosition::Suffix) => "]",
+        (Punctuation::Brackets, ScriptClass::Cjk, PunctuationPosition::Prefix) => "【",
+        (Punctuation::Brackets, ScriptClass::Cjk, PunctuationPosition::Suffix) => "】",
+        (Punctuation::Parentheses, ScriptClass::Latin, PunctuationPosition::Separator) => "()",
+        (Punctuation::Parentheses, ScriptClass::Cjk, PunctuationPosition::Separator) => "（）",
+        (Punctuation::Brackets, ScriptClass::Latin, PunctuationPosition::Separator) => "[]",
+        (Punctuation::Brackets, ScriptClass::Cjk, PunctuationPosition::Separator) => "【】",
+        (
+            Punctuation::Ampersand
+            | Punctuation::VerticalLine
+            | Punctuation::Slash
+            | Punctuation::Hyphen
+            | Punctuation::Space
+            | Punctuation::None
+            | Punctuation::Custom(_),
+            _,
+            _,
+        ) => return Cow::Borrowed(punctuation.as_default_str()),
+    };
+    Cow::Borrowed(default)
+}
+
+fn pair_mark(pair: &[String; 2], position: PunctuationPosition) -> Cow<'_, str> {
+    match position {
+        PunctuationPosition::Prefix => Cow::Borrowed(pair[0].as_str()),
+        PunctuationPosition::Suffix => Cow::Borrowed(pair[1].as_str()),
+        PunctuationPosition::Separator => Cow::Owned(format!("{}{}", pair[0], pair[1])),
+    }
+}
+
+/// Apply realized punctuation affixes while routing semantic glyphs through
+/// the active output format's text escaping.
+pub(crate) fn apply_punctuation_affixes<F>(
+    fmt: &F,
+    prefix: Option<(&DelimiterPunctuation, &str)>,
+    mut content: String,
+    suffix: Option<(&DelimiterPunctuation, &str)>,
+) -> String
+where
+    F: OutputFormat<Output = String>,
+{
+    if let Some((punctuation, text)) = prefix {
+        content = if punctuation.is_semantic() {
+            fmt.join(vec![fmt.text(text), content], "")
+        } else {
+            fmt.affix(text, content, "")
+        };
+    }
+    if let Some((punctuation, text)) = suffix {
+        content = if punctuation.is_semantic() {
+            fmt.join(vec![content, fmt.text(text)], "")
+        } else {
+            fmt.affix("", content, text)
+        };
+    }
+    content
+}
 
 /// Return Unicode quote marks for a nesting depth.
 ///
@@ -95,15 +217,35 @@ pub struct SemanticAttribute {
 /// `docs/specs/PUNCTUATION_REALIZATION.md` §2. The table is closed for v1;
 /// new marks or script classes require a spec revision.
 #[must_use]
-pub(crate) fn realize_wrap(
+pub(crate) fn realize_wrap<'a>(
     wrap: &WrapPunctuation,
     script: ScriptClass,
-) -> Option<(&'static str, &'static str)> {
+    overrides: Option<&'a PunctuationRealization>,
+) -> Option<(Cow<'a, str>, Cow<'a, str>)> {
+    if let Some(pair) = overrides.and_then(|table| match wrap {
+        WrapPunctuation::Parentheses => table.parentheses.as_ref(),
+        WrapPunctuation::Brackets => table.brackets.as_ref(),
+        WrapPunctuation::Quotes => None,
+    }) {
+        return Some((
+            Cow::Borrowed(pair[0].as_str()),
+            Cow::Borrowed(pair[1].as_str()),
+        ));
+    }
+
     match (wrap, script) {
-        (WrapPunctuation::Parentheses, ScriptClass::Latin) => Some(("(", ")")),
-        (WrapPunctuation::Parentheses, ScriptClass::Cjk) => Some(("（", "）")),
-        (WrapPunctuation::Brackets, ScriptClass::Latin) => Some(("[", "]")),
-        (WrapPunctuation::Brackets, ScriptClass::Cjk) => Some(("【", "】")),
+        (WrapPunctuation::Parentheses, ScriptClass::Latin) => {
+            Some((Cow::Borrowed("("), Cow::Borrowed(")")))
+        }
+        (WrapPunctuation::Parentheses, ScriptClass::Cjk) => {
+            Some((Cow::Borrowed("（"), Cow::Borrowed("）")))
+        }
+        (WrapPunctuation::Brackets, ScriptClass::Latin) => {
+            Some((Cow::Borrowed("["), Cow::Borrowed("]")))
+        }
+        (WrapPunctuation::Brackets, ScriptClass::Cjk) => {
+            Some((Cow::Borrowed("【"), Cow::Borrowed("】")))
+        }
         (WrapPunctuation::Quotes, _) => None,
     }
 }
@@ -194,6 +336,7 @@ pub trait OutputFormat: Default + Clone {
         content: Self::Output,
         marks: &QuoteMarks,
         script: ScriptClass,
+        realization: Option<&PunctuationRealization>,
     ) -> Self::Output;
 
     /// Apply a semantic identifier (class) to the content.
@@ -423,6 +566,7 @@ mod tests {
             content: Self::Output,
             _marks: &QuoteMarks,
             _script: ScriptClass,
+            _realization: Option<&PunctuationRealization>,
         ) -> Self::Output {
             content
         }
@@ -463,8 +607,31 @@ mod tests {
             (WrapPunctuation::Quotes, ScriptClass::Latin, None),
             (WrapPunctuation::Quotes, ScriptClass::Cjk, None),
         ] {
-            assert_eq!(realize_wrap(&wrap, script), expected, "{wrap:?}/{script:?}");
+            assert_eq!(
+                realize_wrap(&wrap, script, None)
+                    .map(|(open, close)| (open.into_owned(), close.into_owned())),
+                expected.map(|(open, close)| (open.to_string(), close.to_string())),
+                "{wrap:?}/{script:?}"
+            );
         }
+    }
+
+    #[test]
+    fn paired_punctuation_override_includes_both_marks_as_separator() {
+        let overrides = PunctuationRealization {
+            parentheses: Some(["〔".to_string(), "〕".to_string()]),
+            ..PunctuationRealization::default()
+        };
+
+        assert_eq!(
+            realize_punctuation(
+                &DelimiterPunctuation::Parentheses,
+                ScriptClass::Cjk,
+                Some(&overrides),
+                PunctuationPosition::Separator,
+            ),
+            "〔〕"
+        );
     }
 
     #[test]
@@ -491,6 +658,75 @@ mod tests {
                 &ProcEntryMetadata::default()
             ),
             "content"
+        );
+    }
+
+    #[test]
+    fn semantic_affixes_use_each_output_formats_text_escaping() {
+        let punctuation = DelimiterPunctuation::Comma;
+
+        assert_eq!(
+            apply_punctuation_affixes(
+                &crate::render::plain::PlainText,
+                Some((&punctuation, "<&")),
+                "value".to_string(),
+                None,
+            ),
+            "<&value"
+        );
+        assert_eq!(
+            apply_punctuation_affixes(
+                &crate::render::html::Html,
+                Some((&punctuation, "<&")),
+                "value".to_string(),
+                None,
+            ),
+            "&lt;&amp;value"
+        );
+        assert_eq!(
+            apply_punctuation_affixes(
+                &crate::render::latex::Latex,
+                Some((&punctuation, "<&")),
+                "value".to_string(),
+                None,
+            ),
+            "<\\&value"
+        );
+        assert_eq!(
+            apply_punctuation_affixes(
+                &crate::render::typst::Typst,
+                Some((&punctuation, "<&")),
+                "value".to_string(),
+                None,
+            ),
+            "\\<&value"
+        );
+        assert_eq!(
+            apply_punctuation_affixes(
+                &crate::render::markdown::Markdown,
+                Some((&punctuation, "<&")),
+                "value".to_string(),
+                None,
+            ),
+            "\\<\\&value"
+        );
+        assert_eq!(
+            apply_punctuation_affixes(
+                &crate::render::djot::Djot,
+                Some((&punctuation, "<&")),
+                "value".to_string(),
+                None,
+            ),
+            "<&value"
+        );
+        assert_eq!(
+            apply_punctuation_affixes(
+                &crate::render::org::OrgOutputFormat,
+                Some((&punctuation, "<&")),
+                "value".to_string(),
+                None,
+            ),
+            "<&value"
         );
     }
 }

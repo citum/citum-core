@@ -86,7 +86,11 @@ impl TemplateCompiler {
             form,
             merge,
             name_order,
-            delimiter: names.options.delimiter.clone(),
+            delimiter: names
+                .options
+                .delimiter
+                .as_deref()
+                .map(citum_schema::template::DelimiterPunctuation::from_csl_string),
             sort_separator: names.options.sort_separator.clone(),
             shorten,
             and,
@@ -165,8 +169,16 @@ impl TemplateCompiler {
                             placement: placement.clone(),
                             text_case: None,
                             wrap: None,
-                            prefix: label.formatting.prefix.clone(),
-                            suffix: label.formatting.suffix.clone(),
+                            prefix: label
+                                .formatting
+                                .prefix
+                                .as_deref()
+                                .map(citum_schema::template::DelimiterPunctuation::from_csl_string),
+                            suffix: label
+                                .formatting
+                                .suffix
+                                .as_deref()
+                                .map(citum_schema::template::DelimiterPunctuation::from_csl_string),
                         }),
                     },
                 );

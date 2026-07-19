@@ -48,7 +48,7 @@ options:
       - editor
   dates: numeric
   punctuation-in-quote: true
-  volume-pages-delimiter: comma
+  volume-pages-delimiter: { mark: comma }
 citation:
   options:
     substitute:

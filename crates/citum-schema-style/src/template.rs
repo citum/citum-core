@@ -126,12 +126,14 @@ pub struct Rendering {
     /// Vertical alignment to apply to rendered output.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub vertical_align: Option<VerticalAlign>,
-    /// Text to prepend to the rendered value (outside any wrap).
+    /// Text or a semantic punctuation mark to prepend to the rendered value
+    /// (outside any wrap).
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub prefix: Option<String>,
-    /// Text to append to the rendered value (outside any wrap).
+    pub prefix: Option<DelimiterPunctuation>,
+    /// Text or a semantic punctuation mark to append to the rendered value
+    /// (outside any wrap).
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub suffix: Option<String>,
+    pub suffix: Option<DelimiterPunctuation>,
     /// Wrapping punctuation and optional inner affixes (text inside the wrap).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub wrap: Option<WrapConfig>,
@@ -697,12 +699,12 @@ pub struct RoleLabel {
     /// for an unwrapped suffix label, and empty for prefix placement). Mirrors
     /// CSL 1.0 `cs:label` `prefix` (e.g. `" ("` for elsevier's `" (Eds.)"`).
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub prefix: Option<String>,
+    pub prefix: Option<DelimiterPunctuation>,
     /// Optional affix rendered after the label term, overriding the
     /// placement-derived default (empty for suffix placement, `" "` for
     /// prefix placement). Mirrors CSL 1.0 `cs:label` `suffix` (e.g. `")"`).
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub suffix: Option<String>,
+    pub suffix: Option<DelimiterPunctuation>,
 }
 
 /// Term form for role labels.
@@ -893,7 +895,7 @@ pub struct TemplateContributor {
     pub name_form: Option<crate::options::contributors::NameForm>,
     /// Custom delimiter between names (overrides global setting).
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub delimiter: Option<String>,
+    pub delimiter: Option<DelimiterPunctuation>,
     /// Delimiter between family and given name when inverted (overrides global setting).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub sort_separator: Option<String>,
@@ -1670,23 +1672,39 @@ pub enum TemplateConditionField {
     VolumeOrIssue,
 }
 
-/// Delimiter punctuation options.
-#[derive(Debug, Default, Serialize, Deserialize, Clone, PartialEq)]
-#[serde(rename_all = "kebab-case")]
+/// Literal text or an explicit semantic punctuation mark.
+///
+/// YAML strings are always literal. Semantic marks use the explicit mapping
+/// form `{ mark: comma }`, so a string such as `comma` is never interpreted as
+/// punctuation intent.
+#[derive(Debug, Default, Clone, PartialEq)]
 pub enum DelimiterPunctuation {
+    /// A semantic comma mark.
     #[default]
     Comma,
+    /// A semantic semicolon mark.
     Semicolon,
+    /// A semantic period mark.
     Period,
+    /// A semantic colon mark.
     Colon,
+    /// A semantic parentheses pair.
+    Parentheses,
+    /// A semantic brackets pair.
+    Brackets,
+    /// A literal ampersand delimiter retained for programmatic compatibility.
     Ampersand,
+    /// A literal vertical-line delimiter retained for programmatic compatibility.
     VerticalLine,
+    /// A literal slash delimiter retained for programmatic compatibility.
     Slash,
+    /// A literal hyphen delimiter retained for programmatic compatibility.
     Hyphen,
+    /// A literal space delimiter retained for programmatic compatibility.
     Space,
+    /// An empty literal delimiter retained for programmatic compatibility.
     None,
-    /// Custom delimiter string (e.g., ": ").
-    #[serde(untagged)]
+    /// Literal punctuation or text (e.g., `": "` or `"comma"`).
     Custom(String),
 }
 
@@ -1697,28 +1715,147 @@ impl JsonSchema for DelimiterPunctuation {
     }
 
     fn json_schema(_gen: &mut schemars::SchemaGenerator) -> schemars::Schema {
-        schemars::json_schema!({"type": "string", "description": "Delimiter punctuation options."})
+        schemars::json_schema!({
+            "oneOf": [
+                {
+                    "type": "string",
+                    "description": "Literal punctuation or text."
+                },
+                {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": ["mark"],
+                    "properties": {
+                        "mark": {
+                            "type": "string",
+                            "enum": [
+                                "comma",
+                                "colon",
+                                "semicolon",
+                                "period",
+                                "parentheses",
+                                "brackets"
+                            ]
+                        }
+                    }
+                }
+            ],
+            "description": "Literal text or an explicit semantic punctuation mark."
+        })
+    }
+}
+
+impl Serialize for DelimiterPunctuation {
+    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        use serde::ser::SerializeMap as _;
+
+        let mark = match self {
+            Self::Comma => Some("comma"),
+            Self::Semicolon => Some("semicolon"),
+            Self::Period => Some("period"),
+            Self::Colon => Some("colon"),
+            Self::Parentheses => Some("parentheses"),
+            Self::Brackets => Some("brackets"),
+            Self::Ampersand
+            | Self::VerticalLine
+            | Self::Slash
+            | Self::Hyphen
+            | Self::Space
+            | Self::None
+            | Self::Custom(_) => None,
+        };
+
+        if let Some(mark) = mark {
+            let mut map = serializer.serialize_map(Some(1))?;
+            map.serialize_entry("mark", mark)?;
+            map.end()
+        } else {
+            serializer.serialize_str(self.as_default_str())
+        }
+    }
+}
+
+impl<'de> Deserialize<'de> for DelimiterPunctuation {
+    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        #[derive(Deserialize)]
+        #[serde(deny_unknown_fields)]
+        struct MarkReference {
+            mark: String,
+        }
+
+        #[derive(Deserialize)]
+        #[serde(untagged)]
+        enum LiteralOrMark {
+            Literal(String),
+            Mark(MarkReference),
+        }
+
+        match LiteralOrMark::deserialize(deserializer)? {
+            LiteralOrMark::Literal(value) => Ok(Self::Custom(value)),
+            LiteralOrMark::Mark(reference) => match reference.mark.as_str() {
+                "comma" => Ok(Self::Comma),
+                "colon" => Ok(Self::Colon),
+                "semicolon" => Ok(Self::Semicolon),
+                "period" => Ok(Self::Period),
+                "parentheses" => Ok(Self::Parentheses),
+                "brackets" => Ok(Self::Brackets),
+                other => Err(serde::de::Error::unknown_variant(
+                    other,
+                    &[
+                        "comma",
+                        "colon",
+                        "semicolon",
+                        "period",
+                        "parentheses",
+                        "brackets",
+                    ],
+                )),
+            },
+        }
     }
 }
 
 impl DelimiterPunctuation {
+    /// Return whether this value carries semantic punctuation intent rather
+    /// than literal text.
+    #[must_use]
+    pub fn is_semantic(&self) -> bool {
+        matches!(
+            self,
+            Self::Comma
+                | Self::Semicolon
+                | Self::Period
+                | Self::Colon
+                | Self::Parentheses
+                | Self::Brackets
+        )
+    }
+
+    /// Return the historical Latin/default literal form.
+    #[must_use]
+    pub fn as_default_str(&self) -> &str {
+        match self {
+            Self::Comma => ", ",
+            Self::Semicolon => "; ",
+            Self::Period => ". ",
+            Self::Colon => ": ",
+            Self::Parentheses => "()",
+            Self::Brackets => "[]",
+            Self::Ampersand => " & ",
+            Self::VerticalLine => " | ",
+            Self::Slash => "/",
+            Self::Hyphen => "-",
+            Self::Space => " ",
+            Self::None => "",
+            Self::Custom(value) => value,
+        }
+    }
+
     /// Convert this delimiter to a string with trailing space.
     ///
     /// Returns the punctuation followed by a space, except for Space (single space) and None (empty string).
     pub fn to_string_with_space(&self) -> String {
-        match self {
-            Self::Comma => ", ".to_string(),
-            Self::Semicolon => "; ".to_string(),
-            Self::Period => ". ".to_string(),
-            Self::Colon => ": ".to_string(),
-            Self::Ampersand => " & ".to_string(),
-            Self::VerticalLine => " | ".to_string(),
-            Self::Slash => "/".to_string(),
-            Self::Hyphen => "-".to_string(),
-            Self::Space => " ".to_string(),
-            Self::None => "".to_string(),
-            Self::Custom(s) => s.clone(),
-        }
+        self.as_default_str().to_string()
     }
 
     /// Parse a delimiter from a CSL 1.0 delimiter string.
@@ -1746,6 +1883,32 @@ impl DelimiterPunctuation {
             "-" => Self::Hyphen,
             _ => Self::Custom(s.to_string()),
         }
+    }
+}
+
+impl std::ops::Deref for DelimiterPunctuation {
+    type Target = str;
+
+    fn deref(&self) -> &Self::Target {
+        self.as_default_str()
+    }
+}
+
+impl std::fmt::Display for DelimiterPunctuation {
+    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        formatter.write_str(self.as_default_str())
+    }
+}
+
+impl From<String> for DelimiterPunctuation {
+    fn from(value: String) -> Self {
+        Self::Custom(value)
+    }
+}
+
+impl From<&str> for DelimiterPunctuation {
+    fn from(value: &str) -> Self {
+        Self::Custom(value.to_string())
     }
 }
 
@@ -1829,7 +1992,7 @@ name-order: family-first-except-last
 
         match &components[0] {
             TemplateComponent::Title(t) => {
-                assert_eq!(t.rendering.prefix, Some("In ".to_string()));
+                assert_eq!(t.rendering.prefix.as_deref(), Some("In "));
                 assert_eq!(t.rendering.emph, Some(true));
             }
             _ => panic!("Expected Title"),

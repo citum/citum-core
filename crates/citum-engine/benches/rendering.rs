@@ -714,7 +714,7 @@ fn build_type_variant_bench_style() -> Style {
                 title: TitleType::Primary,
                 form: None,
                 rendering: Rendering {
-                    prefix: Some("DEFAULT ".to_string()),
+                    prefix: Some("DEFAULT ".into()),
                     ..Default::default()
                 },
                 ..Default::default()
@@ -732,7 +732,7 @@ fn build_type_variant_bench_style() -> Style {
                     TemplateComponent::Number(TemplateNumber {
                         number: NumberVariable::Volume,
                         rendering: Rendering {
-                            prefix: Some(", ".to_string()),
+                            prefix: Some(", ".into()),
                             ..Default::default()
                         },
                         ..Default::default()
@@ -740,7 +740,7 @@ fn build_type_variant_bench_style() -> Style {
                     TemplateComponent::Number(TemplateNumber {
                         number: NumberVariable::Pages,
                         rendering: Rendering {
-                            prefix: Some(": ".to_string()),
+                            prefix: Some(": ".into()),
                             ..Default::default()
                         },
                         ..Default::default()
@@ -748,7 +748,7 @@ fn build_type_variant_bench_style() -> Style {
                     TemplateComponent::Variable(TemplateVariable {
                         variable: SimpleVariable::Doi,
                         rendering: Rendering {
-                            prefix: Some(" DOI: ".to_string()),
+                            prefix: Some(" DOI: ".into()),
                             ..Default::default()
                         },
                         ..Default::default()
@@ -818,7 +818,7 @@ fn build_compound_bench_style() -> Style {
                     number: NumberVariable::CitationNumber,
                     rendering: Rendering {
                         wrap: Some(WrapPunctuation::Brackets.into()),
-                        suffix: Some(" ".to_string()),
+                        suffix: Some(" ".into()),
                         ..Default::default()
                     },
                     ..Default::default()
@@ -832,7 +832,7 @@ fn build_compound_bench_style() -> Style {
                     title: TitleType::Primary,
                     form: None,
                     rendering: Rendering {
-                        prefix: Some(". ".to_string()),
+                        prefix: Some(". ".into()),
                         ..Default::default()
                     },
                     ..Default::default()

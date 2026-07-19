@@ -52,7 +52,7 @@ citation:
         min: 3
         use-first: 1
   template:
-  - delimiter: space
+  - delimiter: " "
     group:
     - contributor: author
       form: short
@@ -94,7 +94,7 @@ bibliography:
       form: year
     - title: primary
     - title: parent-serial
-    - delimiter: none
+    - delimiter: ""
       group:
       - number: volume
       - number: issue

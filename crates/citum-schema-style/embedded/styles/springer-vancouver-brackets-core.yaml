@@ -82,7 +82,7 @@ bibliography:
       - number: volume
       - number: pages
         prefix: ':'
-      delimiter: none
+      delimiter: ''
     - variable: doi
       prefix: '. https://doi.org/'
 
@@ -178,7 +178,7 @@ bibliography:
       - date: issued
         form: month-day
         prefix: ' '
-      delimiter: none
+      delimiter: ''
       suffix: ';'
 
     article-magazine:
@@ -196,7 +196,7 @@ bibliography:
       - number: volume
       - number: pages
         prefix: ':'
-      delimiter: none
+      delimiter: ''
 
     entry-encyclopedia:
     - contributor: author

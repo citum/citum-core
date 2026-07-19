@@ -464,7 +464,7 @@ mod tests {
             and: Some(AndOptions::None),
             display_as_sort: Some(DisplayAsSort::None),
             initialize_with: Some(".".to_string()),
-            delimiter: Some(", ".to_string()),
+            delimiter: Some(", ".into()),
             delimiter_precedes_last: Some(DelimiterPrecedesLast::Always),
             demote_non_dropping_particle: Some(DemoteNonDroppingParticle::SortOnly),
             ..Default::default()

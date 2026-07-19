@@ -43,7 +43,7 @@ citation:
         min: 3
         use-first: 1
   template:
-  - delimiter: space
+  - delimiter: " "
     group:
     - contributor: author
       form: short
@@ -103,7 +103,7 @@ bibliography:
       group:
       - variable: publisher
       - variable: publisher-place
-    - delimiter: none
+    - delimiter: ""
       prefix: " "
       group:
       - number: volume
@@ -170,7 +170,7 @@ bibliography:
               - number: pages
       add:
         - component:
-            delimiter: none
+            delimiter: ''
             prefix: ' '
             group:
               - number: volume
@@ -334,7 +334,7 @@ bibliography:
     - variable: publisher-place
     - number: pages
       prefix: "pp "
-  - delimiter: none
+  - delimiter: ""
     prefix: " "
     group:
     - number: volume

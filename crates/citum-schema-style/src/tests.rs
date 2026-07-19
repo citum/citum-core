@@ -112,9 +112,9 @@ options:
 #[test]
 fn test_resolve_for_position_ibid_falls_back_to_subsequent() {
     let citation = CitationSpec {
-        suffix: Some("base".to_string()),
+        suffix: Some("base".into()),
         subsequent: Some(Box::new(CitationSpec {
-            suffix: Some("subseq".to_string()),
+            suffix: Some("subseq".into()),
             ..Default::default()
         })),
         ..Default::default()
@@ -123,24 +123,24 @@ fn test_resolve_for_position_ibid_falls_back_to_subsequent() {
     let resolved = citation
         .resolve_for_position(Some(&crate::citation::Position::Ibid))
         .into_owned();
-    assert_eq!(resolved.suffix, Some("subseq".to_string()));
+    assert_eq!(resolved.suffix.as_deref(), Some("subseq"));
 
     let resolved_with_locator = citation
         .resolve_for_position(Some(&crate::citation::Position::IbidWithLocator))
         .into_owned();
-    assert_eq!(resolved_with_locator.suffix, Some("subseq".to_string()));
+    assert_eq!(resolved_with_locator.suffix.as_deref(), Some("subseq"));
 }
 
 #[test]
 fn test_resolve_for_position_ibid_precedes_subsequent() {
     let citation = CitationSpec {
-        suffix: Some("base".to_string()),
+        suffix: Some("base".into()),
         subsequent: Some(Box::new(CitationSpec {
-            suffix: Some("subseq".to_string()),
+            suffix: Some("subseq".into()),
             ..Default::default()
         })),
         ibid: Some(Box::new(CitationSpec {
-            suffix: Some("ibid".to_string()),
+            suffix: Some("ibid".into()),
             ..Default::default()
         })),
         ..Default::default()
@@ -149,12 +149,12 @@ fn test_resolve_for_position_ibid_precedes_subsequent() {
     let resolved = citation
         .resolve_for_position(Some(&crate::citation::Position::Ibid))
         .into_owned();
-    assert_eq!(resolved.suffix, Some("ibid".to_string()));
+    assert_eq!(resolved.suffix.as_deref(), Some("ibid"));
 
     let resolved_subsequent = citation
         .resolve_for_position(Some(&crate::citation::Position::Subsequent))
         .into_owned();
-    assert_eq!(resolved_subsequent.suffix, Some("subseq".to_string()));
+    assert_eq!(resolved_subsequent.suffix.as_deref(), Some("subseq"));
 }
 
 #[test]
@@ -256,7 +256,7 @@ bibliography:
 
     match &bib_template[3] {
         template::TemplateComponent::Title(t) => {
-            assert_eq!(t.rendering.prefix, Some("In ".to_string()));
+            assert_eq!(t.rendering.prefix.as_deref(), Some("In "));
             assert_eq!(t.rendering.emph, Some(true));
         }
         _ => panic!("Expected Title"),
@@ -2169,4 +2169,58 @@ fn substitute_schema_exposes_scalar_and_contributor_candidates() {
         schema.pointer("/anyOf/1/$ref"),
         Some(&serde_json::json!("#/$defs/SubstituteContributor"))
     );
+}
+
+#[test]
+fn punctuation_mark_mapping_is_semantic_but_scalar_name_is_literal() {
+    let semantic: template::DelimiterPunctuation =
+        serde_yaml::from_str("{ mark: comma }").expect("semantic mark should parse");
+    let literal: template::DelimiterPunctuation =
+        serde_yaml::from_str("comma").expect("literal punctuation should parse");
+
+    assert_eq!(semantic, template::DelimiterPunctuation::Comma);
+    assert_eq!(
+        literal,
+        template::DelimiterPunctuation::Custom("comma".to_string())
+    );
+    assert_eq!(
+        serde_yaml::to_string(&semantic).expect("semantic mark should serialize"),
+        "mark: comma\n"
+    );
+    assert_eq!(
+        serde_yaml::to_string(&literal).expect("literal punctuation should serialize"),
+        "comma\n"
+    );
+}
+
+#[test]
+fn multilingual_script_realization_overrides_parse_as_partial_tables() {
+    let yaml = r#"
+info: { id: realization-overrides, title: Realization Overrides }
+options:
+  multilingual:
+    scripts:
+      cjk:
+        realization:
+          comma: "、"
+          parentheses: ["〔", "〕"]
+bibliography:
+  template:
+    - title: primary
+"#;
+    let style: Style = serde_yaml::from_str(yaml).expect("realization overrides should parse");
+    let realization = style
+        .options
+        .as_ref()
+        .and_then(|options| options.multilingual.as_ref())
+        .and_then(|options| options.scripts.get("cjk"))
+        .and_then(|script| script.realization.as_ref())
+        .expect("CJK realization table should be present");
+
+    assert_eq!(realization.comma.as_deref(), Some("、"));
+    assert_eq!(
+        realization.parentheses.as_ref(),
+        Some(&["〔".to_string(), "〕".to_string()])
+    );
+    assert_eq!(realization.colon, None);
 }

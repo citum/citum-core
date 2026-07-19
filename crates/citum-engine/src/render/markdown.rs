@@ -133,9 +133,12 @@ impl OutputFormat for Markdown {
         content: Self::Output,
         marks: &QuoteMarks,
         script: ScriptClass,
+        realization: Option<&citum_schema::options::PunctuationRealization>,
     ) -> Self::Output {
-        match realize_wrap(wrap, script) {
-            Some((open, close)) => format!("{open}{content}{close}"),
+        match realize_wrap(wrap, script, realization) {
+            Some((open, close)) => {
+                format!("{}{}{}", self.text(&open), content, self.text(&close))
+            }
             None => self.quote(content, marks),
         }
     }
@@ -347,7 +350,7 @@ mod tests {
                 WrapPunctuation::Brackets,
                 ScriptClass::Latin,
                 "text",
-                "[text]",
+                "\\[text\\]",
             ),
             (
                 WrapPunctuation::Quotes,
@@ -369,7 +372,7 @@ mod tests {
             ),
         ] {
             assert_eq!(
-                fmt.wrap_punctuation(&wrap, input.to_string(), &marks, script),
+                fmt.wrap_punctuation(&wrap, input.to_string(), &marks, script, None),
                 expected
             );
         }

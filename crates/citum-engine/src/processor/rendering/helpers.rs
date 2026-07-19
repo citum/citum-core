@@ -4,6 +4,9 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 */
 
 use super::TemplateComponent;
+use crate::render::format::{OutputFormat, PunctuationPosition, realize_punctuation};
+use crate::values::ScriptClass;
+use citum_schema::options::PunctuationRealization;
 
 pub fn strip_author_component(component: &TemplateComponent) -> Option<TemplateComponent> {
     match component {
@@ -32,15 +35,39 @@ pub fn strip_author_component(component: &TemplateComponent) -> Option<TemplateC
 }
 
 /// Extract the leading affix used to separate grouped authors from item details.
-pub fn leading_group_affix(component: &TemplateComponent) -> Option<String> {
+pub fn leading_group_affix<F>(
+    component: &TemplateComponent,
+    script: ScriptClass,
+    realization: Option<&PunctuationRealization>,
+    fmt: &F,
+) -> Option<String>
+where
+    F: OutputFormat<Output = String>,
+{
     let r = component.rendering();
     let own_affix = r
         .prefix
-        .clone()
+        .as_ref()
+        .map(|punctuation| {
+            let realized = realize_punctuation(
+                punctuation,
+                script,
+                realization,
+                PunctuationPosition::Prefix,
+            );
+            if punctuation.is_semantic() {
+                fmt.text(&realized)
+            } else {
+                realized.into_owned()
+            }
+        })
         .or_else(|| r.wrap.as_ref().and_then(|w| w.inner_prefix.clone()))
         .or_else(|| {
             if let TemplateComponent::Group(inner) = component {
-                inner.group.first().and_then(leading_group_affix)
+                inner
+                    .group
+                    .first()
+                    .and_then(|first| leading_group_affix(first, script, realization, fmt))
             } else {
                 None
             }

@@ -149,6 +149,38 @@ pub struct ScriptConfig {
     /// half-width for Latin-script items in a bilingual style).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub punctuation: Option<PunctuationStyle>,
+    /// Style-owned glyph overrides for semantic punctuation marks realized for
+    /// this script class.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub realization: Option<PunctuationRealization>,
+}
+
+/// Per-script glyph overrides for semantic punctuation marks.
+///
+/// Scalar marks use complete separator strings, including spacing. Paired
+/// marks use `[open, close]`.
+#[derive(Debug, Default, PartialEq, Eq, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[serde(rename_all = "kebab-case", deny_unknown_fields)]
+pub struct PunctuationRealization {
+    /// Override for the semantic comma mark.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub comma: Option<String>,
+    /// Override for the semantic colon mark.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub colon: Option<String>,
+    /// Override for the semantic semicolon mark.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub semicolon: Option<String>,
+    /// Override for the semantic period mark.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub period: Option<String>,
+    /// Override for the semantic parentheses pair.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub parentheses: Option<[String; 2]>,
+    /// Override for the semantic brackets pair.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub brackets: Option<[String; 2]>,
 }
 
 /// Punctuation convention applied to a script's rendered output.

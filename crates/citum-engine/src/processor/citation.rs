@@ -29,8 +29,8 @@ use crate::values::ProcHints;
 use citum_schema::NoteStartTextCase;
 use citum_schema::locale::{GeneralTerm, Locale, TermForm};
 use citum_schema::options::{Config, GivennameRule};
-use citum_schema::template::DelimiterPunctuation;
 use indexmap::IndexMap;
+use std::borrow::Cow;
 use std::collections::HashMap;
 use std::sync::Arc;
 
@@ -148,33 +148,37 @@ impl Processor {
 
     /// Resolve intra-item and inter-citation delimiters for a citation spec.
     fn resolve_citation_delimiters<'a>(
-        &self,
+        &'a self,
+        citation: &Citation,
         effective_spec: &'a citum_schema::CitationSpec,
-    ) -> (&'a str, &'a str) {
-        let intra_delimiter = effective_spec.delimiter.as_deref().unwrap_or(", ");
+    ) -> (Cow<'a, str>, Cow<'a, str>) {
+        let (script, realization) = self.citation_punctuation_context(citation);
+        let intra_delimiter = effective_spec
+            .delimiter
+            .as_ref()
+            .map(|punctuation| {
+                crate::render::format::realize_punctuation(
+                    punctuation,
+                    script,
+                    realization,
+                    crate::render::format::PunctuationPosition::Separator,
+                )
+            })
+            .unwrap_or(Cow::Borrowed(", "));
         let inter_delimiter = effective_spec
             .multi_cite_delimiter
-            .as_deref()
-            .unwrap_or("; ");
+            .as_ref()
+            .map(|punctuation| {
+                crate::render::format::realize_punctuation(
+                    punctuation,
+                    script,
+                    realization,
+                    crate::render::format::PunctuationPosition::Separator,
+                )
+            })
+            .unwrap_or(Cow::Borrowed("; "));
 
-        (
-            if matches!(
-                DelimiterPunctuation::from_csl_string(intra_delimiter),
-                DelimiterPunctuation::None
-            ) {
-                ""
-            } else {
-                intra_delimiter
-            },
-            if matches!(
-                DelimiterPunctuation::from_csl_string(inter_delimiter),
-                DelimiterPunctuation::None
-            ) {
-                ""
-            } else {
-                inter_delimiter
-            },
-        )
+        (intra_delimiter, inter_delimiter)
     }
 
     /// Register a dynamic compound group for a `grouped` citation.
@@ -554,15 +558,49 @@ impl Processor {
     where
         F: crate::render::format::OutputFormat<Output = String>,
     {
-        let spec_prefix = effective_spec.prefix.as_deref().unwrap_or("");
-        let spec_suffix = effective_spec.suffix.as_deref().unwrap_or("");
+        let (script, realization) = self.citation_punctuation_context(citation);
+        let spec_prefix = effective_spec
+            .prefix
+            .as_ref()
+            .map(|punctuation| {
+                crate::render::format::realize_punctuation(
+                    punctuation,
+                    script,
+                    realization,
+                    crate::render::format::PunctuationPosition::Prefix,
+                )
+            })
+            .unwrap_or(Cow::Borrowed(""));
+        let spec_suffix = effective_spec
+            .suffix
+            .as_ref()
+            .map(|punctuation| {
+                crate::render::format::realize_punctuation(
+                    punctuation,
+                    script,
+                    realization,
+                    crate::render::format::PunctuationPosition::Suffix,
+                )
+            })
+            .unwrap_or(Cow::Borrowed(""));
 
         if matches!(
             citation.mode,
             citum_schema::citation::CitationMode::Integral
         ) {
             if !spec_prefix.is_empty() || !spec_suffix.is_empty() {
-                fmt.affix(spec_prefix, output, spec_suffix)
+                crate::render::format::apply_punctuation_affixes(
+                    fmt,
+                    effective_spec
+                        .prefix
+                        .as_ref()
+                        .map(|punctuation| (punctuation, spec_prefix.as_ref())),
+                    output,
+                    effective_spec
+                        .suffix
+                        .as_ref()
+                        .map(|punctuation| (punctuation, spec_suffix.as_ref())),
+                )
             } else {
                 output
             }
@@ -575,10 +613,26 @@ impl Processor {
                 output
             };
             let marks = crate::render::format::QuoteMarks::from(&self.locale.grammar_options);
-            let script = self.citation_wrap_script_class(citation);
-            fmt.wrap_punctuation(&wrap.punctuation, inner_wrapped, &marks, script)
+            fmt.wrap_punctuation(
+                &wrap.punctuation,
+                inner_wrapped,
+                &marks,
+                script,
+                realization,
+            )
         } else if !spec_prefix.is_empty() || !spec_suffix.is_empty() {
-            fmt.affix(spec_prefix, output, spec_suffix)
+            crate::render::format::apply_punctuation_affixes(
+                fmt,
+                effective_spec
+                    .prefix
+                    .as_ref()
+                    .map(|punctuation| (punctuation, spec_prefix.as_ref())),
+                output,
+                effective_spec
+                    .suffix
+                    .as_ref()
+                    .map(|punctuation| (punctuation, spec_suffix.as_ref())),
+            )
         } else {
             output
         }
@@ -612,21 +666,24 @@ impl Processor {
             })
     }
 
-    /// Resolve the script class to realize the citation-spec-level `wrap`
-    /// punctuation as, based on the citation's first item's effective
-    /// language (mirroring [`Self::wants_latin_punctuation_for_citation`]'s
-    /// approximation for mixed compound citations), falling back to the
-    /// style-declared `options.multilingual.realization-default`.
-    fn citation_wrap_script_class(&self, citation: &Citation) -> crate::values::ScriptClass {
-        let default_script = crate::values::realization_default_script_class(
-            self.get_config().multilingual.as_ref(),
-        );
+    /// Resolve script selection and per-script realization overrides for a
+    /// citation using its first item as the mixed-cluster approximation.
+    fn citation_punctuation_context(
+        &self,
+        citation: &Citation,
+    ) -> (
+        crate::values::ScriptClass,
+        Option<&citum_schema::options::PunctuationRealization>,
+    ) {
         let lang = citation.items.first().and_then(|item| {
             self.bibliography
                 .get(&item.id)
                 .and_then(crate::values::effective_item_language)
         });
-        crate::values::wrap_script_class(lang.as_deref(), default_script)
+        crate::values::punctuation_realization_context(
+            lang.as_deref(),
+            self.get_config().multilingual.as_ref(),
+        )
     }
 
     /// Render a single citation to plain text.
@@ -683,12 +740,30 @@ impl Processor {
         let note_start_text_case =
             self.sentence_initial_note_start_text_case(citation, &effective_spec);
         let (renderer_delimiter, renderer_inter_delimiter) =
-            self.resolve_citation_delimiters(&effective_spec);
+            self.resolve_citation_delimiters(citation, &effective_spec);
+        let renderer_delimiter = if effective_spec
+            .delimiter
+            .as_ref()
+            .is_some_and(citum_schema::template::DelimiterPunctuation::is_semantic)
+        {
+            fmt.text(&renderer_delimiter)
+        } else {
+            renderer_delimiter.into_owned()
+        };
+        let renderer_inter_delimiter = if effective_spec
+            .multi_cite_delimiter
+            .as_ref()
+            .is_some_and(citum_schema::template::DelimiterPunctuation::is_semantic)
+        {
+            fmt.text(&renderer_inter_delimiter)
+        } else {
+            renderer_inter_delimiter.into_owned()
+        };
         let content = self.render_citation_content::<F>(
             citation,
             &effective_spec,
-            renderer_delimiter,
-            renderer_inter_delimiter,
+            &renderer_delimiter,
+            &renderer_inter_delimiter,
             note_start_text_case,
             run,
         )?;

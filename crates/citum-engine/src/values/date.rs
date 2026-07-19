@@ -746,23 +746,59 @@ fn apply_fallback_component_rendering<F: crate::render::format::OutputFormat<Out
         fmt.text(value)
     };
     if let Some(wrap_config) = rendering.wrap.as_ref() {
-        let default_script =
-            crate::values::realization_default_script_class(options.config.multilingual.as_ref());
-        let script = crate::values::wrap_script_class(
+        let (script, realization) = crate::values::punctuation_realization_context(
             crate::values::effective_item_language(reference).as_deref(),
-            default_script,
+            options.config.multilingual.as_ref(),
         );
         output = fmt.wrap_punctuation(
             &wrap_config.punctuation,
             output,
             &crate::render::format::QuoteMarks::default(),
             script,
+            realization,
         );
     }
-    let prefix = rendering.prefix.as_deref().unwrap_or_default();
-    let suffix = rendering.suffix.as_deref().unwrap_or_default();
+    let (script, realization) = crate::values::punctuation_realization_context(
+        crate::values::effective_item_language(reference).as_deref(),
+        options.config.multilingual.as_ref(),
+    );
+    let prefix = rendering
+        .prefix
+        .as_ref()
+        .map(|punctuation| {
+            crate::render::format::realize_punctuation(
+                punctuation,
+                script,
+                realization,
+                crate::render::format::PunctuationPosition::Prefix,
+            )
+        })
+        .unwrap_or_default();
+    let suffix = rendering
+        .suffix
+        .as_ref()
+        .map(|punctuation| {
+            crate::render::format::realize_punctuation(
+                punctuation,
+                script,
+                realization,
+                crate::render::format::PunctuationPosition::Suffix,
+            )
+        })
+        .unwrap_or_default();
     if !prefix.is_empty() || !suffix.is_empty() {
-        output = fmt.affix(prefix, output, suffix);
+        output = crate::render::format::apply_punctuation_affixes(
+            fmt,
+            rendering
+                .prefix
+                .as_ref()
+                .map(|punctuation| (punctuation, prefix.as_ref())),
+            output,
+            rendering
+                .suffix
+                .as_ref()
+                .map(|punctuation| (punctuation, suffix.as_ref())),
+        );
     }
     output
 }

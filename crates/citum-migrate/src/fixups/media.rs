@@ -206,7 +206,7 @@ pub(super) fn ensure_inferred_media_type_templates(
                 contributor: citum_schema::template::ContributorRole::Director.into(),
                 form: citum_schema::template::ContributorForm::Long,
                 rendering: Rendering {
-                    prefix: Some("Directed by ".to_string()),
+                    prefix: Some("Directed by ".into()),
                     ..Default::default()
                 },
                 ..Default::default()

@@ -68,7 +68,7 @@ fn migration_groups_adjacent_issue_and_year_month_inside_article_journal_detail_
         TemplateComponent::Number(TemplateNumber {
             number: NumberVariable::Volume,
             rendering: Rendering {
-                suffix: Some(", ".to_string()),
+                suffix: Some(", ".into()),
                 ..Default::default()
             },
             ..Default::default()
@@ -76,7 +76,7 @@ fn migration_groups_adjacent_issue_and_year_month_inside_article_journal_detail_
         TemplateComponent::Number(TemplateNumber {
             number: NumberVariable::Issue,
             rendering: Rendering {
-                suffix: Some(" ".to_string()),
+                suffix: Some(" ".into()),
                 ..Default::default()
             },
             ..Default::default()
@@ -85,8 +85,8 @@ fn migration_groups_adjacent_issue_and_year_month_inside_article_journal_detail_
             date: DateVariable::Issued,
             form: DateForm::YearMonth,
             rendering: Rendering {
-                prefix: Some("(".to_string()),
-                suffix: Some(")".to_string()),
+                prefix: Some("(".into()),
+                suffix: Some(")".into()),
                 ..Default::default()
             },
             ..Default::default()

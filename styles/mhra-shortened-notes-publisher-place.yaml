@@ -90,7 +90,7 @@ bibliography:
       form: long
       name-order: family-first
     - title: primary
-    - delimiter: none
+    - delimiter: ""
       group:
       - message: pattern.patent-number
         args:
@@ -134,7 +134,7 @@ bibliography:
       form: long
       prefix: ", interview with "
     - prefix: ", "
-      delimiter: none
+      delimiter: ''
       group:
       - date: issued
         form: month-day

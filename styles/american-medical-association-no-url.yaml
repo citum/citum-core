@@ -40,7 +40,7 @@ options:
     range-delimiter: –
 citation:
   template:
-  - delimiter: none
+  - delimiter: ""
     group:
     - number: citation-number
     - variable: locator
@@ -218,7 +218,7 @@ bibliography:
         use-first: 3
     - title: primary
       prefix: ' '
-    - delimiter: none
+    - delimiter: ""
       group:
       - message: pattern.published-online-date
         args:
