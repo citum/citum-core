@@ -27,7 +27,7 @@ options:
     sort-separator: " "
   dates: long
   punctuation-in-quote: true
-  volume-pages-delimiter: colon
+  volume-pages-delimiter: { mark: colon }
 citation:
   template:
   - number: citation-number

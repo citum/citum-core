@@ -59,6 +59,7 @@ pub struct ProcEntry {
 
 use super::format::{OutputFormat, SemanticAttribute};
 use super::plain::PlainText;
+use std::borrow::Cow;
 
 /// Resolve the semantic CSS class for a rendered component based on its template type.
 fn resolve_semantic_class(component: &ProcTemplateComponent) -> Option<String> {
@@ -140,6 +141,54 @@ pub fn render_component_with_format<F: OutputFormat<Output = String>>(
     render_component_with_format_and_renderer::<F>(component, &F::default(), true)
 }
 
+fn realized_component_affixes<'a>(
+    rendering: &'a Rendering,
+    script: crate::values::ScriptClass,
+    realization: Option<&'a citum_schema::options::PunctuationRealization>,
+) -> (Cow<'a, str>, Cow<'a, str>) {
+    let realize = |punctuation: &'a citum_schema::template::DelimiterPunctuation, position| {
+        super::format::realize_punctuation(punctuation, script, realization, position)
+    };
+    let prefix = rendering
+        .prefix
+        .as_ref()
+        .map(|punctuation| realize(punctuation, super::format::PunctuationPosition::Prefix))
+        .unwrap_or(Cow::Borrowed(""));
+    let suffix = rendering
+        .suffix
+        .as_ref()
+        .map(|punctuation| realize(punctuation, super::format::PunctuationPosition::Suffix))
+        .unwrap_or(Cow::Borrowed(""));
+    (prefix, suffix)
+}
+
+fn apply_component_semantics<F>(
+    component: &ProcTemplateComponent,
+    fmt: &F,
+    show_semantics: bool,
+    output: F::Output,
+) -> F::Output
+where
+    F: OutputFormat<Output = String>,
+{
+    if !show_semantics {
+        return output;
+    }
+    let Some(class) = resolve_semantic_class(component) else {
+        return output;
+    };
+    let semantic_attributes = component
+        .template_index
+        .map(|index| {
+            vec![SemanticAttribute {
+                name: "data-index",
+                value: index.to_string(),
+            }]
+        })
+        .unwrap_or_default();
+    fmt.semantic_with_attributes(&class, output, &semantic_attributes)
+}
+
 /// Render a single component using a specific output format and an existing renderer instance.
 pub fn render_component_with_format_and_renderer<F: OutputFormat<Output = String>>(
     component: &ProcTemplateComponent,
@@ -154,8 +203,15 @@ pub fn render_component_with_format_and_renderer<F: OutputFormat<Output = String
         return fmt.text("");
     }
 
-    let prefix = rendering.prefix.as_deref().unwrap_or_default();
-    let suffix = rendering.suffix.as_deref().unwrap_or_default();
+    let multilingual = component
+        .config
+        .as_ref()
+        .and_then(|config| config.multilingual.as_ref());
+    let (script, realization) = crate::values::punctuation_realization_context(
+        component.item_language.as_deref(),
+        multilingual,
+    );
+    let (prefix, suffix) = realized_component_affixes(&rendering, script, realization);
     let inner_prefix = rendering
         .wrap
         .as_ref()
@@ -175,15 +231,7 @@ pub fn render_component_with_format_and_renderer<F: OutputFormat<Output = String
         fmt.text(&component.value)
     };
 
-    // Order of application:
-    // 1. Text styles (emph, strong, etc.)
-    // 2. Links
-    // 3. Inner affixes
-    // 4. Wrap
-    // 5. Outer affixes
-    // 6. Semantic classes (last, to wrap everything)
-
-    // 1. Apply text styles
+    // Apply styles, links, inner affixes, wrap, outer affixes, then semantics.
     if rendering.emph == Some(true) {
         output = fmt.emph(output);
     }
@@ -207,12 +255,10 @@ pub fn render_component_with_format_and_renderer<F: OutputFormat<Output = String
         output = fmt.quote(output, &component.quote_marks);
     }
 
-    // 2. Apply links if URL is present
     if let Some(url) = &component.url {
         output = fmt.link(url, output);
     }
 
-    // 3. Inner affixes + extracted val prefix/suffix
     let total_inner_prefix = format!(
         "{}{}",
         inner_prefix,
@@ -228,47 +274,36 @@ pub fn render_component_with_format_and_renderer<F: OutputFormat<Output = String
         output = fmt.inner_affix(&total_inner_prefix, output, &total_inner_suffix);
     }
 
-    // 4. Wrap
     if let Some(wrap_config) = rendering.wrap.as_ref() {
-        let default_script = crate::values::realization_default_script_class(
-            component
-                .config
-                .as_ref()
-                .and_then(|cfg| cfg.multilingual.as_ref()),
-        );
-        let script =
-            crate::values::wrap_script_class(component.item_language.as_deref(), default_script);
         output = fmt.wrap_punctuation(
             &wrap_config.punctuation,
             output,
             &component.quote_marks,
             script,
+            realization,
         );
     }
 
-    // 5. Outer affixes
     if !prefix.is_empty() || !suffix.is_empty() {
-        output = fmt.affix(prefix, output, suffix);
+        output = super::format::apply_punctuation_affixes(
+            fmt,
+            rendering
+                .prefix
+                .as_ref()
+                .map(|punctuation| (punctuation, prefix.as_ref())),
+            output,
+            rendering
+                .suffix
+                .as_ref()
+                .map(|punctuation| (punctuation, suffix.as_ref())),
+        );
     }
 
-    // 6. Apply semantic class based on component type
-    if show_semantics && let Some(class) = resolve_semantic_class(component) {
-        let semantic_attributes = component
-            .template_index
-            .map(|index| {
-                vec![SemanticAttribute {
-                    name: "data-index",
-                    value: index.to_string(),
-                }]
-            })
-            .unwrap_or_default();
-        output = fmt.semantic_with_attributes(&class, output, &semantic_attributes);
-    }
+    output = apply_component_semantics(component, fmt, show_semantics, output);
 
-    // 7. Script-aware punctuation remap. Runs last so it also catches full-width
-    // delimiters introduced by literal `prefix`/`suffix`/`delimiter` YAML config
-    // (e.g. a bilingual GB/T-style `prefix: （ suffix: ）`), not just component
-    // value content.
+    // 7. Legacy literal-punctuation compatibility shim. Semantic punctuation
+    // realizes before this point; this late remap remains only for external
+    // bilingual styles authored with the original `punctuation: latin` option.
     if wants_latin_punctuation(component) {
         output = remap_to_latin_punctuation(output);
     }
@@ -276,12 +311,11 @@ pub fn render_component_with_format_and_renderer<F: OutputFormat<Output = String
     output
 }
 
-/// Whether this component should have its full-width CJK delimiters remapped to
-/// Latin punctuation, per `options.multilingual.scripts.latin.punctuation: latin`.
+/// Whether this component opts into the legacy literal-punctuation remap.
 ///
-/// Exposed crate-wide so citation-level assembly (`render::citation`), which
-/// applies its own `delimiter`/`prefix`/`suffix`/`wrap` outside this component's
-/// own rendering, can apply the same remap to that outer punctuation.
+/// New styles express punctuation with semantic marks. This fixed compatibility
+/// shim remains crate-wide because external literal-authored styles may place
+/// punctuation at component, citation-section, or citation-spec boundaries.
 pub(crate) fn wants_latin_punctuation(component: &ProcTemplateComponent) -> bool {
     let configured = component
         .config
@@ -295,11 +329,11 @@ pub(crate) fn wants_latin_punctuation(component: &ProcTemplateComponent) -> bool
     configured && crate::values::is_latin_script_language(component.item_language.as_deref())
 }
 
-/// Remap CJK full-width delimiters to their Latin half-width equivalents.
+/// Apply the legacy fixed CJK-to-Latin literal-punctuation remap.
 ///
 /// `：`(U+FF1A) → `: `, `，`(U+FF0C) → `, `, `（`(U+FF08) → `(`, `）`(U+FF09) → `)`,
-/// then any resulting doubled space is collapsed. Used for Latin-script items in
-/// otherwise-CJK-punctuated bilingual styles (e.g. GB/T 7714).
+/// then any resulting doubled space is collapsed. Do not extend this table;
+/// new punctuation behavior belongs in semantic realization.
 pub(crate) fn remap_to_latin_punctuation(text: String) -> String {
     if !text.contains(['：', '，', '（', '）']) {
         return text;

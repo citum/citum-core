@@ -72,7 +72,7 @@ bibliography:
       - number: volume
       - number: pages
         prefix: ':'
-      delimiter: none
+      delimiter: ''
     - variable: doi
       prefix: '. https://doi.org/'
       suffix: '.'
@@ -94,7 +94,7 @@ bibliography:
               - number: volume
               - number: pages
                 prefix: ':'
-            delimiter: none
+            delimiter: ''
           after:
             title: primary
     article-newspaper:
@@ -108,7 +108,7 @@ bibliography:
               - date: issued
                 form: year
                 prefix: ' '
-            delimiter: none
+            delimiter: ''
           after:
             title: primary
     book:
@@ -186,7 +186,7 @@ bibliography:
               - number: volume
               - number: pages
                 prefix: ':'
-            delimiter: none
+            delimiter: ''
           after:
             title: primary
     interview:

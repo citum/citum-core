@@ -406,9 +406,10 @@ pub enum ScriptClass {
 
 /// Resolve the effective script class from positive script evidence only.
 ///
-/// Returns `None` when the language tag carries no usable script evidence —
-/// the positive-evidence rule (`MULTILINGUAL.md` §3.2a). Callers realizing
-/// wrap punctuation should fall back to the style-declared default via
+/// Returns `None` when the language tag carries no usable evidence for either
+/// supported class, including known but unsupported scripts such as Cyrillic —
+/// the positive-evidence rule (`MULTILINGUAL.md` §3.2a). Callers realizing wrap
+/// punctuation should fall back to the style-declared default via
 /// [`wrap_script_class`] rather than treating `None` as a script itself.
 #[must_use]
 pub fn script_class(lang: Option<&str>) -> Option<ScriptClass> {
@@ -416,8 +417,8 @@ pub fn script_class(lang: Option<&str>) -> Option<ScriptClass> {
         Some("Hani" | "Hans" | "Hant" | "Jpan" | "Kore" | "Hang" | "Bopo") => {
             Some(ScriptClass::Cjk)
         }
-        Some(_) => Some(ScriptClass::Latin),
-        None => None,
+        Some("Latn") => Some(ScriptClass::Latin),
+        Some(_) | None => None,
     }
 }
 
@@ -458,6 +459,27 @@ pub fn realization_default_script_class(
         Some(citum_schema::options::RealizationDefault::Cjk) => ScriptClass::Cjk,
         _ => ScriptClass::Latin,
     }
+}
+
+/// Resolve the effective script class and style-owned realization overrides for
+/// one item.
+#[must_use]
+pub fn punctuation_realization_context<'a>(
+    lang: Option<&str>,
+    multilingual: Option<&'a citum_schema::options::MultilingualConfig>,
+) -> (
+    ScriptClass,
+    Option<&'a citum_schema::options::PunctuationRealization>,
+) {
+    let script = wrap_script_class(lang, realization_default_script_class(multilingual));
+    let key = match script {
+        ScriptClass::Latin => "latin",
+        ScriptClass::Cjk => "cjk",
+    };
+    let realization = multilingual
+        .and_then(|config| config.scripts.get(key))
+        .and_then(|script| script.realization.as_ref());
+    (script, realization)
 }
 
 /// Select a structured name from transliteration maps using priority-list then script-match rules.

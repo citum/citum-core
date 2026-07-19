@@ -59,7 +59,7 @@ options:
     range-delimiter: –
   titles: humanities
   punctuation-in-quote: true
-  volume-pages-delimiter: comma
+  volume-pages-delimiter: { mark: comma }
 citation:
   options:
     contributors:

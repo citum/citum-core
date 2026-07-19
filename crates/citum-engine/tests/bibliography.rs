@@ -833,7 +833,7 @@ fn build_status_bibliography_style() -> Style {
                 TemplateComponent::Variable(TemplateVariable {
                     variable: SimpleVariable::Status,
                     rendering: Rendering {
-                        prefix: Some(". ".to_string()),
+                        prefix: Some(". ".into()),
                         ..Default::default()
                     },
                     ..Default::default()
@@ -881,8 +881,8 @@ fn build_article_journal_no_page_fallback_style() -> Style {
                         TemplateComponent::Number(TemplateNumber {
                             number: NumberVariable::Issue,
                             rendering: Rendering {
-                                prefix: Some("(".to_string()),
-                                suffix: Some(")".to_string()),
+                                prefix: Some("(".into()),
+                                suffix: Some(")".into()),
                                 ..Default::default()
                             },
                             ..Default::default()
@@ -890,7 +890,7 @@ fn build_article_journal_no_page_fallback_style() -> Style {
                         TemplateComponent::Number(TemplateNumber {
                             number: NumberVariable::Pages,
                             rendering: Rendering {
-                                prefix: Some("pp. ".to_string()),
+                                prefix: Some("pp. ".into()),
                                 ..Default::default()
                             },
                             ..Default::default()
@@ -902,7 +902,7 @@ fn build_article_journal_no_page_fallback_style() -> Style {
                 TemplateComponent::Variable(TemplateVariable {
                     variable: SimpleVariable::Doi,
                     rendering: Rendering {
-                        prefix: Some("DOI:".to_string()),
+                        prefix: Some("DOI:".into()),
                         ..Default::default()
                     },
                     ..Default::default()
@@ -1071,7 +1071,7 @@ fn build_inline_article_journal_detail_group_style() -> Style {
                     contributor: citum_schema::template::ContributorRole::Author.into(),
                     form: citum_schema::template::ContributorForm::Long,
                     rendering: Rendering {
-                        suffix: Some(". ".to_string()),
+                        suffix: Some(". ".into()),
                         ..Default::default()
                     },
                     ..Default::default()
@@ -1080,7 +1080,7 @@ fn build_inline_article_journal_detail_group_style() -> Style {
                     title: TitleType::ParentSerial,
                     rendering: Rendering {
                         emph: Some(true),
-                        suffix: Some(". ".to_string()),
+                        suffix: Some(". ".into()),
                         ..Default::default()
                     },
                     ..Default::default()
@@ -1116,7 +1116,7 @@ fn build_inline_article_journal_detail_group_style() -> Style {
                         TemplateComponent::Number(TemplateNumber {
                             number: NumberVariable::Pages,
                             rendering: Rendering {
-                                prefix: Some("pp. ".to_string()),
+                                prefix: Some("pp. ".into()),
                                 ..Default::default()
                             },
                             ..Default::default()
@@ -1195,8 +1195,8 @@ fn variable_component(
     TemplateComponent::Variable(TemplateVariable {
         variable,
         rendering: Rendering {
-            prefix: prefix.map(str::to_string),
-            suffix: suffix.map(str::to_string),
+            prefix: prefix.map(Into::into),
+            suffix: suffix.map(Into::into),
             ..Default::default()
         },
         ..Default::default()
@@ -1644,7 +1644,7 @@ fn make_style_with_substitute(substitute: Option<String>) -> Style {
         bibliography: Some(BibliographySpec {
             options: Some(BibliographyOptions {
                 subsequent_author_substitute: substitute,
-                entry_suffix: Some(".".to_string()),
+                entry_suffix: Some(".".into()),
                 ..Default::default()
             }),
             template: Some(vec![
@@ -4094,8 +4094,8 @@ fn original_published_date_variable_renders_when_reference_has_original_date() {
                     date: DateVariable::OriginalPublished,
                     form: DateForm::Year,
                     rendering: Rendering {
-                        prefix: Some("(".to_string()),
-                        suffix: Some(") ".to_string()),
+                        prefix: Some("(".into()),
+                        suffix: Some(") ".into()),
                         ..Default::default()
                     },
                     ..Default::default()
@@ -4153,8 +4153,8 @@ fn original_published_date_variable_renders_for_patent_references() {
                     date: DateVariable::OriginalPublished,
                     form: DateForm::Year,
                     rendering: Rendering {
-                        prefix: Some("(".to_string()),
-                        suffix: Some(") ".to_string()),
+                        prefix: Some("(".into()),
+                        suffix: Some(") ".into()),
                         ..Default::default()
                     },
                     ..Default::default()
@@ -4469,7 +4469,7 @@ fn original_title_variable_renders_the_original_language_title() {
                     title: TitleType::Original,
                     form: Some(TitleForm::Long),
                     rendering: Rendering {
-                        prefix: Some(" / ".to_string()),
+                        prefix: Some(" / ".into()),
                         ..Default::default()
                     },
                     ..Default::default()

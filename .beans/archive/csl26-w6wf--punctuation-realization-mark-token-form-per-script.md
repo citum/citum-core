@@ -1,7 +1,7 @@
 ---
 # csl26-w6wf
 title: 'Punctuation realization: mark token form + per-script overrides'
-status: todo
+status: completed
 type: feature
 priority: normal
 tags:
@@ -9,7 +9,7 @@ tags:
     - punctuation
     - architecture
 created_at: 2026-07-19T16:29:49Z
-updated_at: 2026-07-19T16:29:59Z
+updated_at: 2026-07-19T17:18:20Z
 parent: csl26-0ugp
 ---
 
@@ -32,17 +32,22 @@ merged). Adds:
 
 ## Acceptance criteria (from spec)
 
-- [ ] `delimiter: { mark: comma }` renders `，` for CJK items and `, ` for
+- [x] `delimiter: { mark: comma }` renders `，` for CJK items and `, ` for
       Latin items; `delimiter: "comma"` renders the literal text "comma".
-- [ ] A per-script `realization` override replaces the engine default for
+- [x] A per-script `realization` override replaces the engine default for
       exactly the overridden marks.
-- [ ] Literal punctuation in `prefix`/`suffix`/`delimiter` is never rewritten
+- [x] Literal punctuation in `prefix`/`suffix`/`delimiter` is never rewritten
       by the realization layer.
-- [ ] Realization output passes through output-format escaping (HTML, LaTeX,
+- [x] Realization output passes through output-format escaping (HTML, LaTeX,
       Typst, plain, Djot) unchanged in meaning.
-- [ ] Generated schemas include the token form and per-script `realization`;
+- [x] Generated schemas include the token form and per-script `realization`;
       all new public Rust items documented.
 
 Spec: `docs/specs/PUNCTUATION_REALIZATION.md` §8 (increment 2).
 Prerequisite `ScriptClass`/`realize_wrap` infrastructure already landed in
 `crates/citum-engine/src/values/mod.rs` and `render/format.rs` via `csl26-k2kp`.
+
+
+## Summary
+
+Implemented explicit semantic punctuation mark tokens and per-script realization overrides across schema, rendering, citation/group assembly, and all output formats. Existing scalar style values remain literal; existing enum-like YAML spellings were migrated to explicit tokens or literals. Regenerated public schemas and validated with `just pre-commit` (2,073 tests passed).

@@ -40,7 +40,7 @@ pub fn apply_author_suffix(components: &mut [TemplateComponent], suffix: Option<
                 && c.contributor == ContributorRole::Author
             {
                 // Set or update the suffix
-                c.rendering.suffix = Some(suffix.clone());
+                c.rendering.suffix = Some(suffix.clone().into());
             }
         }
     }

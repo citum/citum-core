@@ -36,7 +36,7 @@ options:
   titles: journal-emphasis
 citation:
   template:
-  - delimiter: none
+  - delimiter: ""
     group:
     - number: citation-number
     - variable: locator

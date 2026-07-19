@@ -98,7 +98,7 @@ fn author_date_style() -> Style {
                 TemplateComponent::Title(TemplateTitle {
                     title: TitleType::Primary,
                     rendering: Rendering {
-                        prefix: Some(", ".to_string()),
+                        prefix: Some(", ".into()),
                         ..Default::default()
                     },
                     ..Default::default()
@@ -125,7 +125,7 @@ fn numeric_style() -> Style {
             number: NumberVariable::CitationNumber,
             rendering: Rendering {
                 wrap: Some(WrapPunctuation::Brackets.into()),
-                suffix: Some(" ".to_string()),
+                suffix: Some(" ".into()),
                 ..Default::default()
             },
             ..Default::default()
@@ -138,7 +138,7 @@ fn numeric_style() -> Style {
         TemplateComponent::Title(TemplateTitle {
             title: TitleType::Primary,
             rendering: Rendering {
-                prefix: Some(", ".to_string()),
+                prefix: Some(", ".into()),
                 ..Default::default()
             },
             ..Default::default()

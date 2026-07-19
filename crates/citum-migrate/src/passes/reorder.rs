@@ -185,7 +185,7 @@ pub fn reorder_publisher_place_for_chicago(
 
         // Add space suffix to prevent default period separator
         if let TemplateComponent::Group(ref mut list) = publisher_place_component {
-            list.rendering.suffix = Some(" ".to_string());
+            list.rendering.suffix = Some(" ".into());
         }
 
         // Insert it right after parent-serial
@@ -323,7 +323,7 @@ pub fn add_volume_prefix_after_serial(components: &mut [TemplateComponent]) {
         {
             // Add space prefix if not already present
             if num.rendering.prefix.is_none() {
-                num.rendering.prefix = Some(" ".to_string());
+                num.rendering.prefix = Some(" ".into());
             }
         }
     }

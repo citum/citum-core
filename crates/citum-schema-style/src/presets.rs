@@ -127,7 +127,7 @@ impl ContributorPreset {
             ContributorPreset::Apa => ContributorConfig {
                 display_as_sort: Some(DisplayAsSort::First),
                 and: Some(AndOptions::Symbol),
-                delimiter: Some(", ".to_string()),
+                delimiter: Some(", ".into()),
                 delimiter_precedes_last: Some(DelimiterPrecedesLast::Always),
                 initialize_with: Some(". ".to_string()),
                 name_form: Some(NameForm::Initials),
@@ -141,14 +141,14 @@ impl ContributorPreset {
             ContributorPreset::Chicago => ContributorConfig {
                 display_as_sort: Some(DisplayAsSort::First),
                 and: Some(AndOptions::Text),
-                delimiter: Some(", ".to_string()),
+                delimiter: Some(", ".into()),
                 delimiter_precedes_last: Some(DelimiterPrecedesLast::Contextual),
                 ..Default::default()
             },
             ContributorPreset::Vancouver => ContributorConfig {
                 display_as_sort: Some(DisplayAsSort::All),
                 and: Some(AndOptions::None),
-                delimiter: Some(", ".to_string()),
+                delimiter: Some(", ".into()),
                 initialize_with: Some("".to_string()),
                 name_form: Some(NameForm::Initials),
                 shorten: Some(ShortenListOptions {
@@ -161,7 +161,7 @@ impl ContributorPreset {
             ContributorPreset::Ieee => ContributorConfig {
                 display_as_sort: Some(DisplayAsSort::None),
                 and: Some(AndOptions::Text),
-                delimiter: Some(", ".to_string()),
+                delimiter: Some(", ".into()),
                 delimiter_precedes_last: Some(DelimiterPrecedesLast::Always),
                 initialize_with: Some(". ".to_string()),
                 name_form: Some(NameForm::Initials),
@@ -170,7 +170,7 @@ impl ContributorPreset {
             ContributorPreset::Harvard => ContributorConfig {
                 display_as_sort: Some(DisplayAsSort::All),
                 and: Some(AndOptions::Text),
-                delimiter: Some(", ".to_string()),
+                delimiter: Some(", ".into()),
                 delimiter_precedes_last: Some(DelimiterPrecedesLast::Always),
                 initialize_with: Some(".".to_string()),
                 name_form: Some(NameForm::Initials),
@@ -179,7 +179,7 @@ impl ContributorPreset {
             ContributorPreset::Springer => ContributorConfig {
                 display_as_sort: Some(DisplayAsSort::All),
                 and: Some(AndOptions::None),
-                delimiter: Some(", ".to_string()),
+                delimiter: Some(", ".into()),
                 delimiter_precedes_last: Some(DelimiterPrecedesLast::Always),
                 initialize_with: Some("".to_string()),
                 name_form: Some(NameForm::Initials),
@@ -202,7 +202,7 @@ impl ContributorPreset {
             ContributorPreset::NumericCompact => ContributorConfig {
                 display_as_sort: Some(DisplayAsSort::All),
                 and: Some(AndOptions::None),
-                delimiter: Some(", ".to_string()),
+                delimiter: Some(", ".into()),
                 delimiter_precedes_last: Some(DelimiterPrecedesLast::Always),
                 initialize_with: Some("".to_string()),
                 name_form: Some(NameForm::Initials),
@@ -218,7 +218,7 @@ impl ContributorPreset {
             ContributorPreset::NumericMedium => ContributorConfig {
                 display_as_sort: Some(DisplayAsSort::All),
                 and: Some(AndOptions::None),
-                delimiter: Some(", ".to_string()),
+                delimiter: Some(", ".into()),
                 delimiter_precedes_last: Some(DelimiterPrecedesLast::Always),
                 initialize_with: Some("".to_string()),
                 name_form: Some(NameForm::Initials),
@@ -234,7 +234,7 @@ impl ContributorPreset {
             ContributorPreset::NumericTight => ContributorConfig {
                 display_as_sort: Some(DisplayAsSort::All),
                 and: Some(AndOptions::None),
-                delimiter: Some(", ".to_string()),
+                delimiter: Some(", ".into()),
                 delimiter_precedes_last: Some(DelimiterPrecedesLast::Always),
                 initialize_with: Some("".to_string()),
                 name_form: Some(NameForm::Initials),
@@ -250,7 +250,7 @@ impl ContributorPreset {
             ContributorPreset::NumericLarge => ContributorConfig {
                 display_as_sort: Some(DisplayAsSort::All),
                 and: Some(AndOptions::None),
-                delimiter: Some(", ".to_string()),
+                delimiter: Some(", ".into()),
                 delimiter_precedes_last: Some(DelimiterPrecedesLast::Always),
                 initialize_with: Some("".to_string()),
                 name_form: Some(NameForm::Initials),
@@ -266,7 +266,7 @@ impl ContributorPreset {
             ContributorPreset::NumericAllAuthors => ContributorConfig {
                 display_as_sort: Some(DisplayAsSort::All),
                 and: Some(AndOptions::None),
-                delimiter: Some(", ".to_string()),
+                delimiter: Some(", ".into()),
                 delimiter_precedes_last: Some(DelimiterPrecedesLast::Always),
                 initialize_with: Some("".to_string()),
                 name_form: Some(NameForm::Initials),
@@ -277,7 +277,7 @@ impl ContributorPreset {
             ContributorPreset::NumericGivenDot => ContributorConfig {
                 display_as_sort: Some(DisplayAsSort::None),
                 and: Some(AndOptions::None),
-                delimiter: Some(", ".to_string()),
+                delimiter: Some(", ".into()),
                 delimiter_precedes_last: Some(DelimiterPrecedesLast::Always),
                 initialize_with: Some(".".to_string()),
                 name_form: Some(NameForm::Initials),
@@ -295,7 +295,7 @@ impl ContributorPreset {
             ContributorPreset::AnnualReviews => ContributorConfig {
                 display_as_sort: Some(DisplayAsSort::All),
                 and: Some(AndOptions::None),
-                delimiter: Some(", ".to_string()),
+                delimiter: Some(", ".into()),
                 delimiter_precedes_last: Some(DelimiterPrecedesLast::Never),
                 initialize_with: Some("".to_string()),
                 name_form: Some(NameForm::Initials),
@@ -311,7 +311,7 @@ impl ContributorPreset {
             ContributorPreset::MathPhys => ContributorConfig {
                 display_as_sort: Some(DisplayAsSort::All),
                 and: Some(AndOptions::None),
-                delimiter: Some(", ".to_string()),
+                delimiter: Some(", ".into()),
                 delimiter_precedes_last: Some(DelimiterPrecedesLast::Always),
                 initialize_with: Some(".".to_string()),
                 name_form: Some(NameForm::Initials),
@@ -322,7 +322,7 @@ impl ContributorPreset {
             ContributorPreset::SocSciFirst => ContributorConfig {
                 display_as_sort: Some(DisplayAsSort::First),
                 and: Some(AndOptions::None),
-                delimiter: Some(", ".to_string()),
+                delimiter: Some(", ".into()),
                 delimiter_precedes_last: Some(DelimiterPrecedesLast::Always),
                 initialize_with: Some(". ".to_string()),
                 name_form: Some(NameForm::Initials),
@@ -333,7 +333,7 @@ impl ContributorPreset {
             ContributorPreset::PhysicsNumeric => ContributorConfig {
                 display_as_sort: Some(DisplayAsSort::None),
                 and: Some(AndOptions::None),
-                delimiter: Some(", ".to_string()),
+                delimiter: Some(", ".into()),
                 initialize_with: Some(". ".to_string()),
                 name_form: Some(NameForm::Initials),
                 demote_non_dropping_particle: Some(DemoteNonDroppingParticle::SortOnly),

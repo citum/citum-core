@@ -70,8 +70,8 @@ divergences:
       not catch this — the fidelity gate's proxy is weaker than the real
       requirement (same failure class as the tier-0 alias negative result).
       Adjusted verification masks mismatches that are punctuation-only after
-      remapping full-width to Latin delimiters, for Latin-script items only.
-      See docs/specs/MULTILINGUAL.md §3.2a and csl26-fn9x.
+      applying the GB/T semantic Latin realization, for Latin-script items
+      only. See docs/specs/MULTILINGUAL.md §3.2a and csl26-5y6k.
 
 styles:
   numeric-comp:

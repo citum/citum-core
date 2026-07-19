@@ -226,7 +226,7 @@ fn build_ml_style(name_mode: MultilingualMode, preferred_script: Option<String>)
                 citum_schema::tc_contributor!(Author, Short),
                 citum_schema::tc_date!(Issued, Year),
             ]),
-            delimiter: Some(", ".to_string()),
+            delimiter: Some(", ".into()),
             ..Default::default()
         }),
         ..Default::default()
@@ -269,7 +269,7 @@ fn make_german_translator_role_style() -> Style {
                     date: citum_schema::template::DateVariable::Issued,
                     form: DateForm::Year,
                     rendering: Rendering {
-                        suffix: Some(". ".to_string()),
+                        suffix: Some(". ".into()),
                         ..Default::default()
                     },
                     ..Default::default()
@@ -278,7 +278,7 @@ fn make_german_translator_role_style() -> Style {
                     title: TitleType::Primary,
                     rendering: Rendering {
                         emph: Some(true),
-                        suffix: Some(". ".to_string()),
+                        suffix: Some(". ".into()),
                         ..Default::default()
                     },
                     ..Default::default()
@@ -1257,7 +1257,7 @@ fn given_apa_multilingual_title_mode_when_rendering_a_japanese_article_then_titl
                 citum_schema::template::TemplateComponent::Title(TemplateTitle {
                     title: TitleType::Primary,
                     rendering: Rendering {
-                        suffix: Some(". ".to_string()),
+                        suffix: Some(". ".into()),
                         ..Default::default()
                     },
                     ..Default::default()
@@ -1365,7 +1365,7 @@ fn chicago_pattern_renders_three_way_japanese_title() {
                 TemplateTitle {
                     title: TitleType::Primary,
                     rendering: Rendering {
-                        suffix: Some(". ".to_string()),
+                        suffix: Some(". ".into()),
                         ..Default::default()
                     },
                     ..Default::default()
@@ -1446,7 +1446,7 @@ fn mla_pattern_renders_original_and_translation_chinese_title() {
                 TemplateTitle {
                     title: TitleType::Primary,
                     rendering: Rendering {
-                        suffix: Some(". ".to_string()),
+                        suffix: Some(". ".into()),
                         ..Default::default()
                     },
                     ..Default::default()

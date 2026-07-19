@@ -272,7 +272,7 @@ fn test_taylor_and_francis_author_date_wrapper_preserves_prefixed_multi_cites() 
             },
             CitationItem {
                 id: "ITEM-3".to_string(),
-                prefix: Some("cf. ".to_string()),
+                prefix: Some("cf. ".into()),
                 locator: Some(CitationLocator::single(LocatorType::Page, "437")),
                 ..Default::default()
             },

@@ -60,7 +60,7 @@ bibliography:
       wrap:
         punctuation: brackets
       suffix: ""
-    - delimiter: comma
+    - delimiter: { mark: comma }
       group:
       - contributor: author
         form: long
@@ -68,7 +68,7 @@ bibliography:
       - message: pattern.in-container-colon
         args:
           container:
-            delimiter: comma
+            delimiter: { mark: comma }
             group:
             - title: parent-monograph
             - delimiter: " "
@@ -111,14 +111,14 @@ bibliography:
       wrap:
         punctuation: brackets
       suffix: ""
-    - delimiter: comma
+    - delimiter: { mark: comma }
       group:
       - contributor: author
         form: long
         name-form: initials
         initialize-with: "."
       - title: primary
-      - delimiter: comma
+      - delimiter: { mark: comma }
         group:
         - delimiter: ": "
           group:
@@ -174,12 +174,12 @@ bibliography:
       wrap:
         punctuation: brackets
       suffix: ""
-    - delimiter: comma
+    - delimiter: { mark: comma }
       group:
       - contributor: author
         form: long
       - title: primary
-      - delimiter: comma
+      - delimiter: { mark: comma }
         group:
         - delimiter: ": "
           group:
@@ -236,12 +236,12 @@ bibliography:
       wrap:
         punctuation: brackets
       suffix: ""
-    - delimiter: comma
+    - delimiter: { mark: comma }
       group:
       - contributor: author
         form: long
       - title: primary
-      - delimiter: comma
+      - delimiter: { mark: comma }
         group:
         - delimiter: ": "
           group:
@@ -298,7 +298,7 @@ bibliography:
       wrap:
         punctuation: brackets
       suffix: ""
-    - delimiter: comma
+    - delimiter: { mark: comma }
       group:
       - contributor: author
         form: long
@@ -306,7 +306,7 @@ bibliography:
       - message: pattern.in-container-colon
         args:
           container:
-            delimiter: comma
+            delimiter: { mark: comma }
             group:
             - title: parent-monograph
             - delimiter: " "
@@ -386,12 +386,12 @@ bibliography:
       wrap:
         punctuation: brackets
       suffix: ""
-    - delimiter: comma
+    - delimiter: { mark: comma }
       group:
       - contributor: author
         form: long
       - title: primary
-      - delimiter: comma
+      - delimiter: { mark: comma }
         group:
         - delimiter: ": "
           group:
@@ -543,12 +543,12 @@ bibliography:
       wrap:
         punctuation: brackets
       suffix: ""
-    - delimiter: comma
+    - delimiter: { mark: comma }
       group:
       - contributor: author
         form: long
       - title: primary
-      - delimiter: comma
+      - delimiter: { mark: comma }
         group:
         - delimiter: ": "
           group:
@@ -669,12 +669,12 @@ bibliography:
     wrap:
       punctuation: brackets
     suffix: ""
-  - delimiter: comma
+  - delimiter: { mark: comma }
     group:
     - contributor: author
       form: long
     - title: primary
-    - delimiter: comma
+    - delimiter: { mark: comma }
       group:
       - delimiter: ": "
         group:

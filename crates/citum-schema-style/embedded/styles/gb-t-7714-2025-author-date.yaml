@@ -106,7 +106,7 @@ bibliography:
     - number: issue
       wrap:
         punctuation: parentheses
-    delimiter: space
+    delimiter: ' '
   - contributor: author
     form: long
     and: none
@@ -126,7 +126,7 @@ bibliography:
   - number: number
   - group:
     - variable: medium
-    delimiter: slash
+    delimiter: '/'
     wrap:
       punctuation: brackets
   - number: pages
@@ -138,7 +138,7 @@ bibliography:
     form: long
   - group:
     - number: edition
-    delimiter: space
+    delimiter: ' '
   - identifier: cstr
     prefix: 'CSTR:'
   - variable: doi
@@ -152,7 +152,7 @@ bibliography:
       - number: issue
         wrap:
           punctuation: parentheses
-      delimiter: space
+      delimiter: ' '
     - contributor: author
       form: long
       shorten:
@@ -166,7 +166,7 @@ bibliography:
       form: year
       suppress: false
     - group: []
-      delimiter: hyphen
+      delimiter: '-'
       suppress: false
     - variable: archive-location
       suppress: true
@@ -189,7 +189,7 @@ bibliography:
       suppress: false
     - group:
       - variable: medium
-      delimiter: slash
+      delimiter: '/'
       wrap:
         punctuation: brackets
       suppress: false
@@ -212,7 +212,7 @@ bibliography:
       suppress: false
     - group:
       - number: edition
-      delimiter: space
+      delimiter: ' '
       suppress: false
     - identifier: cstr
       prefix: 'CSTR:'
@@ -236,7 +236,7 @@ bibliography:
       - number: issue
         wrap:
           punctuation: parentheses
-      delimiter: space
+      delimiter: ' '
     - contributor: author
       form: long
       shorten:
@@ -250,7 +250,7 @@ bibliography:
       form: year
       suppress: false
     - group: []
-      delimiter: hyphen
+      delimiter: '-'
       suppress: false
     - variable: archive-location
       suppress: true
@@ -273,7 +273,7 @@ bibliography:
       suppress: false
     - group:
       - variable: medium
-      delimiter: slash
+      delimiter: '/'
       wrap:
         punctuation: brackets
       suppress: false
@@ -296,7 +296,7 @@ bibliography:
       suppress: false
     - group:
       - number: edition
-      delimiter: space
+      delimiter: ' '
       suppress: false
     - identifier: cstr
       prefix: 'CSTR:'

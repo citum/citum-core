@@ -1016,7 +1016,7 @@ mod tests {
                         date: TemplateDateVariable::Issued,
                         form: DateForm::Year,
                         rendering: Rendering {
-                            prefix: Some(", ".to_string()),
+                            prefix: Some(", ".into()),
                             ..Default::default()
                         },
                         ..Default::default()

@@ -337,6 +337,7 @@ impl Processor {
             .as_ref()
             .and_then(|spec| spec.ibid.as_ref())
             .and_then(|ibid| ibid.suffix.clone())
+            .map(|suffix| suffix.to_string())
             .filter(|suffix| !suffix.trim().is_empty())
             .or_else(|| {
                 self.locale.resolved_general_term(

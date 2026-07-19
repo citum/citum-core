@@ -42,8 +42,8 @@ pub use locators::{
     LocatorPreset, TypeClass,
 };
 pub use multilingual::{
-    MultilingualConfig, MultilingualMode, MultilingualSegment, MultilingualView, PunctuationStyle,
-    RealizationDefault, ScriptConfig, SegmentWrap,
+    MultilingualConfig, MultilingualMode, MultilingualSegment, MultilingualView,
+    PunctuationRealization, PunctuationStyle, RealizationDefault, ScriptConfig, SegmentWrap,
 };
 pub use processing::{
     CitationSortPolicy, Disambiguation, GivennameRule, Group, LabelConfig, LabelParams,
@@ -1481,7 +1481,7 @@ punctuation:
         };
 
         let overrides = BibliographyOptions {
-            entry_suffix: Some(".".to_string()),
+            entry_suffix: Some(".".into()),
             separator: Some(", ".to_string()),
             suppress_period_after_url: true,
             ..Default::default()

@@ -135,7 +135,7 @@ citation:
         prefix: ", "
       render-when:
         field-present: title
-      delimiter: none
+      delimiter: ''
     - group:
       - title: parent-serial
       - variable: section

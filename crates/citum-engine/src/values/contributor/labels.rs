@@ -252,7 +252,25 @@ fn resolve_explicit_label<F: OutputFormat<Output = String>>(
         context.effective_rendering,
         context.options,
         context.fmt,
+        crate::values::effective_item_language(context.reference).as_deref(),
     )
+}
+
+pub(super) fn realize_label_affix(
+    affix: Option<&citum_schema::template::DelimiterPunctuation>,
+    fallback: &str,
+    options: &RenderOptions<'_>,
+    item_language: Option<&str>,
+    position: crate::render::format::PunctuationPosition,
+) -> String {
+    let Some(affix) = affix else {
+        return fallback.to_string();
+    };
+    let (script, realization) = crate::values::punctuation_realization_context(
+        item_language,
+        options.config.multilingual.as_ref(),
+    );
+    crate::render::format::realize_punctuation(affix, script, realization, position).into_owned()
 }
 
 /// Place an already-resolved term using an explicit role-label configuration.
@@ -262,6 +280,7 @@ pub(super) fn place_explicit_term<F: OutputFormat<Output = String>>(
     effective_rendering: &Rendering,
     options: &RenderOptions<'_>,
     fmt: &F,
+    item_language: Option<&str>,
 ) -> (Option<String>, Option<String>) {
     use citum_schema::template::LabelPlacement;
 
@@ -272,8 +291,20 @@ pub(super) fn place_explicit_term<F: OutputFormat<Output = String>>(
         (LabelPlacement::Prefix, _) => ("", " "),
         (LabelPlacement::Suffix, None) => (", ", ""),
     };
-    let before = label_config.prefix.as_deref().unwrap_or(default_before);
-    let after = label_config.suffix.as_deref().unwrap_or(default_after);
+    let before = realize_label_affix(
+        label_config.prefix.as_ref(),
+        default_before,
+        options,
+        item_language,
+        crate::render::format::PunctuationPosition::Prefix,
+    );
+    let after = realize_label_affix(
+        label_config.suffix.as_ref(),
+        default_after,
+        options,
+        item_language,
+        crate::render::format::PunctuationPosition::Suffix,
+    );
 
     match label_config.placement {
         LabelPlacement::Prefix => (
@@ -283,9 +314,9 @@ pub(super) fn place_explicit_term<F: OutputFormat<Output = String>>(
                     fmt,
                     effective_rendering,
                     options,
-                    before,
-                    after,
+                    (&before, &after),
                     label_config.wrap.as_deref(),
+                    item_language,
                 )
             }),
             None,
@@ -298,9 +329,9 @@ pub(super) fn place_explicit_term<F: OutputFormat<Output = String>>(
                     fmt,
                     effective_rendering,
                     options,
-                    before,
-                    after,
+                    (&before, &after),
                     label_config.wrap.as_deref(),
+                    item_language,
                 )
             }),
         ),
@@ -321,8 +352,8 @@ fn configured_structural_label<F: OutputFormat<Output = String>>(
             placement: presentation.placement.clone(),
             text_case: presentation.text_case,
             wrap: presentation.wrap.clone(),
-            prefix: presentation.prefix.clone(),
-            suffix: presentation.suffix.clone(),
+            prefix: presentation.prefix.clone().map(Into::into),
+            suffix: presentation.suffix.clone().map(Into::into),
         }
     };
 

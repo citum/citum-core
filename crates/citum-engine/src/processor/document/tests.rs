@@ -82,8 +82,8 @@ fn make_author_date_style() -> Style {
                     date: DateVariable::Issued,
                     form: DateForm::Year,
                     rendering: Rendering {
-                        prefix: Some(" (".to_string()),
-                        suffix: Some(")".to_string()),
+                        prefix: Some(" (".into()),
+                        suffix: Some(")".into()),
                         ..Default::default()
                     },
                     ..Default::default()
@@ -107,17 +107,17 @@ fn make_note_style() -> Style {
                 rendering: Rendering::default(),
                 ..Default::default()
             })]),
-            suffix: Some(".".to_string()),
+            suffix: Some(".".into()),
             subsequent: Some(Box::new(CitationSpec {
                 template: Some(vec![TemplateComponent::Title(TemplateTitle {
                     title: TitleType::Primary,
                     rendering: Rendering {
-                        prefix: Some("sub: ".to_string()),
+                        prefix: Some("sub: ".into()),
                         ..Default::default()
                     },
                     ..Default::default()
                 })]),
-                suffix: Some(".".to_string()),
+                suffix: Some(".".into()),
                 ..Default::default()
             })),
             ibid: Some(Box::new(CitationSpec {
@@ -129,7 +129,7 @@ fn make_note_style() -> Style {
                     rendering: Rendering::default(),
                     custom: None,
                 })]),
-                suffix: Some(".".to_string()),
+                suffix: Some(".".into()),
                 ..Default::default()
             })),
             ..Default::default()
@@ -144,7 +144,7 @@ fn make_note_style() -> Style {
                 TemplateComponent::Title(TemplateTitle {
                     title: TitleType::Primary,
                     rendering: Rendering {
-                        prefix: Some(". ".to_string()),
+                        prefix: Some(". ".into()),
                         ..Default::default()
                     },
                     ..Default::default()
@@ -214,8 +214,8 @@ fn make_integral_name_style(scope: IntegralNameScope, contexts: IntegralNameCont
                     date: DateVariable::Issued,
                     form: DateForm::Year,
                     rendering: Rendering {
-                        prefix: Some(" (".to_string()),
-                        suffix: Some(")".to_string()),
+                        prefix: Some(" (".into()),
+                        suffix: Some(")".into()),
                         ..Default::default()
                     },
                     ..Default::default()
@@ -517,7 +517,7 @@ fn test_repro_djot_rendering() {
                     ..Default::default()
                 }),
             ]),
-            delimiter: Some(", ".to_string()),
+            delimiter: Some(", ".into()),
             wrap: Some(WrapPunctuation::Parentheses.into()),
             integral: Some(Box::new(citum_schema::CitationSpec {
                 template: Some(vec![
@@ -541,7 +541,7 @@ fn test_repro_djot_rendering() {
                         custom: None,
                     }),
                 ]),
-                delimiter: Some(" ".to_string()),
+                delimiter: Some(" ".into()),
                 ..Default::default()
             })),
             ..Default::default()

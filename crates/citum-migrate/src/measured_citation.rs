@@ -649,7 +649,7 @@ fn add_compact_locator_delimiter_candidate(
     if let Some(citation) = style.citation.as_mut()
         && citation.delimiter.as_deref() != Some("")
     {
-        citation.delimiter = Some(String::new());
+        citation.delimiter = Some(String::new().into());
         changed = true;
     }
     if changed {

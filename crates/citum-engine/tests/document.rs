@@ -112,7 +112,7 @@ fn given_simple_author_date_document_when_rendered_as_html_then_a_bibliography_h
         citation: None,
         bibliography: Some(BibliographySpec {
             options: Some(BibliographyOptions {
-                entry_suffix: Some(".".to_string()),
+                entry_suffix: Some(".".into()),
                 ..Default::default()
             }),
             template: Some(vec![
@@ -184,7 +184,7 @@ fn given_simple_author_date_document_when_rendered_as_djot_then_html_tags_are_no
         citation: None,
         bibliography: Some(BibliographySpec {
             options: Some(BibliographyOptions {
-                entry_suffix: Some(".".to_string()),
+                entry_suffix: Some(".".into()),
                 ..Default::default()
             }),
             template: Some(vec![
@@ -682,7 +682,7 @@ fn given_locale_specific_ibid_term_when_the_style_has_no_ibid_override_then_the_
  {
     let mut style = load_style("styles/embedded/chicago-notes-18th.yaml").into_resolved();
     if let Some(citation) = style.citation.as_mut() {
-        citation.suffix = Some(".".to_string());
+        citation.suffix = Some(".".into());
         citation.ibid = None;
     }
 
@@ -718,7 +718,7 @@ fn given_explicit_style_ibid_suffix_when_locale_also_defines_ibid_then_the_style
     if let Some(citation) = style.citation.as_mut()
         && let Some(ibid) = citation.ibid.as_mut()
     {
-        ibid.suffix = Some("IBIDX".to_string());
+        ibid.suffix = Some("IBIDX".into());
     }
 
     let mut locale = Locale::en_us();
@@ -1736,7 +1736,7 @@ fn given_a_large_library_and_a_small_cited_subset_when_rendering_a_flat_document
         citation: None,
         bibliography: Some(BibliographySpec {
             options: Some(BibliographyOptions {
-                entry_suffix: Some(".".to_string()),
+                entry_suffix: Some(".".into()),
                 ..Default::default()
             }),
             template: Some(vec![
@@ -1817,7 +1817,7 @@ fn given_an_uncited_reference_between_two_same_author_cited_entries_when_renderi
         citation: None,
         bibliography: Some(BibliographySpec {
             options: Some(BibliographyOptions {
-                entry_suffix: Some(".".to_string()),
+                entry_suffix: Some(".".into()),
                 subsequent_author_substitute: Some("———".to_string()),
                 ..Default::default()
             }),
@@ -1886,7 +1886,7 @@ fn given_sort_partitioned_sections_and_subsequent_author_substitution_when_rende
         citation: None,
         bibliography: Some(BibliographySpec {
             options: Some(BibliographyOptions {
-                entry_suffix: Some(".".to_string()),
+                entry_suffix: Some(".".into()),
                 subsequent_author_substitute: Some("———".to_string()),
                 sort_partitioning: Some(BibliographySortPartitioning {
                     by: BibliographyPartitionKind::Language,
@@ -1973,7 +1973,7 @@ fn given_groups_enabled_false_with_groups_still_configured_when_rendering_a_docu
         citation: None,
         bibliography: Some(BibliographySpec {
             options: Some(BibliographyOptions {
-                entry_suffix: Some(".".to_string()),
+                entry_suffix: Some(".".into()),
                 ..Default::default()
             }),
             groups_enabled: false,

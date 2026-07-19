@@ -58,7 +58,7 @@ bibliography:
         use-first: 3
     - title: primary
     - title: parent-serial
-    - delimiter: none
+    - delimiter: ""
       group:
       - date: issued
         form: year

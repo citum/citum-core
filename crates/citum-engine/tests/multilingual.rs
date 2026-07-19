@@ -481,3 +481,205 @@ fn realization_default_cjk_wraps_untagged_item_full_width() {
 
     assert_eq!(rendered, "（Unknown）");
 }
+
+fn render_realization_group(style_yaml: &str, language: &str) -> String {
+    let style: Style =
+        serde_yaml::from_str(style_yaml).expect("punctuation realization style should parse");
+    let bibliography = IndexMap::from([(
+        "book".to_string(),
+        punctuation_test_book("book", "测试", language, "Left", "Right"),
+    )]);
+
+    Processor::new(style, bibliography).render_bibliography()
+}
+
+#[test]
+fn semantic_comma_uses_script_default_but_literal_comma_name_is_untouched() {
+    announce_behavior(
+        "A { mark: comma } separator follows the effective item script while the scalar \
+         text `comma` remains literal — csl26-w6wf.",
+    );
+    let semantic_style = r#"
+info: { id: semantic-comma, title: Semantic Comma }
+options:
+  multilingual:
+    realization-default: cjk
+bibliography:
+  template:
+    - group:
+        - variable: publisher-place
+        - variable: publisher
+      delimiter: { mark: comma }
+"#;
+    let literal_style = r#"
+info: { id: literal-comma, title: Literal Comma }
+options:
+  multilingual:
+    realization-default: cjk
+bibliography:
+  template:
+    - group:
+        - variable: publisher-place
+        - variable: publisher
+      delimiter: comma
+"#;
+
+    assert_eq!(
+        render_realization_group(semantic_style, "zh"),
+        "Left，Right"
+    );
+    assert_eq!(
+        render_realization_group(semantic_style, "en"),
+        "Left, Right"
+    );
+    assert_eq!(
+        render_realization_group(literal_style, "zh"),
+        "LeftcommaRight"
+    );
+}
+
+#[test]
+fn per_script_realization_override_wins_and_unset_marks_use_defaults() {
+    announce_behavior(
+        "Per-script realization overrides replace only named marks; other semantic marks \
+         continue to use the engine defaults — csl26-w6wf.",
+    );
+    let style = r#"
+info: { id: cjk-realization-override, title: CJK Realization Override }
+options:
+  multilingual:
+    realization-default: cjk
+    scripts:
+      cjk:
+        realization:
+          comma: "、"
+bibliography:
+  template:
+    - group:
+        - variable: publisher-place
+        - variable: publisher
+      delimiter: { mark: comma }
+      suffix: { mark: period }
+"#;
+
+    assert_eq!(render_realization_group(style, "zh"), "Left、Right。");
+}
+
+#[test]
+fn literal_affixes_and_delimiters_are_not_realized_for_cjk_items() {
+    announce_behavior(
+        "Literal prefix, suffix, and delimiter strings retain their authored glyphs even \
+         when the style opts into CJK realization — csl26-w6wf.",
+    );
+    let style = r#"
+info: { id: literal-realization-boundary, title: Literal Realization Boundary }
+options:
+  multilingual:
+    realization-default: cjk
+bibliography:
+  template:
+    - group:
+        - variable: publisher-place
+        - variable: publisher
+      delimiter: ", "
+      prefix: "("
+      suffix: ")"
+"#;
+
+    assert_eq!(render_realization_group(style, "zh"), "(Left, Right)");
+}
+
+fn render_contributor_delimiter(style_yaml: &str, language: &str) -> String {
+    let style: Style =
+        serde_yaml::from_str(style_yaml).expect("contributor realization style should parse");
+    let fixture = serde_json::json!({
+        "id": "book",
+        "type": "book",
+        "title": "测试",
+        "language": language,
+        "author": [
+            { "family": "Alpha", "given": "A" },
+            { "family": "Beta", "given": "B" }
+        ],
+        "editor": [
+            { "family": "Alpha", "given": "A" },
+            { "family": "Beta", "given": "B" }
+        ]
+    });
+    let reference: csl_legacy::csl_json::Reference =
+        serde_json::from_value(fixture).expect("contributor fixture should parse");
+    let bibliography = IndexMap::from([("book".to_string(), reference.into())]);
+
+    Processor::new(style, bibliography).render_bibliography()
+}
+
+#[test]
+fn semantic_contributor_delimiter_realizes_by_script_while_scalar_stays_literal() {
+    announce_behavior(
+        "Contributor-list delimiters use the same explicit mark contract as template \
+         delimiters, including literal scalar preservation — csl26-w6wf.",
+    );
+    let semantic_style = r#"
+info: { id: semantic-contributor-comma, title: Semantic Contributor Comma }
+options:
+  multilingual:
+    realization-default: cjk
+  contributors:
+    delimiter: { mark: comma }
+bibliography:
+  template:
+    - contributor: editor
+      form: family-only
+"#;
+    let literal_style = r#"
+info: { id: literal-contributor-comma, title: Literal Contributor Comma }
+options:
+  multilingual:
+    realization-default: cjk
+  contributors:
+    delimiter: comma
+bibliography:
+  template:
+    - contributor: author
+      form: family-only
+"#;
+    let component_style = r#"
+info: { id: semantic-component-punctuation, title: Semantic Component Punctuation }
+options:
+  multilingual:
+    realization-default: cjk
+  contributors:
+    delimiter: " | "
+bibliography:
+  template:
+    - contributor: editor
+      form: family-only
+      delimiter: { mark: semicolon }
+      label:
+        term: editor
+        form: long
+        placement: suffix
+        prefix: { mark: colon }
+"#;
+
+    assert_eq!(
+        render_contributor_delimiter(semantic_style, "zh"),
+        "Alpha，Beta"
+    );
+    assert_eq!(
+        render_contributor_delimiter(semantic_style, "en"),
+        "Alpha, Beta"
+    );
+    assert_eq!(
+        render_contributor_delimiter(literal_style, "zh"),
+        "AlphacommaBeta"
+    );
+    assert_eq!(
+        render_contributor_delimiter(component_style, "zh"),
+        "Alpha；Beta：editors"
+    );
+    assert_eq!(
+        render_contributor_delimiter(component_style, "en"),
+        "Alpha; Beta: editors"
+    );
+}

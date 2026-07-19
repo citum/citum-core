@@ -348,7 +348,8 @@ fn extract_from_names(names: &Names) -> Option<ContributorConfig> {
                 has_config = true;
             }
             if let Some(delim) = &n.delimiter {
-                config.delimiter = Some(delim.clone());
+                config.delimiter =
+                    Some(citum_schema::template::DelimiterPunctuation::from_csl_string(delim));
                 has_config = true;
             }
             if let Some(sep) = &n.sort_separator {

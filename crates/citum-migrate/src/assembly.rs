@@ -328,10 +328,15 @@ fn build_final_style(legacy_style: &csl_legacy::model::Style, mut c: CompiledOut
             locales: c.citation_locales,
             collapse: extract_citation_collapse(&legacy_style.citation),
             wrap: c.citation_wrap.map(Into::into),
-            prefix: c.citation_prefix,
-            suffix: c.citation_suffix,
-            delimiter: c.citation_delimiter,
-            multi_cite_delimiter: legacy_style.citation.layout.delimiter.clone(),
+            prefix: c.citation_prefix.map(Into::into),
+            suffix: c.citation_suffix.map(Into::into),
+            delimiter: c.citation_delimiter.map(Into::into),
+            multi_cite_delimiter: legacy_style
+                .citation
+                .layout
+                .delimiter
+                .clone()
+                .map(Into::into),
             subsequent,
             ibid,
             ..Default::default()
@@ -697,7 +702,7 @@ mod tests {
     fn bibliography_candidate_preserves_current_citation_section() {
         let current = Style {
             citation: Some(CitationSpec {
-                delimiter: Some(String::new()),
+                delimiter: Some(String::new().into()),
                 ..CitationSpec::default()
             }),
             bibliography: Some(BibliographySpec {
@@ -711,7 +716,7 @@ mod tests {
         };
         let bibliography_source = Style {
             citation: Some(CitationSpec {
-                delimiter: Some(", ".to_string()),
+                delimiter: Some(", ".into()),
                 ..CitationSpec::default()
             }),
             bibliography: Some(BibliographySpec {

@@ -47,7 +47,7 @@ citation:
       punctuation: parentheses
     delimiter: ", "
     template:
-    - delimiter: space
+    - delimiter: " "
       group:
       - contributor: author
         form: short
@@ -96,10 +96,10 @@ bibliography:
       suffix: "."
       wrap:
         punctuation: quotes
-    - delimiter: space
+    - delimiter: " "
       suffix: "."
       group:
-      - delimiter: space
+      - delimiter: " "
         group:
         - message: pattern.in-container
           args:
@@ -119,11 +119,11 @@ bibliography:
           - number: issue
             wrap:
               punctuation: parentheses
-          delimiter: space
+          delimiter: ' '
         - number: pages
           prefix: ": "
-        delimiter: none
-    - delimiter: period
+        delimiter: ''
+    - delimiter: { mark: period }
       suffix: "."
       group:
       - variable: publisher-place
@@ -140,10 +140,10 @@ bibliography:
       suffix: "."
       wrap:
         punctuation: quotes
-    - delimiter: space
+    - delimiter: " "
       suffix: "."
       group:
-      - delimiter: space
+      - delimiter: " "
         group:
         - message: pattern.in-container
           args:
@@ -158,8 +158,8 @@ bibliography:
         form: long
         emph: true
       - group: *id002
-        delimiter: none
-    - delimiter: period
+        delimiter: ''
+    - delimiter: { mark: period }
       suffix: "."
       group:
       - variable: publisher-place
@@ -174,10 +174,10 @@ bibliography:
     fallback: *id001
   - title: primary
     suffix: "."
-  - delimiter: space
+  - delimiter: " "
     suffix: "."
     group:
-    - delimiter: space
+    - delimiter: " "
       group:
       - message: pattern.in-container
         args:
@@ -191,9 +191,9 @@ bibliography:
     - title: parent-serial
       form: long
       emph: true
-    - delimiter: none
+    - delimiter: ""
       group:
-      - delimiter: space
+      - delimiter: " "
         group:
         - number: volume
         - number: issue
@@ -201,7 +201,7 @@ bibliography:
             punctuation: parentheses
       - number: pages
         prefix: ": "
-  - delimiter: period
+  - delimiter: { mark: period }
     suffix: "."
     group:
     - variable: publisher-place

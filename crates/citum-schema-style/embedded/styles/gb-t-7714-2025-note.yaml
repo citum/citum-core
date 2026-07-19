@@ -55,7 +55,7 @@ citation:
     suppress: true
   - group:
     - variable: medium
-    delimiter: slash
+    delimiter: '/'
     wrap:
       punctuation: brackets
   - contributor: translator
@@ -81,7 +81,7 @@ citation:
     suppress: true
   - group:
     - number: edition
-    delimiter: space
+    delimiter: ' '
   - variable: publisher
   - variable: publisher-place
   - variable: archive
@@ -111,7 +111,7 @@ citation:
       suppress: true
     - group:
       - variable: medium
-      delimiter: slash
+      delimiter: '/'
       wrap:
         punctuation: brackets
       suppress: false
@@ -143,7 +143,7 @@ citation:
       suppress: true
     - group:
       - number: edition
-      delimiter: space
+      delimiter: ' '
       suppress: false
     - variable: publisher
       suppress: false
@@ -177,7 +177,7 @@ citation:
       suppress: true
     - group:
       - variable: medium
-      delimiter: slash
+      delimiter: '/'
       wrap:
         punctuation: brackets
       suppress: false
@@ -209,7 +209,7 @@ citation:
       suppress: true
     - group:
       - number: edition
-      delimiter: space
+      delimiter: ' '
       suppress: false
     - variable: publisher
       suppress: false

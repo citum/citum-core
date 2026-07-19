@@ -91,7 +91,7 @@ bibliography:
     - variable: publisher-place
     - date: issued
       form: year
-    delimiter: comma
+    delimiter: { mark: comma }
     suppress: true
   - group:
     - group:
@@ -101,10 +101,10 @@ bibliography:
         - variable: publisher
         - date: issued
           form: year
-        delimiter: space
-      delimiter: comma
+        delimiter: ' '
+      delimiter: { mark: comma }
     - number: pages
-    delimiter: comma
+    delimiter: { mark: comma }
     suffix: .
     suppress: true
   - message: pattern.in-container-colon
@@ -134,9 +134,9 @@ bibliography:
               - variable: publisher-place
               - date: issued
                 form: year
-              delimiter: comma
+              delimiter: { mark: comma }
             - number: pages
-            delimiter: comma
+            delimiter: { mark: comma }
             suffix: .
             suppress: true
           - number: volume
@@ -158,12 +158,12 @@ bibliography:
     - group:
       - title: parent-serial
       - number: volume
-      delimiter: space
+      delimiter: ' '
       emph: true
     - date: issued
       form: year
     - number: pages
-    delimiter: comma
+    delimiter: { mark: comma }
     suffix: .
     suppress: false
   - variable: url
@@ -255,7 +255,7 @@ bibliography:
               - variable: publisher-place
               - date: issued
                 form: year
-              delimiter: comma
+              delimiter: { mark: comma }
           delimiter: " "
     - number: pages
       label-form: short

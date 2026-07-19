@@ -1,7 +1,7 @@
 # Punctuation Realization Layer Specification
 
-**Status:** Active (increment 1 implemented; increments 2–3 remain Draft)
-**Version:** 1.2
+**Status:** Active (increments 1–3 implemented)
+**Version:** 1.4
 **Date:** 2026-07-19
 **Related:** [`MULTILINGUAL.md`](./MULTILINGUAL.md) §3.2a,
 [`PUNCTUATION_NORMALIZATION.md`](./PUNCTUATION_NORMALIZATION.md),
@@ -129,8 +129,8 @@ Notes:
 
 ### 3. Style schema: the token form
 
-`delimiter`, `prefix`, and `suffix` accept either a literal string (today's
-behavior, unchanged) or an explicit mark reference:
+Template `delimiter`, `prefix`, and `suffix` fields accept either a literal
+string (today's behavior, unchanged) or an explicit mark reference:
 
 ```yaml
 # GB/T 7714 issue-number component, today (literal, CJK-only):
@@ -152,6 +152,11 @@ that literal strings can never be misread as tokens (`delimiter: comma`
 stays the literal text "comma"). This follows the explicit-over-magic
 principle; a shorthand can be considered later without breaking the
 mapping form.
+
+Style-wide and per-component contributor-list `delimiter` fields use the same
+literal-or-mark form, as do explicit role-label `prefix` and `suffix` fields.
+Their semantic marks realize from the item script because the punctuation is
+part of the rendered contributor phrase rather than a style-wide convention.
 
 `wrap` already *is* the token form — `parentheses`/`brackets` simply gain
 script-aware realization, with no schema change. Styles that need a
@@ -198,10 +203,10 @@ future extension.
 
 ### 5. Effective script and the realization default
 
-The script selector is the effective item script from the unified ISO
-15924 resolver (`csl26-30ga`): explicit BCP 47 script subtag first, then
-primary-language lookup. Until that bean lands, the existing boolean
-`is_latin_script_language` serves as an interim two-class adapter.
+The script selector uses the unified ISO 15924 resolver (`csl26-30ga`):
+explicit BCP 47 script subtag first, then CLDR likely-subtags expansion.
+Version 1 recognizes positive `Latn` and CJK-family evidence only; known but
+unsupported scripts such as Cyrillic do not collapse into the Latin class.
 
 **The positive-evidence rule is preserved, with a style-declared default —
 and per-item evidence only overrides that default once the style has opted
@@ -218,6 +223,8 @@ options:
   full-width — byte-identical to today's literal-authored output and to
   citeproc-js. A positively-Latin-script item in the same style realizes
   half-width, overriding the default.
+- A known but unsupported script (Cyrillic, Arabic, and so on) retains the
+  declared default until that script gains its own realization class.
 - For every style that does not set `realization-default` (every existing
   style today), wrap punctuation realizes Latin half-width
   **unconditionally** — byte-identical to today's `wrap: parentheses`
@@ -291,7 +298,7 @@ carry marks as the normalization phase is extracted.
 3. **Increment 3.** Migrate embedded bilingual styles (GB/T 7714 first)
    from literal full-width punctuation to semantic marks +
    `realization-default: cjk`; demote the remap to shim status in docs and
-   `MULTILINGUAL.md` §3.2a.
+   `MULTILINGUAL.md` §3.2a. Implemented for the GB/T family.
 4. **Future.** Locale-supplied realization (after per-item locale
    loading); additional script classes (`cyrillic`, `arabic`) with their
    own evidence rules; per-segment realization in mixed-script compound
@@ -320,32 +327,42 @@ Non-normative pointers:
 
 ## Acceptance Criteria
 
-- [ ] `wrap: parentheses` and `wrap: brackets` render full-width for
+- [x] `wrap: parentheses` and `wrap: brackets` render full-width for
   CJK-script items and half-width for Latin-script items in one bilingual
   style that sets `realization-default: cjk` (increment 1).
-- [ ] Byte-for-byte parity for all existing styles that set neither
+- [x] Byte-for-byte parity for all existing styles that set neither
   `realization-default` nor a `realization` override, including untagged
   *and* CJK-script items — item language never overrides an unset (Latin)
   default, so romanized citations of non-Latin sources (Chicago's
   "romanized + original-script [translation]" mode) are unaffected.
-- [ ] `realization-default: cjk` makes untagged items realize full-width;
+- [x] `realization-default: cjk` makes untagged items realize full-width;
   positive Latin evidence still realizes half-width in the same style.
-- [ ] `delimiter: { mark: comma }` renders `，` for CJK items and `, ` for
+- [x] `delimiter: { mark: comma }` renders `，` for CJK items and `, ` for
   Latin items; `delimiter: "comma"` renders the literal text "comma".
-- [ ] A per-script `realization` override replaces the engine default for
+- [x] A per-script `realization` override replaces the engine default for
   exactly the overridden marks.
-- [ ] Literal punctuation in `prefix`/`suffix`/`delimiter` is never
+- [x] Literal punctuation in `prefix`/`suffix`/`delimiter` is never
   rewritten by the realization layer.
-- [ ] Realization output passes through output-format escaping (HTML,
+- [x] Realization output passes through output-format escaping (HTML,
   LaTeX, Typst, plain, Djot) unchanged in meaning.
-- [ ] The GB/T embedded style migrated to semantic marks matches its
+- [x] The GB/T embedded style migrated to semantic marks matches its
   standard-derived expectations, with citeproc-js divergences registered
   where the standard and the oracle disagree (increment 3).
-- [ ] Generated schemas include the token form, `realization-default`, and
+- [x] Generated schemas include the token form, `realization-default`, and
   per-script `realization`; all new public Rust items are documented.
 
 ## Changelog
 
+- v1.4 (2026-07-19): Implemented increment 3 by migrating the embedded GB/T
+  7714 family to semantic marks, declaring a CJK realization default with the
+  standard's ASCII bracket override, retaining registered citeproc-js
+  divergences, and documenting the literal remap as a compatibility shim.
+- v1.3 (2026-07-19): Implemented increment 2: explicit semantic mark tokens
+  for template delimiters and affixes plus contributor-list delimiters and
+  role-label affixes, Latin/CJK engine defaults, per-script style overrides,
+  output-format escaping, and regenerated public schemas. Existing scalar
+  YAML values remain literal and existing styles were made explicit where
+  they relied on the former enum-like scalar spellings.
 - v1.2 (2026-07-19): Increment 1 implementation revision. Per-item script
   evidence overrides the realization default only in styles that set
   `realization-default: cjk`; styles that have not opted in realize Latin

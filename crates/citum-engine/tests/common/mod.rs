@@ -398,7 +398,7 @@ pub fn build_author_date_style(
                 },
             )),
             template: Some(citation_template),
-            multi_cite_delimiter: Some("; ".to_string()),
+            multi_cite_delimiter: Some("; ".into()),
             ..Default::default()
         }),
         ..Default::default()

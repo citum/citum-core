@@ -43,7 +43,7 @@ options:
   dates: long
   titles: humanities
   punctuation-in-quote: true
-  volume-pages-delimiter: colon
+  volume-pages-delimiter: { mark: colon }
 citation:
   options:
     contributors:
@@ -51,7 +51,7 @@ citation:
         min: 3
         use-first: 1
   template:
-  - delimiter: space
+  - delimiter: " "
     group:
     - contributor: author
       form: short

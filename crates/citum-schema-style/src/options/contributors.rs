@@ -56,13 +56,13 @@ pub struct ContributorConfig {
     /// Shorten the list of contributors (et al. handling).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub shorten: Option<ShortenListOptions>,
-    /// The delimiter between contributors. Defaults to `", "` if not specified.
+    /// The delimiter between contributors. Defaults to the semantic `comma` mark.
     /// `None` means "not configured at this level" and will not override an inherited value.
     #[serde(
         default = "default_contributor_delimiter",
         skip_serializing_if = "is_default_contributor_delimiter"
     )]
-    pub delimiter: Option<String>,
+    pub delimiter: Option<crate::template::DelimiterPunctuation>,
     /// Conjunction between last two contributors.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub and: Option<AndOptions>,
@@ -546,8 +546,8 @@ impl RoleRendering {
             emph: self.emph,
             strong: self.strong,
             small_caps: self.small_caps,
-            prefix: self.prefix.clone(),
-            suffix: self.suffix.clone(),
+            prefix: self.prefix.clone().map(Into::into),
+            suffix: self.suffix.clone().map(Into::into),
             ..Default::default()
         }
     }
@@ -617,12 +617,14 @@ pub enum AndOtherOptions {
     Text,
 }
 
-fn default_contributor_delimiter() -> Option<String> {
-    Some(", ".to_string())
+fn default_contributor_delimiter() -> Option<crate::template::DelimiterPunctuation> {
+    Some(crate::template::DelimiterPunctuation::Comma)
 }
 
-fn is_default_contributor_delimiter(v: &Option<String>) -> bool {
-    v.as_deref() == Some(", ")
+fn is_default_contributor_delimiter(value: &Option<crate::template::DelimiterPunctuation>) -> bool {
+    value
+        .as_ref()
+        .is_some_and(|delimiter| delimiter.as_default_str() == ", ")
 }
 
 /// Deserialize role options from either a preset name or explicit config.

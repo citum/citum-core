@@ -17,8 +17,8 @@ const DIV_008_ID = 'div-008';
 const DIV_009_ID = 'div-009';
 const DIV_010_ID = 'div-010';
 
-// Mirrors the fixed 4-character table in `render::component::remap_to_latin_punctuation`
-// (crates/citum-engine/src/render/component.rs) and docs/specs/MULTILINGUAL.md §3.2a.
+// Models the GB/T punctuation-only citeproc divergence after semantic
+// realization; see docs/specs/MULTILINGUAL.md §3.2a.
 const FULL_WIDTH_TO_LATIN_PUNCTUATION = [
   [/：/g, ': '],
   [/，/g, ', '],
@@ -65,9 +65,8 @@ function isMeaningfulLanguagePrimary(primary) {
 }
 
 /**
- * Map CJK full-width delimiters to their Latin half-width equivalents, then
- * collapse any resulting doubled space. Mirrors
- * `render::component::remap_to_latin_punctuation` in the Rust engine.
+ * Map citeproc's hardcoded CJK delimiters to the Latin strings produced by
+ * GB/T semantic realization, then collapse any resulting doubled space.
  */
 function mapFullWidthToLatinPunctuation(text) {
   let mapped = String(text || '');
@@ -387,7 +386,7 @@ function explainCitationMismatchFromDiv005(citationEntry, citationFixture, testI
  * (：，（）) for every item, including Latin-script references, where GB/T
  * practice is Latin half-width punctuation. citeproc-js reproduces the same
  * hardcoded full-width punctuation, so byte-parity does not catch this —
- * see docs/specs/MULTILINGUAL.md §3.2a and csl26-fn9x. Masks a mismatch only
+ * see docs/specs/MULTILINGUAL.md §3.2a and csl26-5y6k. Masks a mismatch only
  * when the item(s) are Latin-script and the delta is punctuation-only.
  */
 function explainCitationMismatchFromDiv010(citationEntry, citationFixture, testItems, divergenceRule) {

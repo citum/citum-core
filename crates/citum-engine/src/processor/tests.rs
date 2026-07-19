@@ -88,7 +88,7 @@ fn make_style() -> Style {
                     title: TitleType::Primary,
                     form: None,
                     rendering: Rendering {
-                        prefix: Some(". ".to_string()),
+                        prefix: Some(". ".into()),
                         emph: Some(true),
                         ..Default::default()
                     },
@@ -329,7 +329,7 @@ fn make_grouped_compound_selection_style() -> Style {
                     form: None,
                     rendering: Rendering {
                         wrap: Some(WrapPunctuation::Brackets.into()),
-                        suffix: Some(" ".to_string()),
+                        suffix: Some(" ".into()),
                         ..Default::default()
                     },
                     ..Default::default()
@@ -347,7 +347,7 @@ fn make_grouped_compound_selection_style() -> Style {
                     title: TitleType::Primary,
                     form: None,
                     rendering: Rendering {
-                        prefix: Some(". ".to_string()),
+                        prefix: Some(". ".into()),
                         ..Default::default()
                     },
                     ..Default::default()
@@ -435,11 +435,11 @@ fn render_integral_multi_cite(
 ) -> String {
     let mut style = make_style();
     let mut base_citation = style.citation.take().unwrap_or_default();
-    base_citation.multi_cite_delimiter = base_multi_cite_delimiter.map(str::to_string);
+    base_citation.multi_cite_delimiter = base_multi_cite_delimiter.map(Into::into);
 
     if integral_multi_cite_delimiter.is_some() {
         base_citation.integral = Some(Box::new(CitationSpec {
-            multi_cite_delimiter: integral_multi_cite_delimiter.map(str::to_string),
+            multi_cite_delimiter: integral_multi_cite_delimiter.map(Into::into),
             ..Default::default()
         }));
     }
@@ -682,7 +682,7 @@ fn test_process_citation_treats_trimmed_none_delimiter_as_empty() {
             }),
         ]),
         wrap: Some(WrapPunctuation::Parentheses.into()),
-        delimiter: Some(" none ".to_string()),
+        delimiter: Some(DelimiterPunctuation::from_csl_string(" none ")),
         ..Default::default()
     });
 
@@ -728,7 +728,7 @@ fn test_citation_locator_label_renders_term() {
             }),
         ]),
         wrap: Some(WrapPunctuation::Parentheses.into()),
-        delimiter: Some(", ".to_string()),
+        delimiter: Some(", ".into()),
         ..Default::default()
     });
 
@@ -779,7 +779,7 @@ fn test_citation_locator_label_renders_term_with_loaded_locale() {
             }),
         ]),
         wrap: Some(WrapPunctuation::Parentheses.into()),
-        delimiter: Some(", ".to_string()),
+        delimiter: Some(", ".into()),
         ..Default::default()
     });
 
@@ -833,7 +833,7 @@ fn test_citation_locator_can_suppress_label() {
             }),
         ]),
         wrap: Some(WrapPunctuation::Parentheses.into()),
-        delimiter: Some(", ".to_string()),
+        delimiter: Some(", ".into()),
         ..Default::default()
     });
 
@@ -894,7 +894,7 @@ fn test_citation_locator_can_strip_label_periods() {
             }),
         ]),
         wrap: Some(WrapPunctuation::Parentheses.into()),
-        delimiter: Some(", ".to_string()),
+        delimiter: Some(", ".into()),
         ..Default::default()
     });
 
@@ -1623,7 +1623,7 @@ fn test_apa_titles_config() {
             }),
             container_monograph: Some(TitleRendering {
                 emph: Some(true),
-                prefix: Some("In ".to_string()),
+                prefix: Some("In ".into()),
                 ..Default::default()
             }),
             ..Default::default()
@@ -2486,7 +2486,7 @@ fn test_numeric_citation_number_collapse_enabled() {
             },
         )]),
         wrap: Some(WrapPunctuation::Brackets.into()),
-        multi_cite_delimiter: Some(",".to_string()),
+        multi_cite_delimiter: Some(",".into()),
         collapse: Some(citum_schema::CitationCollapse::CitationNumber),
         ..Default::default()
     });
@@ -2545,7 +2545,7 @@ fn test_numeric_citation_number_collapse_skips_affixed_items() {
             },
         )]),
         wrap: Some(WrapPunctuation::Brackets.into()),
-        multi_cite_delimiter: Some(",".to_string()),
+        multi_cite_delimiter: Some(",".into()),
         collapse: Some(citum_schema::CitationCollapse::CitationNumber),
         ..Default::default()
     });
@@ -2567,7 +2567,7 @@ fn test_numeric_citation_number_collapse_skips_affixed_items() {
             },
             crate::reference::CitationItem {
                 id: "book-2".to_string(),
-                suffix: Some("n. 12".to_string()),
+                suffix: Some("n. 12".into()),
                 ..Default::default()
             },
             crate::reference::CitationItem {
@@ -2886,9 +2886,9 @@ fn test_same_author_integral_multi_cite_collapses_to_grouped_years() {
     let mut style = make_style();
     let mut base_citation = style.citation.take().unwrap_or_default();
     // Simulate APA: base spec has multi_cite_delimiter "; " but integral sub-spec does not.
-    base_citation.multi_cite_delimiter = Some("; ".to_string());
+    base_citation.multi_cite_delimiter = Some("; ".into());
     base_citation.integral = Some(Box::new(CitationSpec {
-        delimiter: Some(" ".to_string()),
+        delimiter: Some(" ".into()),
         template: Some(vec![
             TemplateComponent::Contributor(TemplateContributor {
                 contributor: ContributorRole::Author.into(),
@@ -2904,7 +2904,7 @@ fn test_same_author_integral_multi_cite_collapses_to_grouped_years() {
                     ..Default::default()
                 })],
                 rendering: Rendering {
-                    prefix: Some(", ".to_string()),
+                    prefix: Some(", ".into()),
                     wrap: Some(WrapPunctuation::Parentheses.into()),
                     ..Default::default()
                 },
@@ -2972,14 +2972,14 @@ fn test_same_author_non_integral_multi_cite_collapses_to_grouped_years() {
                 date: TDateVar::Issued,
                 form: DateForm::Year,
                 rendering: Rendering {
-                    prefix: Some(", ".to_string()),
+                    prefix: Some(", ".into()),
                     ..Default::default()
                 },
                 ..Default::default()
             }),
         ]),
         wrap: Some(WrapPunctuation::Parentheses.into()),
-        multi_cite_delimiter: Some("; ".to_string()),
+        multi_cite_delimiter: Some("; ".into()),
         ..Default::default()
     });
 
@@ -3029,9 +3029,9 @@ fn test_same_author_non_integral_multi_cite_collapses_to_grouped_years() {
 fn test_same_author_integral_multi_cite_respects_bracket_wrap() {
     let mut style = make_style();
     let mut base_citation = style.citation.take().unwrap_or_default();
-    base_citation.multi_cite_delimiter = Some("; ".to_string());
+    base_citation.multi_cite_delimiter = Some("; ".into());
     base_citation.integral = Some(Box::new(CitationSpec {
-        delimiter: Some(" ".to_string()),
+        delimiter: Some(" ".into()),
         template: Some(vec![
             TemplateComponent::Contributor(TemplateContributor {
                 contributor: ContributorRole::Author.into(),
@@ -3047,7 +3047,7 @@ fn test_same_author_integral_multi_cite_respects_bracket_wrap() {
                     ..Default::default()
                 })],
                 rendering: Rendering {
-                    prefix: Some(", ".to_string()),
+                    prefix: Some(", ".into()),
                     wrap: Some(WrapPunctuation::Brackets.into()),
                     ..Default::default()
                 },
@@ -3112,7 +3112,7 @@ fn test_integral_locator_does_not_duplicate_group_delimiter() {
                 date: TDateVar::Issued,
                 form: DateForm::Year,
                 rendering: Rendering {
-                    prefix: Some(", ".to_string()),
+                    prefix: Some(", ".into()),
                     ..Default::default()
                 },
                 ..Default::default()
@@ -3120,7 +3120,7 @@ fn test_integral_locator_does_not_duplicate_group_delimiter() {
             TemplateComponent::Variable(TemplateVariable {
                 variable: SimpleVariable::Locator,
                 rendering: Rendering {
-                    prefix: Some(", ".to_string()),
+                    prefix: Some(", ".into()),
                     ..Default::default()
                 },
                 ..Default::default()
@@ -3309,7 +3309,7 @@ fn test_grouped_numeric_bibliography_rerender_preserves_numbers_and_substitution
             form: None,
             rendering: Rendering {
                 wrap: Some(WrapPunctuation::Brackets.into()),
-                suffix: Some(" ".to_string()),
+                suffix: Some(" ".into()),
                 ..Default::default()
             },
             ..Default::default()
@@ -5210,8 +5210,8 @@ fn test_compound_numeric_citation_subentry_collapse_disabled() {
                 number: NumberVariable::CitationNumber,
                 ..Default::default()
             })]),
-            delimiter: Some(",".to_string()),
-            multi_cite_delimiter: Some(",".to_string()),
+            delimiter: Some(",".into()),
+            multi_cite_delimiter: Some(",".into()),
             ..Default::default()
         }),
         options: Some(Config {
@@ -5294,8 +5294,8 @@ fn test_compound_numeric_citation_subentry_collapse_enabled() {
                 number: NumberVariable::CitationNumber,
                 ..Default::default()
             })]),
-            delimiter: Some(",".to_string()),
-            multi_cite_delimiter: Some(",".to_string()),
+            delimiter: Some(",".into()),
+            multi_cite_delimiter: Some(",".into()),
             ..Default::default()
         }),
         options: Some(Config {
@@ -5609,7 +5609,7 @@ fn test_grouped_integral_citation_preserves_later_item_prefixes() {
             },
             CitationItem {
                 id: "kuhn1970".to_string(),
-                prefix: Some("see".to_string()),
+                prefix: Some("see".into()),
                 ..Default::default()
             },
         ],
@@ -5696,8 +5696,8 @@ fn make_compound_numeric_style_for_dynamic() -> Style {
                 number: NumberVariable::CitationNumber,
                 ..Default::default()
             })]),
-            delimiter: Some(",".to_string()),
-            multi_cite_delimiter: Some(",".to_string()),
+            delimiter: Some(",".into()),
+            multi_cite_delimiter: Some(",".into()),
             ..Default::default()
         }),
         options: Some(Config {
