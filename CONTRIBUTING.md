@@ -200,6 +200,24 @@ Follow [Conventional Commits](https://www.conventionalcommits.org/) format:
 - **References**: Include issue references (e.g., `Refs: csl26-xxxx` or `Refs: #123`)
 - **No Co-Authored-By**: Do not include co-author footers
 
+### Versioning Signals
+
+The release workflow (`cargo-release`) infers version bumps from your
+commit prefix — do not bump `[workspace.package].version` manually:
+
+| Prefix | Impact |
+|---|---|
+| `feat!:` / `fix!:` | Major (capped at Minor pre-1.0) |
+| `feat:` | Minor |
+| `fix:` / `perf:` | Patch |
+| `chore:` / `docs:` | None |
+
+Citum is pre-1.0: a breaking change (`feat!:`/`fix!:`) still only bumps the
+minor version, per [semver's pre-1.0 convention](https://semver.org/#spec-item-4).
+Mark breaking changes with `!` regardless — it's the signal that
+distinguishes an intentional break from routine work, both for readers and
+for the changelog `cargo-release` generates.
+
 Enable the repository commit hook to enforce this automatically:
 ```bash
 git config core.hooksPath .githooks

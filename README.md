@@ -51,7 +51,12 @@ References (JSON / YAML / BibLaTeX / RIS)
 
 ## Status
 
-Citum is in active development. The schema, engine, and CLI are the stable core; PDF output and some language bindings are experimental.
+Citum is pre-1.0 (`0.x`) and under active development. **Expect breaking
+changes** to the data model, style schema, and public Rust API before a 1.0
+release — see [Commit Conventions](./CONTRIBUTING.md#versioning-signals)
+for how they're signaled (`feat!`/`fix!:`, capped at a minor-version bump
+pre-1.0). The schema, engine, and CLI are the most exercised paths; PDF
+output and some language bindings are experimental.
 
 For live metrics — do not rely on any hardcoded numbers in this file:
 
