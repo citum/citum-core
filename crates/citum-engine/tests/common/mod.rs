@@ -26,7 +26,7 @@ use citum_schema::{
     citation::{Citation, CitationItem, CitationMode},
     options::GivennameRule,
     reference::{
-        Contributor, ContributorList, EdtfString, InputReference as Reference, Monograph,
+        Contributor, ContributorList, DateValue, InputReference as Reference, Monograph,
         MonographType, MultilingualString, Serial, SerialComponent, SerialComponentType,
         SerialType, StructuredName, Title, WorkRelation,
     },
@@ -64,7 +64,7 @@ pub fn make_book_multi_author(
         r#type: MonographType::Book,
         title: Some(Title::Single(title.to_string())),
         author: Some(Contributor::ContributorList(ContributorList(author_list))),
-        issued: EdtfString(year.to_string()),
+        issued: DateValue::new(year.to_string()),
         ..Default::default()
     }))
 }
@@ -99,7 +99,7 @@ pub fn make_article_multi_author(
         r#type: SerialComponentType::Article,
         title: Some(Title::Single(title.to_string())),
         author: Some(Contributor::ContributorList(ContributorList(author_list))),
-        issued: EdtfString(year.to_string()),
+        issued: DateValue::new(year.to_string()),
         container: Some(WorkRelation::Embedded(Box::new(Reference::Serial(
             Box::new(Serial {
                 r#type: SerialType::AcademicJournal,
@@ -154,7 +154,7 @@ pub fn make_multilingual_book(params: MultilingualBookParams) -> Reference {
             transliterations,
             translations: HashMap::new(),
         })),
-        issued: EdtfString(params.year.to_string()),
+        issued: DateValue::new(params.year.to_string()),
         ..Default::default()
     }))
 }

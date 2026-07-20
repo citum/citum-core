@@ -9,23 +9,50 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use std::fmt;
 
-/// An EDTF string.
-#[derive(Debug, Deserialize, Serialize, Clone, Default, PartialEq)]
-#[cfg_attr(feature = "schema", derive(JsonSchema))]
+/// An EDTF date value, with an optional opaque note.
+///
+/// `value` is the canonical EDTF string driving all date computation
+/// (sorting, disambiguation, fallback selection). `note` is optional,
+/// uninterpreted display text a data producer supplies alongside the date —
+/// e.g. source-calendar wording such as `民国三十六年` next to a Gregorian
+/// `value` of `"1947"`. Citum never parses, converts, or validates `note`;
+/// see [`docs/specs/CALENDAR_DATE_ANNOTATIONS.md`](../../../../docs/specs/CALENDAR_DATE_ANNOTATIONS.md).
+///
+/// The wire format is backward compatible: a bare EDTF string (`"1947"`)
+/// deserializes with `note: None` and serializes back to the same bare
+/// string. Supplying a `note` requires the mapping form
+/// `{ value: "1947", note: "..." }`, and only then does serialization emit
+/// the mapping form.
+#[derive(Debug, Clone, Default, PartialEq)]
 #[cfg_attr(feature = "bindings", derive(specta::Type))]
-pub struct EdtfString(pub String);
+pub struct DateValue {
+    /// The EDTF value.
+    pub value: String,
+    /// Optional opaque, uninterpreted text alongside the date. Preserved
+    /// verbatim; never parsed, converted, or validated.
+    #[cfg_attr(feature = "bindings", specta(optional))]
+    pub note: Option<String>,
+}
 
-impl EdtfString {
-    /// Check if the EdtfString is empty.
+impl DateValue {
+    /// Construct a `DateValue` with no note, from any string-like value.
+    pub fn new(value: impl Into<String>) -> Self {
+        Self {
+            value: value.into(),
+            note: None,
+        }
+    }
+
+    /// Check if the date value is empty.
     pub fn is_empty(&self) -> bool {
-        self.0.is_empty()
+        self.value.is_empty()
     }
 
     /// Parse the string as an EDTF date etc, or return the string as a literal.
     pub fn parse(&self) -> RefDate {
-        match self.0.parse::<citum_edtf::Edtf>() {
+        match self.value.parse::<citum_edtf::Edtf>() {
             Ok(edtf) => RefDate::Edtf(edtf),
-            Err(_) => RefDate::Literal(self.0.clone()),
+            Err(_) => RefDate::Literal(self.value.clone()),
         }
     }
 
@@ -47,12 +74,12 @@ impl EdtfString {
 
     /// Check if the date is uncertain (has "?" qualifier).
     pub fn is_uncertain(&self) -> bool {
-        self.0.contains('?')
+        self.value.contains('?')
     }
 
     /// Check if the date is approximate (has "~" qualifier).
     pub fn is_approximate(&self) -> bool {
-        self.0.contains('~')
+        self.value.contains('~')
     }
 
     /// Check if the date is a range (interval).
@@ -79,8 +106,166 @@ impl EdtfString {
     }
 }
 
-impl fmt::Display for EdtfString {
+impl fmt::Display for DateValue {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.0)
+        write!(f, "{}", self.value)
+    }
+}
+
+impl From<String> for DateValue {
+    fn from(value: String) -> Self {
+        Self::new(value)
+    }
+}
+
+impl From<&str> for DateValue {
+    fn from(value: &str) -> Self {
+        Self::new(value)
+    }
+}
+
+/// Wire representation used only to deserialize [`DateValue`]: either a bare
+/// EDTF string, or the explicit `{ value, note }` mapping. Unknown mapping
+/// keys are rejected.
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct DateValueStructured {
+    value: String,
+    #[serde(default)]
+    note: Option<String>,
+}
+
+#[derive(Deserialize)]
+#[serde(untagged)]
+enum DateValueRepr {
+    Scalar(String),
+    Structured(DateValueStructured),
+}
+
+impl<'de> Deserialize<'de> for DateValue {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        Ok(match DateValueRepr::deserialize(deserializer)? {
+            DateValueRepr::Scalar(value) => DateValue { value, note: None },
+            DateValueRepr::Structured(DateValueStructured { value, note }) => {
+                DateValue { value, note }
+            }
+        })
+    }
+}
+
+impl Serialize for DateValue {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        match &self.note {
+            None => serializer.serialize_str(&self.value),
+            Some(note) => {
+                use serde::ser::SerializeMap;
+                let mut map = serializer.serialize_map(Some(2))?;
+                map.serialize_entry("value", &self.value)?;
+                map.serialize_entry("note", note)?;
+                map.end()
+            }
+        }
+    }
+}
+
+#[cfg(feature = "schema")]
+impl JsonSchema for DateValue {
+    fn schema_name() -> std::borrow::Cow<'static, str> {
+        "DateValue".into()
+    }
+
+    fn json_schema(generator: &mut schemars::SchemaGenerator) -> schemars::Schema {
+        let scalar_schema = generator.subschema_for::<String>();
+        let structured_schema = schemars::json_schema!({
+            "type": "object",
+            "properties": {
+                "value": generator.subschema_for::<String>(),
+                "note": generator.subschema_for::<Option<String>>()
+            },
+            "required": ["value"],
+            "additionalProperties": false
+        });
+        schemars::json_schema!({
+            "oneOf": [scalar_schema, structured_schema]
+        })
+    }
+}
+
+#[cfg(test)]
+#[allow(clippy::unwrap_used, reason = "Panicking is acceptable in tests.")]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn scalar_input_round_trips_byte_identically() {
+        let json = r#""1947""#;
+        let date: DateValue = serde_json::from_str(json).unwrap();
+        assert_eq!(date, DateValue::new("1947"));
+        assert_eq!(serde_json::to_string(&date).unwrap(), json);
+    }
+
+    #[test]
+    fn mapping_form_parses_value_and_note() {
+        let json = r#"{"value":"1947","note":"民国三十六年"}"#;
+        let date: DateValue = serde_json::from_str(json).unwrap();
+        assert_eq!(date.value, "1947");
+        assert_eq!(date.note.as_deref(), Some("民国三十六年"));
+    }
+
+    #[test]
+    fn mapping_form_without_note_defaults_to_none() {
+        let json = r#"{"value":"1947"}"#;
+        let date: DateValue = serde_json::from_str(json).unwrap();
+        assert_eq!(date, DateValue::new("1947"));
+    }
+
+    #[test]
+    fn mapping_form_rejects_unknown_fields() {
+        let json = r#"{"value":"1947","note":"民国三十六年","calendar":"minguo"}"#;
+        let err = serde_json::from_str::<DateValue>(json).unwrap_err();
+        assert!(
+            err.to_string()
+                .contains("did not match any variant of untagged enum")
+        );
+    }
+
+    #[test]
+    fn mapping_form_requires_value() {
+        let json = r#"{"note":"民国三十六年"}"#;
+        assert!(serde_json::from_str::<DateValue>(json).is_err());
+    }
+
+    #[test]
+    fn note_present_serializes_as_mapping_not_scalar() {
+        let date = DateValue {
+            value: "1947".to_string(),
+            note: Some("民国三十六年".to_string()),
+        };
+        let json = serde_json::to_string(&date).unwrap();
+        assert_eq!(json, r#"{"value":"1947","note":"民国三十六年"}"#);
+
+        let round_tripped: DateValue = serde_json::from_str(&json).unwrap();
+        assert_eq!(round_tripped, date);
+    }
+
+    #[test]
+    fn note_is_ignored_by_value_oriented_accessors() {
+        // The note must never influence anything computed off the date's
+        // canonical value: sorting, disambiguation, and fallback selection
+        // all read `value`, never `note`. See CALENDAR_DATE_ANNOTATIONS.md.
+        let annotated = DateValue {
+            value: "1947".to_string(),
+            note: Some("民国三十六年".to_string()),
+        };
+        let plain = DateValue::new("1947");
+        assert_eq!(annotated.value, plain.value);
+        assert_eq!(annotated.year(), plain.year());
+        assert_eq!(annotated.is_empty(), plain.is_empty());
     }
 }

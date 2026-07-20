@@ -1059,7 +1059,7 @@ mod tests {
     };
     use citum_schema::reference::types::MultilingualComplex;
     use citum_schema::reference::{
-        Contributor, EdtfString, InputReference as Reference, Monograph, MonographType,
+        Contributor, DateValue, InputReference as Reference, Monograph, MonographType,
         MultilingualString, StructuredName, Title,
     };
     use citum_schema::template::{TemplateComponent, WrapPunctuation};
@@ -1082,7 +1082,7 @@ mod tests {
             })),
             editor: None,
             translator: None,
-            issued: EdtfString(year.to_string()),
+            issued: DateValue::new(year.to_string()),
             ..Default::default()
         }))
     }
@@ -1104,7 +1104,7 @@ mod tests {
             })),
             editor: None,
             translator: None,
-            issued: EdtfString(year.to_string()),
+            issued: DateValue::new(year.to_string()),
             ..Default::default()
         }))
     }
@@ -1135,7 +1135,7 @@ mod tests {
             )),
             editor: None,
             translator: None,
-            issued: EdtfString(year.to_string()),
+            issued: DateValue::new(year.to_string()),
             ..Default::default()
         }))
     }
@@ -1749,7 +1749,7 @@ mod tests {
                 transliterations,
                 translations: HashMap::new(),
             })),
-            issued: EdtfString(year.to_string()),
+            issued: DateValue::new(year.to_string()),
             ..Default::default()
         }))
     }
@@ -1884,7 +1884,7 @@ mod tests {
                 })),
                 editor: None,
                 translator: None,
-                issued: EdtfString("2020".to_string()),
+                issued: DateValue::new("2020".to_string()),
                 ..Default::default()
             }))
         };

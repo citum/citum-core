@@ -79,7 +79,7 @@ pub use self::contributor::{
     Contributor, ContributorEntry, ContributorGender, ContributorList, ContributorRole, FlatName,
     SimpleName, StructuredName,
 };
-pub use self::date::EdtfString;
+pub use self::date::DateValue;
 pub(crate) use self::input::EMPTY_FIELD_LANGUAGES;
 pub use self::input::{IdentifierName, InputReference, SupplementaryIdentifiers, UnknownClassData};
 pub use self::types::common::{

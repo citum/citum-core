@@ -13,7 +13,7 @@ use url::Url;
 
 use super::classes::class_dispatch;
 use super::contributor::{Contributor, ContributorEntry, ContributorList, ContributorRole};
-use super::date::EdtfString;
+use super::date::DateValue;
 use super::types::common::{
     FieldLanguageMap, HasNumbering, LangID, MultilingualString, NumOrStr, NumberingType, Publisher,
     RefID, RichText, Title,
@@ -565,12 +565,12 @@ impl InputReference {
         }
     }
 
-    fn non_empty_date(date: EdtfString) -> Option<EdtfString> {
+    fn non_empty_date(date: DateValue) -> Option<DateValue> {
         if date.is_empty() { None } else { Some(date) }
     }
 
     /// Return the creation or origination date.
-    pub fn created(&self) -> Option<EdtfString> {
+    pub fn created(&self) -> Option<DateValue> {
         match &self.extension {
             ClassExtension::Monograph(r) => Self::non_empty_date(r.created.clone()),
             ClassExtension::CollectionComponent(r) => Self::non_empty_date(r.created.clone()),
@@ -595,7 +595,7 @@ impl InputReference {
     }
 
     /// Return the explicit publication or release date.
-    pub fn issued(&self) -> Option<EdtfString> {
+    pub fn issued(&self) -> Option<DateValue> {
         match &self.extension {
             ClassExtension::Monograph(r) => Self::non_empty_date(r.issued.clone()),
             ClassExtension::CollectionComponent(r) => Self::non_empty_date(r.issued.clone()),
@@ -621,13 +621,13 @@ impl InputReference {
 
     /// Return the effective issued date, falling back to the created date when
     /// no explicit issued date is present.
-    pub fn effective_issued_date(&self) -> Option<EdtfString> {
+    pub fn effective_issued_date(&self) -> Option<DateValue> {
         self.issued().or_else(|| self.created())
     }
 
     /// Return the copyright year, a publication-year substitute used when
     /// the true issue date is unknown (GB/T 7714 §7.5.4.3's `c1988`).
-    pub fn copyright(&self) -> Option<EdtfString> {
+    pub fn copyright(&self) -> Option<DateValue> {
         match &self.extension {
             ClassExtension::Monograph(r) => r.copyright.clone().and_then(Self::non_empty_date),
             _ => None,
@@ -636,7 +636,7 @@ impl InputReference {
 
     /// Return the printing/impression year, another publication-year
     /// substitute (GB/T 7714 §7.5.4.3's `1995印刷`).
-    pub fn printing(&self) -> Option<EdtfString> {
+    pub fn printing(&self) -> Option<DateValue> {
         match &self.extension {
             ClassExtension::Monograph(r) => r.printing.clone().and_then(Self::non_empty_date),
             _ => None,
@@ -1374,7 +1374,7 @@ impl InputReference {
     }
 
     /// Return the accessed date.
-    pub fn accessed(&self) -> Option<EdtfString> {
+    pub fn accessed(&self) -> Option<DateValue> {
         class_dispatch!(&self.extension, |r| r.accessed.clone(), unknown(_) => None)
     }
 
@@ -1420,7 +1420,7 @@ impl InputReference {
     }
 
     /// Return the original publication date.
-    pub fn original_date(&self) -> Option<EdtfString> {
+    pub fn original_date(&self) -> Option<DateValue> {
         self.original_embedded()?.effective_issued_date()
     }
 

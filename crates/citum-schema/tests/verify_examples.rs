@@ -47,7 +47,7 @@ fn test_verify_comprehensive_examples() {
                     let orig_date = reference
                         .original_date()
                         .expect("Should have original date");
-                    assert_eq!(orig_date.0, "1975");
+                    assert_eq!(orig_date.value, "1975");
                 }
             }
             tracing::debug!("Successfully verified {} references", refs.len());

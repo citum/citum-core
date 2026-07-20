@@ -18,7 +18,7 @@ use citum_schema::options::{
     AndOptions, BibliographyOptions, Config, ContributorConfig, Processing,
 };
 use citum_schema::reference::{
-    Contributor, EdtfString, Monograph, MonographType, MultilingualString, StructuredName, Title,
+    Contributor, DateValue, Monograph, MonographType, MultilingualString, StructuredName, Title,
 };
 use citum_schema::template::{
     ContributorForm, ContributorRole, NumberVariable, Rendering, TemplateComponent,
@@ -39,7 +39,7 @@ fn make_ref(id: &str, family: &str, given: &str, year: i32) -> Reference {
             dropping_particle: None,
             non_dropping_particle: None,
         })),
-        issued: EdtfString(year.to_string()),
+        issued: DateValue::new(year.to_string()),
         ..Default::default()
     }))
 }

@@ -26,7 +26,7 @@ use common::*;
 
 use citum_engine::Processor;
 use citum_schema::reference::{
-    Contributor, ContributorEntry, ContributorRole, EdtfString, InputReference, Monograph,
+    Contributor, ContributorEntry, ContributorRole, DateValue, InputReference, Monograph,
     MonographType, Publisher, StructuredName, Title,
 };
 use indexmap::IndexMap;
@@ -54,7 +54,7 @@ fn test_apa_interview_fidelity_regression() {
             }),
             gender: None,
         }],
-        issued: EdtfString("1975".to_string()),
+        issued: DateValue::new("1975".to_string()),
         publisher: Some(Publisher {
             name: "Schocken Books".into(),
             place: None,

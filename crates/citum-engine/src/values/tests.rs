@@ -11,7 +11,7 @@ use citum_schema::options::contributors::NameForm;
 use citum_schema::options::*;
 use citum_schema::reference::{
     ClassExtension, Collection, CollectionComponent, CollectionType, Contributor, ContributorEntry,
-    ContributorGender, EdtfString, FlatName, InputReference, Monograph, MonographComponentType,
+    ContributorGender, DateValue, FlatName, InputReference, Monograph, MonographComponentType,
     MonographType, StructuredName, Title, WorkRelation,
 };
 use citum_schema::template::DateVariable as TemplateDateVar;
@@ -248,7 +248,7 @@ fn make_editor_reference(genders: &[ContributorGender]) -> Reference {
         r#type: MonographType::Book,
         title: Some(Title::Single("Obra".to_string())),
         contributors,
-        issued: EdtfString("2024".to_string()),
+        issued: DateValue::new("2024".to_string()),
         ..Default::default()
     }))
 }
@@ -276,7 +276,7 @@ fn make_custom_role_reference(
         r#type: MonographType::Book,
         title: Some(Title::Single("Obra".to_string())),
         contributors,
-        issued: EdtfString("2024".to_string()),
+        issued: DateValue::new("2024".to_string()),
         ..Default::default()
     }))
 }
@@ -890,7 +890,7 @@ fn test_arabic_role_label_falls_back_to_roles_common_when_gender_missing() {
         r#type: MonographType::Book,
         title: Some(Title::Single("Obra".to_string())),
         contributors,
-        issued: EdtfString("2024".to_string()),
+        issued: DateValue::new("2024".to_string()),
         ..Default::default()
     }));
 
@@ -5388,4 +5388,319 @@ fn given_abbreviation_map_when_title_not_in_map_then_original_returned() {
     let result = component.values::<PlainText>(&reference, &hints, &options);
     assert!(result.is_some());
     assert_eq!(result.unwrap().value, "Some Other Journal");
+}
+
+fn make_annotated_date_reference(note: Option<&str>, language: Option<&str>) -> Reference {
+    InputReference::Monograph(Box::new(Monograph {
+        id: Some("gbt-regnal-1947".into()),
+        r#type: MonographType::Book,
+        title: Some(Title::Single("Test Work".to_string())),
+        issued: DateValue {
+            value: "1947".to_string(),
+            note: note.map(str::to_string),
+        },
+        language: language.map(Into::into),
+        ..Default::default()
+    }))
+}
+
+fn make_issued_year_component() -> TemplateDate {
+    TemplateDate {
+        date: TemplateDateVar::Issued,
+        form: DateForm::Year,
+        fallback: None,
+        rendering: Default::default(),
+        links: None,
+        custom: None,
+    }
+}
+
+#[test]
+fn test_date_note_appends_full_width_wrap_for_cjk_script_item() {
+    // Full-width delimiters require the style to opt in via
+    // `multilingual.realization-default: cjk` (PUNCTUATION_REALIZATION.md
+    // §5) — matching how the embedded GB/T styles are configured. Without
+    // that opt-in, per-item CJK language evidence alone does not force
+    // full-width wrap punctuation (see `wrap_script_class`).
+    let reference = make_annotated_date_reference(Some("民国三十六年"), Some("zh"));
+    let config = Config {
+        dates: Some(DateConfig {
+            note_wrap: Some(WrapConfig {
+                punctuation: WrapPunctuation::Parentheses,
+                inner_prefix: None,
+                inner_suffix: None,
+            }),
+            ..Default::default()
+        }),
+        multilingual: Some(MultilingualConfig {
+            realization_default: RealizationDefault::Cjk,
+            ..Default::default()
+        }),
+        ..Default::default()
+    };
+    let locale = make_locale();
+    let options = RenderOptions {
+        config: Arc::new(config),
+        bibliography_config: None,
+        locale: &locale,
+        context: RenderContext::Bibliography,
+        mode: citum_schema::citation::CitationMode::NonIntegral,
+        suppress_author: false,
+        locator_raw: None,
+        ref_type: None,
+        show_semantics: false,
+        current_template_index: None,
+        abbreviation_map: None,
+    };
+    let hints = ProcHints::default();
+
+    let values = make_issued_year_component()
+        .values::<PlainText>(&reference, &hints, &options)
+        .unwrap();
+
+    assert_eq!(values.value, "1947（民国三十六年）");
+}
+
+#[test]
+fn test_date_note_appends_half_width_wrap_for_latin_script_item() {
+    let reference = make_annotated_date_reference(Some("民国三十六年"), Some("en"));
+    let config = Config {
+        dates: Some(DateConfig {
+            note_wrap: Some(WrapConfig {
+                punctuation: WrapPunctuation::Parentheses,
+                inner_prefix: None,
+                inner_suffix: None,
+            }),
+            ..Default::default()
+        }),
+        ..Default::default()
+    };
+    let locale = make_locale();
+    let options = RenderOptions {
+        config: Arc::new(config),
+        bibliography_config: None,
+        locale: &locale,
+        context: RenderContext::Bibliography,
+        mode: citum_schema::citation::CitationMode::NonIntegral,
+        suppress_author: false,
+        locator_raw: None,
+        ref_type: None,
+        show_semantics: false,
+        current_template_index: None,
+        abbreviation_map: None,
+    };
+    let hints = ProcHints::default();
+
+    let values = make_issued_year_component()
+        .values::<PlainText>(&reference, &hints, &options)
+        .unwrap();
+
+    assert_eq!(values.value, "1947(民国三十六年)");
+}
+
+#[test]
+fn test_date_note_hidden_when_style_has_no_note_wrap() {
+    let reference = make_annotated_date_reference(Some("民国三十六年"), Some("zh"));
+    let config = Config {
+        dates: Some(DateConfig::default()),
+        ..Default::default()
+    };
+    let locale = make_locale();
+    let options = RenderOptions {
+        config: Arc::new(config),
+        bibliography_config: None,
+        locale: &locale,
+        context: RenderContext::Bibliography,
+        mode: citum_schema::citation::CitationMode::NonIntegral,
+        suppress_author: false,
+        locator_raw: None,
+        ref_type: None,
+        show_semantics: false,
+        current_template_index: None,
+        abbreviation_map: None,
+    };
+    let hints = ProcHints::default();
+
+    let values = make_issued_year_component()
+        .values::<PlainText>(&reference, &hints, &options)
+        .unwrap();
+
+    assert_eq!(values.value, "1947");
+}
+
+#[test]
+fn test_date_note_hidden_when_input_has_no_note() {
+    let reference = make_annotated_date_reference(None, Some("zh"));
+    let config = Config {
+        dates: Some(DateConfig {
+            note_wrap: Some(WrapConfig {
+                punctuation: WrapPunctuation::Parentheses,
+                inner_prefix: None,
+                inner_suffix: None,
+            }),
+            ..Default::default()
+        }),
+        ..Default::default()
+    };
+    let locale = make_locale();
+    let options = RenderOptions {
+        config: Arc::new(config),
+        bibliography_config: None,
+        locale: &locale,
+        context: RenderContext::Bibliography,
+        mode: citum_schema::citation::CitationMode::NonIntegral,
+        suppress_author: false,
+        locator_raw: None,
+        ref_type: None,
+        show_semantics: false,
+        current_template_index: None,
+        abbreviation_map: None,
+    };
+    let hints = ProcHints::default();
+
+    let values = make_issued_year_component()
+        .values::<PlainText>(&reference, &hints, &options)
+        .unwrap();
+
+    assert_eq!(values.value, "1947");
+}
+
+#[test]
+fn test_date_note_follows_year_suffix_disambiguator() {
+    let reference = make_annotated_date_reference(Some("民国三十六年"), Some("en"));
+    let config = Config {
+        dates: Some(DateConfig {
+            note_wrap: Some(WrapConfig {
+                punctuation: WrapPunctuation::Parentheses,
+                inner_prefix: None,
+                inner_suffix: None,
+            }),
+            ..Default::default()
+        }),
+        ..make_config()
+    };
+    let locale = make_locale();
+    let options = RenderOptions {
+        config: Arc::new(config),
+        bibliography_config: None,
+        locale: &locale,
+        context: RenderContext::Bibliography,
+        mode: citum_schema::citation::CitationMode::NonIntegral,
+        suppress_author: false,
+        locator_raw: None,
+        ref_type: None,
+        show_semantics: false,
+        current_template_index: None,
+        abbreviation_map: None,
+    };
+    let hints = ProcHints {
+        disamb_condition: true,
+        group_index: 1,
+        group_length: 2,
+        ..Default::default()
+    };
+
+    let values = make_issued_year_component()
+        .values::<PlainText>(&reference, &hints, &options)
+        .unwrap();
+
+    assert_eq!(values.value, "1947a(民国三十六年)");
+}
+
+#[test]
+fn test_date_note_wraps_after_a_closed_interval() {
+    let reference = InputReference::Monograph(Box::new(Monograph {
+        id: Some("kangxi-1705".into()),
+        r#type: MonographType::Book,
+        title: Some(Title::Single("Test Work".to_string())),
+        issued: DateValue {
+            value: "1705/1706".to_string(),
+            note: Some("康熙四十四年至四十五年".to_string()),
+        },
+        language: Some("zh".into()),
+        ..Default::default()
+    }));
+    let config = Config {
+        dates: Some(DateConfig {
+            note_wrap: Some(WrapConfig {
+                punctuation: WrapPunctuation::Parentheses,
+                inner_prefix: None,
+                inner_suffix: None,
+            }),
+            ..Default::default()
+        }),
+        multilingual: Some(MultilingualConfig {
+            realization_default: RealizationDefault::Cjk,
+            ..Default::default()
+        }),
+        ..Default::default()
+    };
+    let locale = make_locale();
+    let options = RenderOptions {
+        config: Arc::new(config),
+        bibliography_config: None,
+        locale: &locale,
+        context: RenderContext::Bibliography,
+        mode: citum_schema::citation::CitationMode::NonIntegral,
+        suppress_author: false,
+        locator_raw: None,
+        ref_type: None,
+        show_semantics: false,
+        current_template_index: None,
+        abbreviation_map: None,
+    };
+    let hints = ProcHints::default();
+    let component = TemplateDate {
+        date: TemplateDateVar::Issued,
+        form: DateForm::Year,
+        fallback: None,
+        rendering: Default::default(),
+        links: None,
+        custom: None,
+    };
+
+    let values = component
+        .values::<PlainText>(&reference, &hints, &options)
+        .unwrap();
+
+    assert_eq!(values.value, "1705–1706（康熙四十四年至四十五年）");
+}
+
+#[test]
+fn test_date_note_escapes_through_the_active_output_format() {
+    use crate::render::html::Html;
+
+    let reference = make_annotated_date_reference(Some("Minguo <36> & co"), Some("en"));
+    let config = Config {
+        dates: Some(DateConfig {
+            note_wrap: Some(WrapConfig {
+                punctuation: WrapPunctuation::Parentheses,
+                inner_prefix: None,
+                inner_suffix: None,
+            }),
+            ..Default::default()
+        }),
+        ..Default::default()
+    };
+    let locale = make_locale();
+    let options = RenderOptions {
+        config: Arc::new(config),
+        bibliography_config: None,
+        locale: &locale,
+        context: RenderContext::Bibliography,
+        mode: citum_schema::citation::CitationMode::NonIntegral,
+        suppress_author: false,
+        locator_raw: None,
+        ref_type: None,
+        show_semantics: false,
+        current_template_index: None,
+        abbreviation_map: None,
+    };
+    let hints = ProcHints::default();
+
+    let values = make_issued_year_component()
+        .values::<Html>(&reference, &hints, &options)
+        .unwrap();
+
+    assert_eq!(values.value, "1947(Minguo &lt;36&gt; &amp; co)");
 }

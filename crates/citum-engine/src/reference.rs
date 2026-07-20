@@ -16,7 +16,7 @@ pub use citum_schema::citation::{Citation, CitationItem, CitationMode, LocatorTy
 
 // Re-export reference types from citum_schema
 pub use citum_schema::reference::{
-    Contributor, ContributorList, EdtfString, FlatName, InputReference as Reference,
+    Contributor, ContributorList, DateValue, FlatName, InputReference as Reference,
     MultilingualString, NumOrStr, SimpleName, StructuredName, Title,
 };
 

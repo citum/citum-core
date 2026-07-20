@@ -39,7 +39,7 @@ use citum_schema::{
         Collection, CollectionComponent, MultilingualComplex, MultilingualString, Title,
     },
     reference::{
-        EdtfString, InputReference, Monograph, MonographType, Serial, SerialComponent,
+        DateValue, InputReference, Monograph, MonographType, Serial, SerialComponent,
         SerialComponentType, SerialType, WorkRelation,
     },
     template::{
@@ -314,7 +314,7 @@ fn make_german_translator_reference() -> InputReference {
             family: "Name".into(),
             ..Default::default()
         })),
-        issued: EdtfString("2024".to_string()),
+        issued: DateValue::new("2024".to_string()),
         language: Some("de".into()),
         ..Default::default()
     }))
@@ -856,7 +856,7 @@ fn given_translated_numeric_integral_citations_when_rendered_then_the_translated
                 })),
                 editor: None,
                 translator: None,
-                issued: citum_schema::reference::EdtfString("1869".to_string()),
+                issued: citum_schema::reference::DateValue::new("1869".to_string()),
                 ..Default::default()
             },
         )),
@@ -891,7 +891,7 @@ fn given_field_language_overrides_when_resolving_the_effective_field_language_th
         author: None,
         editor: None,
         translator: None,
-        issued: EdtfString("2024".to_string()),
+        issued: DateValue::new("2024".to_string()),
         language: Some("fr".into()),
         field_languages: HashMap::from([("title".to_string(), "en".into())]),
         ..Default::default()
@@ -920,7 +920,7 @@ fn given_no_item_language_when_resolving_the_effective_item_language_then_the_mu
         author: None,
         editor: None,
         translator: None,
-        issued: EdtfString("2024".to_string()),
+        issued: DateValue::new("2024".to_string()),
         ..Default::default()
     }));
 
@@ -973,7 +973,7 @@ fn given_localized_citation_templates_when_the_item_language_matches_then_the_lo
             author: None,
             editor: None,
             translator: None,
-            issued: EdtfString("2024".to_string()),
+            issued: DateValue::new("2024".to_string()),
             publisher: Some(citum_schema::reference::Publisher {
                 name: citum_schema::reference::MultilingualString::Simple("Verlag".to_string()),
                 place: None,
@@ -1011,7 +1011,7 @@ fn given_localized_citation_templates_when_the_item_language_matches_then_the_lo
             author: None,
             editor: None,
             translator: None,
-            issued: EdtfString("2024".to_string()),
+            issued: DateValue::new("2024".to_string()),
             publisher: Some(citum_schema::reference::Publisher {
                 name: citum_schema::reference::MultilingualString::Simple("Editeur".to_string()),
                 place: None,
@@ -1102,7 +1102,7 @@ fn given_localized_bibliography_templates_when_only_the_multilingual_title_has_a
             author: None,
             editor: None,
             translator: None,
-            issued: EdtfString("2024".to_string()),
+            issued: DateValue::new("2024".to_string()),
             publisher: None,
             url: None,
             accessed: None,
@@ -1184,7 +1184,7 @@ fn given_mixed_language_titles_when_rendering_the_bibliography_then_field_langua
         title: Some(Title::Single("English Article".to_string())),
         author: None,
         translator: None,
-        issued: EdtfString("2024".to_string()),
+        issued: DateValue::new("2024".to_string()),
         container: Some(WorkRelation::Embedded(Box::new(
             InputReference::Collection(Box::new(Collection {
                 short_title: None,
@@ -1194,7 +1194,7 @@ fn given_mixed_language_titles_when_rendering_the_bibliography_then_field_langua
                 container: None,
                 editor: None,
                 translator: None,
-                issued: EdtfString("2024".to_string()),
+                issued: DateValue::new("2024".to_string()),
                 publisher: None,
                 numbering: Vec::new(),
                 url: None,
@@ -1290,7 +1290,7 @@ fn given_apa_multilingual_title_mode_when_rendering_a_japanese_article_then_titl
                     .to_string(),
             )]),
         })),
-        issued: EdtfString("2019".to_string()),
+        issued: DateValue::new("2019".to_string()),
         container: Some(WorkRelation::Embedded(Box::new(InputReference::Serial(
             Box::new(Serial {
                 r#type: SerialType::AcademicJournal,
@@ -1392,7 +1392,7 @@ fn chicago_pattern_renders_three_way_japanese_title() {
                 "The Social Function of Citation".to_string(),
             )]),
         })),
-        issued: EdtfString("2020".to_string()),
+        issued: DateValue::new("2020".to_string()),
         language: Some("ja".into()),
         ..Default::default()
     }));
@@ -1470,7 +1470,7 @@ fn mla_pattern_renders_original_and_translation_chinese_title() {
             )]),
             translations: HashMap::from([("en".into(), "War and Peace".to_string())]),
         })),
-        issued: EdtfString("2021".to_string()),
+        issued: DateValue::new("2021".to_string()),
         language: Some("zh".into()),
         ..Default::default()
     }));
@@ -1945,7 +1945,7 @@ fn chicago_german_override_localizes_editor_verb() {
                 ..Default::default()
             })),
             translator: None,
-            issued: EdtfString("2024".to_string()),
+            issued: DateValue::new("2024".to_string()),
             container: Some(WorkRelation::Embedded(Box::new(
                 InputReference::Collection(Box::new(Collection {
                     short_title: None,
@@ -1959,7 +1959,7 @@ fn chicago_german_override_localizes_editor_verb() {
                         ..Default::default()
                     })),
                     translator: None,
-                    issued: EdtfString("2024".to_string()),
+                    issued: DateValue::new("2024".to_string()),
                     publisher: None,
                     numbering: Vec::new(),
                     url: None,

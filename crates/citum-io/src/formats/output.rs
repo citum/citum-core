@@ -47,7 +47,7 @@ pub(crate) fn render_biblatex(input: &InputBibliography) -> String {
             }
         }
         if let Some(issued) = reference.effective_issued_date()
-            && let Some(year) = issued.0.get(0..4)
+            && let Some(year) = issued.value.get(0..4)
         {
             let _ = writeln!(&mut out, "  year = {{{year}}},");
         }
@@ -81,7 +81,7 @@ pub(crate) fn render_ris(input: &InputBibliography) -> String {
             }
         }
         if let Some(issued) = reference.effective_issued_date()
-            && let Some(year) = issued.0.get(0..4)
+            && let Some(year) = issued.value.get(0..4)
         {
             let _ = writeln!(&mut out, "PY  - {year}");
         }

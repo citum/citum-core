@@ -12,7 +12,7 @@ use biblatex as biblatex_crate;
 use citum_schema::reference::{
     InputReference, LangID, Numbering, NumberingType, Publisher, RefID, RichText, WorkRelation,
     contributor::{Contributor, ContributorList, StructuredName},
-    date::EdtfString,
+    date::DateValue,
     types::{
         Collection, CollectionComponent, CollectionType, Monograph, MonographComponentType,
         MonographType, NumOrStr, Serial, SerialComponent, SerialComponentType, SerialType, Title,
@@ -27,7 +27,7 @@ struct BibRefContext<'a> {
     title: Option<Title>,
     author: Option<Contributor>,
     editor: Option<Contributor>,
-    issued: EdtfString,
+    issued: DateValue,
     publisher: Option<Publisher>,
     language: Option<LangID>,
     field_str: &'a dyn Fn(&str) -> Option<String>,
@@ -52,7 +52,7 @@ fn build_inbook_reference(ctx: BibRefContext<'_>) -> InputReference {
         title: ctx.title,
         author: ctx.author,
         translator: None,
-        created: EdtfString(String::new()),
+        created: DateValue::new(String::new()),
         issued: ctx.issued,
         container: Some(WorkRelation::Embedded(Box::new(
             InputReference::Collection(Box::new(Collection {
@@ -63,8 +63,8 @@ fn build_inbook_reference(ctx: BibRefContext<'_>) -> InputReference {
                 container: None,
                 editor: ctx.editor,
                 translator: None,
-                created: EdtfString(String::new()),
-                issued: EdtfString(String::new()),
+                created: DateValue::new(String::new()),
+                issued: DateValue::new(String::new()),
                 publisher: ctx.publisher,
                 numbering: parent_numbering,
                 ..Default::default()
@@ -73,7 +73,7 @@ fn build_inbook_reference(ctx: BibRefContext<'_>) -> InputReference {
         numbering: Vec::new(),
         pages: field_str("pages").map(NumOrStr::Str),
         url: field_str("url").and_then(|u| Url::parse(&u).ok()),
-        accessed: field_str("urldate").map(EdtfString),
+        accessed: field_str("urldate").map(DateValue::new),
         language: ctx.language,
         field_languages: HashMap::new(),
         note: field_str("note").map(RichText::Plain),
@@ -110,7 +110,7 @@ fn build_article_reference(ctx: BibRefContext<'_>) -> InputReference {
         title: ctx.title,
         author: ctx.author,
         translator: None,
-        created: EdtfString(String::new()),
+        created: DateValue::new(String::new()),
         issued: ctx.issued,
         container: Some(WorkRelation::Embedded(Box::new(InputReference::Serial(
             Box::new(Serial {
@@ -133,7 +133,7 @@ fn build_article_reference(ctx: BibRefContext<'_>) -> InputReference {
         )))),
         numbering: component_numbering,
         url: field_str("url").and_then(|u| Url::parse(&u).ok()),
-        accessed: field_str("urldate").map(EdtfString),
+        accessed: field_str("urldate").map(DateValue::new),
         language: ctx.language,
         field_languages: HashMap::new(),
         note: field_str("note").map(RichText::Plain),
@@ -166,7 +166,7 @@ pub fn input_reference_from_biblatex(entry: &biblatex_crate::Entry) -> InputRefe
     };
 
     let title = field_str("title").map(Title::Single);
-    let issued = field_str("date").map_or(EdtfString(String::new()), EdtfString);
+    let issued = field_str("date").map_or(DateValue::new(String::new()), DateValue::new);
     let publisher = field_str("publisher").map(|p| Publisher {
         name: p.into(),
         place: field_str("location").map(Into::into),
@@ -259,11 +259,11 @@ fn biblatex_monograph(
         author: ctx.author,
         editor: ctx.editor,
         translator: None,
-        created: EdtfString(String::new()),
+        created: DateValue::new(String::new()),
         issued: ctx.issued,
         publisher: ctx.publisher,
         url: field_str("url").and_then(|u| Url::parse(&u).ok()),
-        accessed: field_str("urldate").map(EdtfString),
+        accessed: field_str("urldate").map(DateValue::new),
         language: ctx.language,
         field_languages: HashMap::new(),
         note: field_str("note").map(RichText::Plain),

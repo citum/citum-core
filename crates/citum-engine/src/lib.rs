@@ -23,7 +23,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 //! ```rust
 //! use citum_engine::{
 //!     Bibliography, Citation, CitationItem, CitationSpec, Config, Contributor,
-//!     ContributorForm, ContributorList, ContributorRole, DateForm, EdtfString,
+//!     ContributorForm, ContributorList, ContributorRole, DateForm, DateValue,
 //!     Monograph, MonographType, MultilingualString, Processing, Processor, Reference,
 //!     Rendering, StructuredName, Style, StyleInfo, TemplateComponent, TemplateContributor,
 //!     TemplateDate, TemplateDateVariable, Title, WrapPunctuation,
@@ -76,7 +76,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 //!             non_dropping_particle: None,
 //!         }),
 //!     ]))),
-//!     issued: EdtfString("1962".to_string()),
+//!     issued: DateValue::new("1962".to_string()),
 //!     ..Default::default()
 //! }));
 //! bib.insert("kuhn1962".to_string(), reference);
@@ -122,7 +122,7 @@ pub use api::{
 };
 pub use citum_schema::options::{Config, Processing};
 pub use citum_schema::reference::{
-    Contributor, ContributorList, EdtfString, Monograph, MonographType, MultilingualString,
+    Contributor, ContributorList, DateValue, Monograph, MonographType, MultilingualString,
     StructuredName, Title,
 };
 pub use citum_schema::template::{

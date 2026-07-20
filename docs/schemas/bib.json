@@ -163,11 +163,11 @@
               }
             },
             "created": {
-              "$ref": "#/$defs/EdtfString",
+              "$ref": "#/$defs/DateValue",
               "default": ""
             },
             "issued": {
-              "$ref": "#/$defs/EdtfString",
+              "$ref": "#/$defs/DateValue",
               "default": ""
             },
             "publisher": {
@@ -190,7 +190,7 @@
             "accessed": {
               "anyOf": [
                 {
-                  "$ref": "#/$defs/EdtfString"
+                  "$ref": "#/$defs/DateValue"
                 },
                 {
                   "type": "null"
@@ -387,7 +387,7 @@
             "available-date": {
               "anyOf": [
                 {
-                  "$ref": "#/$defs/EdtfString"
+                  "$ref": "#/$defs/DateValue"
                 },
                 {
                   "type": "null"
@@ -397,7 +397,7 @@
             "copyright": {
               "anyOf": [
                 {
-                  "$ref": "#/$defs/EdtfString"
+                  "$ref": "#/$defs/DateValue"
                 },
                 {
                   "type": "null"
@@ -407,7 +407,7 @@
             "printing": {
               "anyOf": [
                 {
-                  "$ref": "#/$defs/EdtfString"
+                  "$ref": "#/$defs/DateValue"
                 },
                 {
                   "type": "null"
@@ -516,11 +516,11 @@
               }
             },
             "created": {
-              "$ref": "#/$defs/EdtfString",
+              "$ref": "#/$defs/DateValue",
               "default": ""
             },
             "issued": {
-              "$ref": "#/$defs/EdtfString",
+              "$ref": "#/$defs/DateValue",
               "default": ""
             },
             "container": {
@@ -601,7 +601,7 @@
             "accessed": {
               "anyOf": [
                 {
-                  "$ref": "#/$defs/EdtfString"
+                  "$ref": "#/$defs/DateValue"
                 },
                 {
                   "type": "null"
@@ -775,11 +775,11 @@
               }
             },
             "created": {
-              "$ref": "#/$defs/EdtfString",
+              "$ref": "#/$defs/DateValue",
               "default": ""
             },
             "issued": {
-              "$ref": "#/$defs/EdtfString",
+              "$ref": "#/$defs/DateValue",
               "default": ""
             },
             "container": {
@@ -850,7 +850,7 @@
             "accessed": {
               "anyOf": [
                 {
-                  "$ref": "#/$defs/EdtfString"
+                  "$ref": "#/$defs/DateValue"
                 },
                 {
                   "type": "null"
@@ -967,7 +967,7 @@
             "available-date": {
               "anyOf": [
                 {
-                  "$ref": "#/$defs/EdtfString"
+                  "$ref": "#/$defs/DateValue"
                 },
                 {
                   "type": "null"
@@ -1094,11 +1094,11 @@
               }
             },
             "created": {
-              "$ref": "#/$defs/EdtfString",
+              "$ref": "#/$defs/DateValue",
               "default": ""
             },
             "issued": {
-              "$ref": "#/$defs/EdtfString",
+              "$ref": "#/$defs/DateValue",
               "default": ""
             },
             "publisher": {
@@ -1169,7 +1169,7 @@
             "accessed": {
               "anyOf": [
                 {
-                  "$ref": "#/$defs/EdtfString"
+                  "$ref": "#/$defs/DateValue"
                 },
                 {
                   "type": "null"
@@ -1320,7 +1320,7 @@
             "accessed": {
               "anyOf": [
                 {
-                  "$ref": "#/$defs/EdtfString"
+                  "$ref": "#/$defs/DateValue"
                 },
                 {
                   "type": "null"
@@ -1440,11 +1440,11 @@
             },
             "created": {
               "description": "Creation or origination date of the legal work.",
-              "$ref": "#/$defs/EdtfString"
+              "$ref": "#/$defs/DateValue"
             },
             "issued": {
               "description": "Decision date",
-              "$ref": "#/$defs/EdtfString"
+              "$ref": "#/$defs/DateValue"
             },
             "url": {
               "description": "URL for the case.",
@@ -1458,7 +1458,7 @@
               "description": "Date the URL was accessed.",
               "anyOf": [
                 {
-                  "$ref": "#/$defs/EdtfString"
+                  "$ref": "#/$defs/DateValue"
                 },
                 {
                   "type": "null"
@@ -1598,7 +1598,7 @@
             },
             "created": {
               "description": "Creation or origination date of the statute.",
-              "$ref": "#/$defs/EdtfString"
+              "$ref": "#/$defs/DateValue"
             },
             "section": {
               "description": "Section or page number",
@@ -1616,7 +1616,7 @@
             },
             "issued": {
               "description": "Enactment or publication date",
-              "$ref": "#/$defs/EdtfString"
+              "$ref": "#/$defs/DateValue"
             },
             "url": {
               "description": "URL for the statute.",
@@ -1630,7 +1630,7 @@
               "description": "Date the URL was accessed.",
               "anyOf": [
                 {
-                  "$ref": "#/$defs/EdtfString"
+                  "$ref": "#/$defs/DateValue"
                 },
                 {
                   "type": "null"
@@ -1760,11 +1760,11 @@
             },
             "created": {
               "description": "Creation or origination date of the treaty text.",
-              "$ref": "#/$defs/EdtfString"
+              "$ref": "#/$defs/DateValue"
             },
             "issued": {
               "description": "Signing or ratification date",
-              "$ref": "#/$defs/EdtfString"
+              "$ref": "#/$defs/DateValue"
             },
             "url": {
               "description": "URL for the treaty.",
@@ -1778,7 +1778,7 @@
               "description": "Date the URL was accessed.",
               "anyOf": [
                 {
-                  "$ref": "#/$defs/EdtfString"
+                  "$ref": "#/$defs/DateValue"
                 },
                 {
                   "type": "null"
@@ -1890,11 +1890,11 @@
             },
             "created": {
               "description": "Creation or origination date of the hearing record.",
-              "$ref": "#/$defs/EdtfString"
+              "$ref": "#/$defs/DateValue"
             },
             "issued": {
               "description": "Hearing date",
-              "$ref": "#/$defs/EdtfString"
+              "$ref": "#/$defs/DateValue"
             },
             "url": {
               "description": "URL for the hearing record.",
@@ -1908,7 +1908,7 @@
               "description": "Date the URL was accessed.",
               "anyOf": [
                 {
-                  "$ref": "#/$defs/EdtfString"
+                  "$ref": "#/$defs/DateValue"
                 },
                 {
                   "type": "null"
@@ -2020,7 +2020,7 @@
             },
             "created": {
               "description": "Creation or origination date of the regulation text.",
-              "$ref": "#/$defs/EdtfString"
+              "$ref": "#/$defs/DateValue"
             },
             "code": {
               "description": "Code abbreviation (e.g., \"C.F.R.\", \"Fed. Reg.\")",
@@ -2038,7 +2038,7 @@
             },
             "issued": {
               "description": "Publication or effective date",
-              "$ref": "#/$defs/EdtfString"
+              "$ref": "#/$defs/DateValue"
             },
             "url": {
               "description": "URL for the regulation.",
@@ -2052,7 +2052,7 @@
               "description": "Date the URL was accessed.",
               "anyOf": [
                 {
-                  "$ref": "#/$defs/EdtfString"
+                  "$ref": "#/$defs/DateValue"
                 },
                 {
                   "type": "null"
@@ -2175,11 +2175,11 @@
             },
             "created": {
               "description": "Creation or origination date of the brief.",
-              "$ref": "#/$defs/EdtfString"
+              "$ref": "#/$defs/DateValue"
             },
             "issued": {
               "description": "Filing date",
-              "$ref": "#/$defs/EdtfString"
+              "$ref": "#/$defs/DateValue"
             },
             "url": {
               "description": "URL for the brief.",
@@ -2193,7 +2193,7 @@
               "description": "Date the URL was accessed.",
               "anyOf": [
                 {
-                  "$ref": "#/$defs/EdtfString"
+                  "$ref": "#/$defs/DateValue"
                 },
                 {
                   "type": "null"
@@ -2375,11 +2375,11 @@
               }
             },
             "created": {
-              "$ref": "#/$defs/EdtfString",
+              "$ref": "#/$defs/DateValue",
               "default": ""
             },
             "issued": {
-              "$ref": "#/$defs/EdtfString",
+              "$ref": "#/$defs/DateValue",
               "default": ""
             },
             "publisher": {
@@ -2402,7 +2402,7 @@
             "accessed": {
               "anyOf": [
                 {
-                  "$ref": "#/$defs/EdtfString"
+                  "$ref": "#/$defs/DateValue"
                 },
                 {
                   "type": "null"
@@ -2536,13 +2536,13 @@
             },
             "created": {
               "description": "Creation or origination date of the patented work.",
-              "$ref": "#/$defs/EdtfString"
+              "$ref": "#/$defs/DateValue"
             },
             "filing-date": {
               "description": "Filing date",
               "anyOf": [
                 {
-                  "$ref": "#/$defs/EdtfString"
+                  "$ref": "#/$defs/DateValue"
                 },
                 {
                   "type": "null"
@@ -2551,7 +2551,7 @@
             },
             "issued": {
               "description": "Issue/grant date",
-              "$ref": "#/$defs/EdtfString"
+              "$ref": "#/$defs/DateValue"
             },
             "jurisdiction": {
               "description": "Jurisdiction (e.g., \"US\", \"EP\", \"JP\")",
@@ -2579,7 +2579,7 @@
               "description": "Date the URL was accessed.",
               "anyOf": [
                 {
-                  "$ref": "#/$defs/EdtfString"
+                  "$ref": "#/$defs/DateValue"
                 },
                 {
                   "type": "null"
@@ -2689,11 +2689,11 @@
             },
             "created": {
               "description": "Creation or origination date of the dataset.",
-              "$ref": "#/$defs/EdtfString"
+              "$ref": "#/$defs/DateValue"
             },
             "issued": {
               "description": "Publication/release date",
-              "$ref": "#/$defs/EdtfString"
+              "$ref": "#/$defs/DateValue"
             },
             "publisher": {
               "description": "Publisher or repository (e.g., \"Zenodo\", \"Dryad\")",
@@ -2760,7 +2760,7 @@
               "description": "Date the URL was accessed.",
               "anyOf": [
                 {
-                  "$ref": "#/$defs/EdtfString"
+                  "$ref": "#/$defs/DateValue"
                 },
                 {
                   "type": "null"
@@ -2869,11 +2869,11 @@
             },
             "created": {
               "description": "Creation or origination date of the standard.",
-              "$ref": "#/$defs/EdtfString"
+              "$ref": "#/$defs/DateValue"
             },
             "issued": {
               "description": "Publication date",
-              "$ref": "#/$defs/EdtfString"
+              "$ref": "#/$defs/DateValue"
             },
             "status": {
               "description": "Publication status. Canonical controlled-vocabulary values: `\"published\"`, `\"draft\"`, `\"withdrawn\"`.\nSee `docs/policies/ENUM_VOCABULARY_POLICY.md` for matching rules.",
@@ -2912,7 +2912,7 @@
               "description": "Date the URL was accessed.",
               "anyOf": [
                 {
-                  "$ref": "#/$defs/EdtfString"
+                  "$ref": "#/$defs/DateValue"
                 },
                 {
                   "type": "null"
@@ -3022,11 +3022,11 @@
             },
             "created": {
               "description": "Creation or origination date of the software work.",
-              "$ref": "#/$defs/EdtfString"
+              "$ref": "#/$defs/DateValue"
             },
             "issued": {
               "description": "Release date",
-              "$ref": "#/$defs/EdtfString"
+              "$ref": "#/$defs/DateValue"
             },
             "publisher": {
               "description": "Publisher or repository (e.g., \"GitHub\", \"Zenodo\")",
@@ -3086,7 +3086,7 @@
               "description": "Date the URL was accessed.",
               "anyOf": [
                 {
-                  "$ref": "#/$defs/EdtfString"
+                  "$ref": "#/$defs/DateValue"
                 },
                 {
                   "type": "null"
@@ -3215,7 +3215,7 @@
               "description": "Event date.",
               "anyOf": [
                 {
-                  "$ref": "#/$defs/EdtfString"
+                  "$ref": "#/$defs/DateValue"
                 },
                 {
                   "type": "null"
@@ -3226,7 +3226,7 @@
               "description": "Date the event became or will become publicly available.",
               "anyOf": [
                 {
-                  "$ref": "#/$defs/EdtfString"
+                  "$ref": "#/$defs/DateValue"
                 },
                 {
                   "type": "null"
@@ -3266,7 +3266,7 @@
               "description": "Date the URL was accessed.",
               "anyOf": [
                 {
-                  "$ref": "#/$defs/EdtfString"
+                  "$ref": "#/$defs/DateValue"
                 },
                 {
                   "type": "null"
@@ -3356,11 +3356,11 @@
               }
             },
             "created": {
-              "$ref": "#/$defs/EdtfString",
+              "$ref": "#/$defs/DateValue",
               "default": ""
             },
             "issued": {
-              "$ref": "#/$defs/EdtfString",
+              "$ref": "#/$defs/DateValue",
               "default": ""
             },
             "original": {
@@ -3460,7 +3460,7 @@
             "accessed": {
               "anyOf": [
                 {
-                  "$ref": "#/$defs/EdtfString"
+                  "$ref": "#/$defs/DateValue"
                 },
                 {
                   "type": "null"
@@ -3969,9 +3969,30 @@
         }
       ]
     },
-    "EdtfString": {
-      "description": "An EDTF string.",
-      "type": "string"
+    "DateValue": {
+      "oneOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": "string"
+            },
+            "note": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "value"
+          ],
+          "additionalProperties": false
+        }
+      ]
     },
     "Publisher": {
       "description": "A publisher or production company.\n\nPublisher is always a corporate entity — a person is never a publisher\nin the bibliographic sense.",

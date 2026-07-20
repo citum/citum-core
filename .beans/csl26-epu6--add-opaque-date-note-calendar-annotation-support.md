@@ -10,7 +10,7 @@ tags:
     - rendering
     - schema
 created_at: 2026-07-20T14:00:23Z
-updated_at: 2026-07-20T14:00:43Z
+updated_at: 2026-07-20T15:06:25Z
 blocking:
     - csl26-0kqf
 ---
@@ -20,14 +20,14 @@ Implement the CALENDAR_DATE_ANNOTATIONS.md spec: DateValue{value, note} with sca
 ## Todo
 
 - [x] Step A: revise CALENDAR_DATE_ANNOTATIONS.md, DATE_MODEL.md, GBT_7714_CITATION_CONVENTIONS.md, docs/specs/README.md for the `note` rename and `DateConfig.note-wrap` config; squash onto PR 1068 branch
-- [ ] Step B: `DateValue{value, note}` scalar/mapping serde in citum-schema-data
-- [ ] Step B: route date accessors through `DateValue.value`
-- [ ] Step B: `DateConfig.note_wrap: Option<WrapConfig>` in citum-schema-style
-- [ ] Step B: bibliography-scoped render via `realize_wrap`
-- [ ] Step B: legacy full-width-paren conversion in citum-migrate
-- [ ] Step B: enable `note-wrap: parentheses` in GB/T style bibliography options
-- [ ] Step B: flip spec Status Draft -> Active in the implementation commit
-- [ ] Step B: `just schema-gen`; commit regenerated schemas
-- [ ] Step B: tests (serde, processing invariance, render, scope, output-format escaping, migrate)
+- [x] Step B: extend the existing date type (`EdtfString` -> `DateValue`) in place with scalar/mapping serde, in citum-schema-data (no new wrapper type)
+- [x] Step B: route date accessors through `DateValue.value`
+- [x] Step B: `DateConfig.note_wrap: Option<WrapConfig>` in citum-schema-style
+- [x] Step B: bibliography-scoped render via `realize_wrap` (`append_note` in citum-engine/src/values/date.rs)
+- [x] Step B: legacy full-width-paren conversion (`annotated_issued_from_legacy`, citum-schema-data/src/reference/conversion/mod.rs — not citum-migrate; that crate migrates CSL styles, not reference data)
+- [x] Step B: enable `note-wrap: parentheses` in gb-t-7714-2025-author-date.yaml bibliography.options.dates
+- [x] Step B: flip spec Status Draft -> Active in the implementation commit
+- [x] Step B: `just schema-gen`; commit regenerated schemas
+- [x] Step B: tests added (serde round-trip/unknown-field, processing-invariance/collision, render single+interval+year-suffix+script, bibliography-vs-citation scoping, HTML escaping, legacy conversion incl. half-width disjointness). Not yet covered: Djot/Markdown/LaTeX/Typst/org escaping specifically (HTML is the highest-risk format and is covered; the others share the same fmt.text() escaping path).
 - [ ] Verify: `just pre-commit`, GB/T workflow-test/oracle, report-core fidelity check
 - [ ] Push PR 1068, `gh pr checks 1068 --watch`

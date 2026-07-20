@@ -13,7 +13,7 @@ use crate::reference::WorkRelation;
 use crate::reference::contributor::{
     Contributor, ContributorEntry, ContributorList, ContributorRole,
 };
-use crate::reference::date::EdtfString;
+use crate::reference::date::DateValue;
 #[cfg(feature = "schema")]
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -138,12 +138,12 @@ pub struct Monograph {
     pub contributors: Vec<ContributorEntry>,
     /// Creation or origination date.
     #[cfg_attr(feature = "bindings", specta(type = String))]
-    #[serde(default, skip_serializing_if = "EdtfString::is_empty")]
-    pub created: EdtfString,
+    #[serde(default, skip_serializing_if = "DateValue::is_empty")]
+    pub created: DateValue,
     /// Publication date.
     #[cfg_attr(feature = "bindings", specta(type = String))]
-    #[serde(default, skip_serializing_if = "EdtfString::is_empty")]
-    pub issued: EdtfString,
+    #[serde(default, skip_serializing_if = "DateValue::is_empty")]
+    pub issued: DateValue,
     /// Publisher of the work.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub publisher: Option<Publisher>,
@@ -153,7 +153,7 @@ pub struct Monograph {
     /// Date the URL was accessed.
     #[cfg_attr(feature = "bindings", specta(type = Option<String>))]
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub accessed: Option<EdtfString>,
+    pub accessed: Option<DateValue>,
     /// BCP 47 language of the work.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub language: Option<LangID>,
@@ -239,17 +239,17 @@ pub struct Monograph {
     /// Date the work became or will become publicly available.
     #[cfg_attr(feature = "bindings", specta(type = Option<String>))]
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub available_date: Option<EdtfString>,
+    pub available_date: Option<DateValue>,
     /// Copyright year, a publication-year substitute used when the true
     /// issue date is unknown (GB/T 7714 §7.5.4.3's `c1988`).
     #[cfg_attr(feature = "bindings", specta(type = Option<String>))]
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub copyright: Option<EdtfString>,
+    pub copyright: Option<DateValue>,
     /// Printing/impression year, another publication-year substitute
     /// (GB/T 7714 §7.5.4.3's `1995印刷`).
     #[cfg_attr(feature = "bindings", specta(type = Option<String>))]
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub printing: Option<EdtfString>,
+    pub printing: Option<DateValue>,
     /// Physical dimensions or format (e.g., `"24 x 30 cm"`).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub size: Option<String>,
@@ -296,15 +296,15 @@ struct MonographDeser {
     contributors: Vec<ContributorEntry>,
     #[cfg_attr(feature = "bindings", specta(type = String))]
     #[serde(default)]
-    created: EdtfString,
+    created: DateValue,
     #[cfg_attr(feature = "bindings", specta(type = String))]
     #[serde(default)]
-    issued: EdtfString,
+    issued: DateValue,
     publisher: Option<Publisher>,
     #[serde(alias = "URL")]
     url: Option<Url>,
     #[cfg_attr(feature = "bindings", specta(type = Option<String>))]
-    accessed: Option<EdtfString>,
+    accessed: Option<DateValue>,
     language: Option<LangID>,
     #[serde(default, skip_serializing_if = "HashMap::is_empty")]
     field_languages: FieldLanguageMap,
@@ -344,11 +344,11 @@ struct MonographDeser {
     event: Option<WorkRelation>,
     status: Option<String>,
     #[cfg_attr(feature = "bindings", specta(type = Option<String>))]
-    available_date: Option<EdtfString>,
+    available_date: Option<DateValue>,
     #[cfg_attr(feature = "bindings", specta(type = Option<String>))]
-    copyright: Option<EdtfString>,
+    copyright: Option<DateValue>,
     #[cfg_attr(feature = "bindings", specta(type = Option<String>))]
-    printing: Option<EdtfString>,
+    printing: Option<DateValue>,
     size: Option<String>,
     duration: Option<String>,
     references: Option<String>,
@@ -485,12 +485,12 @@ pub struct Collection {
     pub contributors: Vec<ContributorEntry>,
     /// Creation or origination date.
     #[cfg_attr(feature = "bindings", specta(type = String))]
-    #[serde(default, skip_serializing_if = "EdtfString::is_empty")]
-    pub created: EdtfString,
+    #[serde(default, skip_serializing_if = "DateValue::is_empty")]
+    pub created: DateValue,
     /// Publication date.
     #[cfg_attr(feature = "bindings", specta(type = String))]
-    #[serde(default, skip_serializing_if = "EdtfString::is_empty")]
-    pub issued: EdtfString,
+    #[serde(default, skip_serializing_if = "DateValue::is_empty")]
+    pub issued: DateValue,
     /// Publisher of the collection.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub publisher: Option<Publisher>,
@@ -526,7 +526,7 @@ pub struct Collection {
     /// Date the URL was accessed.
     #[cfg_attr(feature = "bindings", specta(type = Option<String>))]
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub accessed: Option<EdtfString>,
+    pub accessed: Option<DateValue>,
     /// BCP 47 language of the collection.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub language: Option<LangID>,
@@ -573,10 +573,10 @@ struct CollectionDeser {
     contributors: Vec<ContributorEntry>,
     #[cfg_attr(feature = "bindings", specta(type = String))]
     #[serde(default)]
-    created: EdtfString,
+    created: DateValue,
     #[cfg_attr(feature = "bindings", specta(type = String))]
     #[serde(default)]
-    issued: EdtfString,
+    issued: DateValue,
     publisher: Option<Publisher>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     volume: Option<String>,
@@ -597,7 +597,7 @@ struct CollectionDeser {
     #[serde(alias = "URL")]
     url: Option<Url>,
     #[cfg_attr(feature = "bindings", specta(type = Option<String>))]
-    accessed: Option<EdtfString>,
+    accessed: Option<DateValue>,
     language: Option<LangID>,
     #[serde(default, skip_serializing_if = "HashMap::is_empty")]
     field_languages: FieldLanguageMap,
@@ -690,12 +690,12 @@ pub struct CollectionComponent {
     pub contributors: Vec<ContributorEntry>,
     /// Creation or origination date.
     #[cfg_attr(feature = "bindings", specta(type = String))]
-    #[serde(default, skip_serializing_if = "EdtfString::is_empty")]
-    pub created: EdtfString,
+    #[serde(default, skip_serializing_if = "DateValue::is_empty")]
+    pub created: DateValue,
     /// Publication date.
     #[cfg_attr(feature = "bindings", specta(type = String))]
-    #[serde(default, skip_serializing_if = "EdtfString::is_empty")]
-    pub issued: EdtfString,
+    #[serde(default, skip_serializing_if = "DateValue::is_empty")]
+    pub issued: DateValue,
     /// The parent collection or monograph.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub container: Option<WorkRelation>,
@@ -734,7 +734,7 @@ pub struct CollectionComponent {
     /// Date the URL was accessed.
     #[cfg_attr(feature = "bindings", specta(type = Option<String>))]
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub accessed: Option<EdtfString>,
+    pub accessed: Option<DateValue>,
     /// BCP 47 language of the component.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub language: Option<LangID>,
@@ -797,10 +797,10 @@ struct CollectionComponentDeser {
     contributors: Vec<ContributorEntry>,
     #[cfg_attr(feature = "bindings", specta(type = String))]
     #[serde(default)]
-    created: EdtfString,
+    created: DateValue,
     #[cfg_attr(feature = "bindings", specta(type = String))]
     #[serde(default)]
-    issued: EdtfString,
+    issued: DateValue,
     container: Option<WorkRelation>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     volume: Option<String>,
@@ -822,7 +822,7 @@ struct CollectionComponentDeser {
     #[serde(alias = "URL")]
     url: Option<Url>,
     #[cfg_attr(feature = "bindings", specta(type = Option<String>))]
-    accessed: Option<EdtfString>,
+    accessed: Option<DateValue>,
     language: Option<LangID>,
     #[serde(default, skip_serializing_if = "HashMap::is_empty")]
     field_languages: FieldLanguageMap,
@@ -923,12 +923,12 @@ pub struct SerialComponent {
     pub contributors: Vec<ContributorEntry>,
     /// Creation or origination date.
     #[cfg_attr(feature = "bindings", specta(type = String))]
-    #[serde(default, skip_serializing_if = "EdtfString::is_empty")]
-    pub created: EdtfString,
+    #[serde(default, skip_serializing_if = "DateValue::is_empty")]
+    pub created: DateValue,
     /// Publication date.
     #[cfg_attr(feature = "bindings", specta(type = String))]
-    #[serde(default, skip_serializing_if = "EdtfString::is_empty")]
-    pub issued: EdtfString,
+    #[serde(default, skip_serializing_if = "DateValue::is_empty")]
+    pub issued: DateValue,
     /// The parent work, such as a magazine, journal, or book set.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub container: Option<WorkRelation>,
@@ -964,7 +964,7 @@ pub struct SerialComponent {
     /// Date the URL was accessed.
     #[cfg_attr(feature = "bindings", specta(type = Option<String>))]
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub accessed: Option<EdtfString>,
+    pub accessed: Option<DateValue>,
     /// BCP 47 language of the component.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub language: Option<LangID>,
@@ -1010,7 +1010,7 @@ pub struct SerialComponent {
     /// Date the component became publicly available (e.g., ahead-of-print date).
     #[cfg_attr(feature = "bindings", specta(type = Option<String>))]
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub available_date: Option<EdtfString>,
+    pub available_date: Option<DateValue>,
     /// Event relation associated with the component, such as a performance venue/date.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub event: Option<WorkRelation>,
@@ -1049,10 +1049,10 @@ struct SerialComponentDeser {
     contributors: Vec<ContributorEntry>,
     #[cfg_attr(feature = "bindings", specta(type = String))]
     #[serde(default)]
-    created: EdtfString,
+    created: DateValue,
     #[cfg_attr(feature = "bindings", specta(type = String))]
     #[serde(default)]
-    issued: EdtfString,
+    issued: DateValue,
     container: Option<WorkRelation>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     volume: Option<String>,
@@ -1073,7 +1073,7 @@ struct SerialComponentDeser {
     #[serde(alias = "URL")]
     url: Option<Url>,
     #[cfg_attr(feature = "bindings", specta(type = Option<String>))]
-    accessed: Option<EdtfString>,
+    accessed: Option<DateValue>,
     language: Option<LangID>,
     #[serde(default, skip_serializing_if = "HashMap::is_empty")]
     field_languages: FieldLanguageMap,
@@ -1091,7 +1091,7 @@ struct SerialComponentDeser {
     section: Option<String>,
     status: Option<String>,
     #[cfg_attr(feature = "bindings", specta(type = Option<String>))]
-    available_date: Option<EdtfString>,
+    available_date: Option<DateValue>,
     event: Option<WorkRelation>,
     duration: Option<String>,
     reviewed: Option<WorkRelation>,
@@ -1199,7 +1199,7 @@ pub struct Serial {
     /// Date the URL was accessed.
     #[cfg_attr(feature = "bindings", specta(type = Option<String>))]
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub accessed: Option<EdtfString>,
+    pub accessed: Option<DateValue>,
     /// BCP 47 language of the serial.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub language: Option<LangID>,
@@ -1241,7 +1241,7 @@ struct SerialDeser {
     #[serde(alias = "URL")]
     url: Option<Url>,
     #[cfg_attr(feature = "bindings", specta(type = Option<String>))]
-    accessed: Option<EdtfString>,
+    accessed: Option<DateValue>,
     language: Option<LangID>,
     #[serde(default, skip_serializing_if = "HashMap::is_empty")]
     field_languages: FieldLanguageMap,

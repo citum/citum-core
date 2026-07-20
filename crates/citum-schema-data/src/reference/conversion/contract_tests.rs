@@ -29,14 +29,14 @@ fn structured_circa_csl_dates_convert_to_approximate_edtf() {
     // 7714 §7.5.4.3), not circa — see `copyright_year_from_legacy` and
     // `docs/specs/DATE_MODEL.md`. Only the structured `circa: true` flag
     // maps to EDTF approximate (`~`).
-    let structured: EdtfString = csl_legacy::csl_json::DateVariable {
+    let structured: DateValue = csl_legacy::csl_json::DateVariable {
         date_parts: Some(vec![vec![1988]]),
         circa: Some(true),
         ..Default::default()
     }
     .into();
 
-    assert_eq!(structured.0, "1988~");
+    assert_eq!(structured.value, "1988~");
 }
 
 /// Build the minimal legacy reference the contract test converts for a
