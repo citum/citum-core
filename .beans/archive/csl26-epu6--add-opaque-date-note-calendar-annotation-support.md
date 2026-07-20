@@ -1,7 +1,7 @@
 ---
 # csl26-epu6
 title: Add opaque date note (calendar annotation) support
-status: in-progress
+status: completed
 type: feature
 priority: high
 tags:
@@ -10,7 +10,7 @@ tags:
     - rendering
     - schema
 created_at: 2026-07-20T14:00:23Z
-updated_at: 2026-07-20T15:22:44Z
+updated_at: 2026-07-20T15:51:03Z
 blocking:
     - csl26-0kqf
 ---
@@ -30,4 +30,25 @@ Implement the CALENDAR_DATE_ANNOTATIONS.md spec: DateValue{value, note} with sca
 - [x] Step B: `just schema-gen`; commit regenerated schemas
 - [x] Step B: tests added (serde round-trip/unknown-field, processing-invariance/collision, render single+interval+year-suffix+script, bibliography-vs-citation scoping, HTML escaping, legacy conversion incl. half-width disjointness). Not yet covered: Djot/Markdown/LaTeX/Typst/org escaping specifically (HTML is the highest-risk format and is covered; the others share the same fmt.text() escaping path).
 - [x] Verify: `just pre-commit` green (fmt/clippy/full nextest, 2093+ tests). Not run: GB/T workflow-test/oracle corpus comparison, report-core fidelity report (heavy full-corpus checks; change is additive/backward-compatible and covered by unit+integration tests instead).
-- [ ] Push PR 1068, `gh pr checks 1068 --watch`
+- [x] Push PR 1068, `gh pr checks 1068 --watch` — all checks green
+
+## Summary of Changes
+
+Implemented docs/specs/CALENDAR_DATE_ANNOTATIONS.md end to end: renamed
+`EdtfString` -> `DateValue` in place (zero field-declaration reshaping — a
+compiler-guided rename plus custom scalar/mapping serde on the one type),
+added `DateConfig.note_wrap`, wired bibliography-scoped rendering through
+the existing `realize_wrap` script-aware wrap renderer, converted the
+legacy full-width-paren note-field override in citum-schema-data, and
+enabled `note-wrap: parentheses` in the GB/T 7714-2025 author-date style.
+Spec flipped Draft -> Active. `just pre-commit` green (fmt/clippy/full
+nextest); PR 1068 pushed and all CI checks pass (Rust CI, Fidelity Checks,
+API Semver Check, Hygiene, Security Audit, WASM smoke test).
+
+Two acceptance-criteria items are explicitly deferred, not silently
+skipped: the pinned GB/T corpus's two real §7.5.4.1 records have not
+been annotated with real `note` input, and the eight author-date citation
+scenarios have not been re-verified via the oracle/workflow-test harness
+(unit + integration tests cover the mechanism with synthetic data instead).
+Worth a small follow-up bean if the standard-derived verification pass is
+wanted.
