@@ -33,6 +33,26 @@ In many descriptive standards (including archival standards like DACS), the prim
 
 These role-specific dates supplement `created` and `issued`; they do not replace `created` as the canonical creation date.
 
+### Date Annotations
+
+Any date field may need to retain source-calendar wording alongside its
+canonical EDTF value. The Draft
+[Date Annotations specification](./CALENDAR_DATE_ANNOTATIONS.md) defines a
+backward-compatible structured form:
+
+```yaml
+issued:
+  value: "1947"
+  note: "民国三十六年"
+```
+
+The EDTF `value` remains the sole input for sorting, disambiguation, and
+other date computation. `note` is opaque display metadata — it identifies no
+calendar system and appears only when a style opts in — so it applies
+uniformly to any date field, not just a calendar-note special case. Existing
+scalar input such as `issued: "1947"` remains canonical when no annotation is
+present.
+
 ### Publication-Year Substitutes (GB/T 7714 §7.5.4.3)
 
 When the true publication year is unknown, GB/T 7714 §7.5.4.3 defines three
