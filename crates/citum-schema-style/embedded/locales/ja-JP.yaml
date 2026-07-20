@@ -1,0 +1,772 @@
+locale-schema-version: "2"
+locale: ja-JP
+
+# EXPERT REVIEW NEEDED: this locale was authored from documented Japanese
+# citation conventions (SIST 02 / common academic-publishing practice), not
+# by a native speaker or professional translator. Please have a
+# Japanese-language editor verify role/term vocabulary, quote characters,
+# and date-pattern assembly before relying on this locale for
+# publication-grade output.
+
+evaluation:
+  message-syntax: mf2
+dates:
+  months:
+    long:
+      - 1月
+      - 2月
+      - 3月
+      - 4月
+      - 5月
+      - 6月
+      - 7月
+      - 8月
+      - 9月
+      - 10月
+      - 11月
+      - 12月
+    short:
+      - 1月
+      - 2月
+      - 3月
+      - 4月
+      - 5月
+      - 6月
+      - 7月
+      - 8月
+      - 9月
+      - 10月
+      - 11月
+      - 12月
+  seasons:
+    - 春
+    - 夏
+    - 秋
+    - 冬
+roles:
+  chair:
+    long:
+      singular: 議長
+      plural: 議長
+    verb: 議長
+  collection-editor:
+    long:
+      singular: 叢書編集者
+      plural: 叢書編集者
+    short:
+      singular: 編
+      plural: 編
+    verb: 編集
+    verb-short: 編
+  compiler:
+    long:
+      singular: 編纂者
+      plural: 編纂者
+    short:
+      singular: 編纂
+      plural: 編纂
+    verb: 編纂
+    verb-short: 編纂
+  container-author:
+    long:
+      singular: 著者
+      plural: 著者
+    verb: 著
+  contributor:
+    long:
+      singular: 寄稿者
+      plural: 寄稿者
+    short:
+      singular: 寄稿
+      plural: 寄稿
+    verb: 寄稿
+    verb-short: 寄稿
+  curator:
+    long:
+      singular: 監修者
+      plural: 監修者
+    short:
+      singular: 監修
+      plural: 監修
+    verb: 監修
+    verb-short: 監修
+  director:
+    long:
+      singular: 監督
+      plural: 監督
+    short:
+      singular: 監督
+      plural: 監督
+    verb: 監督
+    verb-short: 監督
+  editor:
+    long:
+      singular: 編集者
+      plural: 編集者
+    short:
+      singular: 編
+      plural: 編
+    verb: 編集
+    verb-short: 編
+  editor-translator:
+    long:
+      singular: 編集・翻訳
+      plural: 編集・翻訳
+    short:
+      singular: 編・訳
+      plural: 編・訳
+    verb: 編集・翻訳
+    verb-short: 編・訳
+  editorial-director:
+    long:
+      singular: 編集責任者
+      plural: 編集責任者
+    short:
+      singular: 編
+      plural: 編
+    verb: 編集
+    verb-short: 編
+  executive-producer:
+    long:
+      singular: 制作総指揮
+      plural: 制作総指揮
+    short:
+      singular: 総指揮
+      plural: 総指揮
+    verb: 制作総指揮
+    verb-short: 総指揮
+  guest:
+    long:
+      singular: ゲスト
+      plural: ゲスト
+    verb: ゲスト出演
+    verb-short: ゲスト
+  host:
+    long:
+      singular: 司会者
+      plural: 司会者
+    verb: 司会
+    verb-short: 司会
+  illustrator:
+    long:
+      singular: イラストレーター
+      plural: イラストレーター
+    short:
+      singular: 絵
+      plural: 絵
+    verb: イラスト
+    verb-short: 絵
+  interviewer:
+    long:
+      singular: インタビュアー
+      plural: インタビュアー
+    verb: インタビュー
+  narrator:
+    long:
+      singular: ナレーター
+      plural: ナレーター
+    short:
+      singular: ナレ
+      plural: ナレ
+    verb: 語り
+    verb-short: 語り
+  organizer:
+    long:
+      singular: 主催者
+      plural: 主催者
+    short:
+      singular: 主催
+      plural: 主催
+    verb: 主催
+    verb-short: 主催
+  original-author:
+    long:
+      singular: 原著者
+      plural: 原著者
+    verb: 原著
+  performer:
+    long:
+      singular: 出演者
+      plural: 出演者
+    short:
+      singular: 出演
+      plural: 出演
+    verb: 出演
+    verb-short: 出演
+  producer:
+    long:
+      singular: プロデューサー
+      plural: プロデューサー
+    short:
+      singular: P
+      plural: P
+    verb: 制作
+    verb-short: 制作
+  recipient:
+    long:
+      singular: 受取人
+      plural: 受取人
+    verb: 宛
+  reviewed-author:
+    long:
+      singular: 原著者
+      plural: 原著者
+    verb: 原著
+  script-writer:
+    long:
+      singular: 脚本家
+      plural: 脚本家
+    short:
+      singular: 脚本
+      plural: 脚本
+    verb: 脚本
+    verb-short: 脚本
+  series-creator:
+    long:
+      singular: 原作者
+      plural: 原作者
+    short:
+      singular: 原作
+      plural: 原作
+    verb: 原作
+    verb-short: 原作
+  translator:
+    long:
+      singular: 翻訳者
+      plural: 翻訳者
+    short:
+      singular: 訳
+      plural: 訳
+    verb: 翻訳
+    verb-short: 訳
+terms:
+  accessed:
+    long: 閲覧
+  advance_online_publication:
+    long: 早期公開
+  album:
+    long: アルバム
+  and:
+    long: と
+  and others:
+    long: ほか
+  anonymous:
+    long: 著者不明
+    short: 著者不明
+  at:
+    long: にて
+  audio_recording:
+    long: 音声記録
+  available at:
+    long: 入手先
+  by:
+    long: 著
+  circa:
+    long: 頃
+    short: 頃
+  cited:
+    long: 引用
+  et_al:
+    long: ほか
+  film:
+    long: 映画
+  forthcoming:
+    long: 近刊
+  from:
+    long: より
+  henceforth:
+    long: 以下
+  ibid:
+    long: 同上
+  in:
+    long: 所収
+  in press:
+    long: 印刷中
+  internet:
+    long: インターネット
+  issued:
+    long: 発行
+  letter:
+    long: 書簡
+  loc_cit:
+    long: 前掲書
+  no date:
+    long: 日付なし
+    short: 日付なし
+  no_place:
+    long: 出版地不明
+    short: 出版地不明
+  no_publisher:
+    long: 出版者不明
+    short: 出版者不明
+  on:
+    long: に
+  online:
+    long: オンライン
+  op_cit:
+    long: 前掲
+  original_work_published:
+    long: 原著発行
+  personal_communication:
+    long: 私信
+  podcast:
+    long: ポッドキャスト
+  podcast_episode:
+    long: ポッドキャストエピソード
+  preprint:
+    long: プレプリント
+  presented at:
+    long: 発表
+  radio_broadcast:
+    long: ラジオ放送
+  radio_series:
+    long: ラジオシリーズ
+  radio_series_episode:
+    long: ラジオシリーズエピソード
+  reference:
+    long:
+      singular: 参考文献
+      plural: 参考文献
+    short:
+      singular: 参考
+      plural: 参考
+  retrieved:
+    long: 取得
+  review_of:
+    long: 書評
+    short: 書評
+  scale:
+    long: 縮尺
+  special_issue:
+    long: 特集号
+  special_section:
+    long: 特集
+  television_broadcast:
+    long: テレビ放送
+  television_series:
+    long: テレビシリーズ
+  television_series_episode:
+    long: テレビシリーズエピソード
+  video:
+    long: ビデオ
+  working_paper:
+    long: ワーキングペーパー
+  article:
+    long: プレプリント
+  article_journal:
+    long: 雑誌論文
+    short: 雑誌論文
+  article_magazine:
+    long: 雑誌記事
+    short: 雑誌記事
+  article_newspaper:
+    long: 新聞記事
+    short: 新聞記事
+  bill:
+    long: 法案
+  broadcast:
+    long: 放送
+  classic:
+    long: 古典
+  collection:
+    long: コレクション
+  dataset:
+    long: データセット
+  document:
+    long: 文書
+    short: 文書
+  entry:
+    long: 項目
+  entry_dictionary:
+    long: 辞書項目
+  entry_encyclopedia:
+    long: 事典項目
+  event:
+    long: イベント
+  graphic:
+    long: 図版
+    short: 図
+  hearing:
+    long: 公聴会
+    verb: 証言
+  interview:
+    long: インタビュー
+    short: インタビュー
+  legal_case:
+    long: 判例
+  legislation:
+    long: 法令
+  manuscript:
+    long: 写本
+    short: 写本
+  map:
+    long: 地図
+  motion_picture:
+    long: 映像記録
+    short: 映像
+  musical_score:
+    long: 楽譜
+  pamphlet:
+    long: パンフレット
+  paper_conference:
+    long: 会議論文
+  patent:
+    long: 特許
+  performance:
+    long: 公演
+  periodical:
+    long: 定期刊行物
+  post:
+    long: 投稿
+  post_weblog:
+    long: ブログ記事
+  regulation:
+    long: 規則
+  report:
+    long: 報告書
+    short: 報告
+  review:
+    long: 書評
+    short: 書評
+    verb: 書評
+  review_book:
+    long: 書評
+    short: 書評
+    verb: 書評
+  software:
+    long: ソフトウェア
+  song:
+    long: 録音
+    short: 録音
+  speech:
+    long: 講演
+  standard:
+    long: 規格
+  thesis:
+    long: 学位論文
+  treaty:
+    long: 条約
+  webpage:
+    long: ウェブページ
+  ad:
+    long: 紀元後
+  bc:
+    long: 紀元前
+  bce:
+    long: 紀元前
+  ce:
+    long: 紀元後
+  open_quote:
+    long: 「
+  close_quote:
+    long: 」
+  open_inner_quote:
+    long: 『
+  close_inner_quote:
+    long: 』
+  page_range_delimiter:
+    long: "–"
+  colon:
+    long: "："
+  comma:
+    long: "、"
+  semicolon:
+    long: "；"
+  ordinal:
+    long: 第
+  act:
+    long:
+      singular: 幕
+      plural: 幕
+  appendix:
+    long:
+      singular: 付録
+      plural: 付録
+    short:
+      singular: 付
+      plural: 付
+  article_locator:
+    long:
+      singular: 条
+      plural: 条
+    short:
+      singular: 条
+      plural: 条
+  book:
+    long:
+      singular: 巻
+      plural: 巻
+    short: 巻
+  canon:
+    long:
+      singular: 経
+      plural: 経
+  chapter:
+    long:
+      singular: 章
+      plural: 章
+    short: 章
+  column:
+    long:
+      singular: 欄
+      plural: 欄
+    short: 欄
+  elocation:
+    long:
+      singular: 電子頁
+      plural: 電子頁
+    short:
+      singular: 電子頁
+      plural: 電子頁
+  equation:
+    long:
+      singular: 式
+      plural: 式
+    short:
+      singular: 式
+      plural: 式
+  figure:
+    long:
+      singular: 図
+      plural: 図
+    short: 図
+  folio:
+    long:
+      singular: 丁
+      plural: 丁
+    short: 丁
+  issue:
+    long:
+      singular: 号
+      plural: 号
+    short: 号
+  line:
+    long:
+      singular: 行
+      plural: 行
+    short: 行
+  note:
+    long:
+      singular: 注
+      plural: 注
+    short: 注
+  opus:
+    long:
+      singular: 作品番号
+      plural: 作品番号
+    short: 作品番号
+  page:
+    long:
+      singular: 頁
+      plural: 頁
+    short:
+      singular: 頁
+      plural: 頁
+  paragraph:
+    long:
+      singular: 段落
+      plural: 段落
+    short: 段
+  part:
+    long:
+      singular: 部
+      plural: 部
+    short: 部
+  rule:
+    long:
+      singular: 規則
+      plural: 規則
+    short:
+      singular: 規則
+      plural: 規則
+  scene:
+    long:
+      singular: 場
+      plural: 場
+    short:
+      singular: 場
+      plural: 場
+  section:
+    long:
+      singular: 節
+      plural: 節
+    short: 節
+  sub_verbo:
+    long:
+      singular: 項目
+      plural: 項目
+    short:
+      singular: 項
+      plural: 項
+  supplement:
+    long:
+      singular: 補遺
+      plural: 補遺
+    short:
+      singular: 補
+      plural: 補
+  table:
+    long:
+      singular: 表
+      plural: 表
+    short:
+      singular: 表
+      plural: 表
+  timestamp:
+    long: ""
+    short: ""
+  title_locator:
+    long:
+      singular: 題
+      plural: 題
+    short:
+      singular: 題
+      plural: 題
+  verse:
+    long:
+      singular: 節
+      plural: 節
+    short:
+      singular: 節
+      plural: 節
+  volume:
+    long:
+      singular: 巻
+      plural: 巻
+    short:
+      singular: 巻
+      plural: 巻
+  chapter_number:
+    long:
+      singular: 章
+      plural: 章
+    short:
+      singular: 章
+      plural: 章
+  citation_number:
+    long:
+      singular: 引用番号
+      plural: 引用番号
+    short:
+      singular: 引用番号
+      plural: 引用番号
+  collection_number:
+    long:
+      singular: 号
+      plural: 号
+    short: 号
+  edition:
+    long:
+      singular: 版
+      plural: 版
+    short: 版
+  first_reference_note_number:
+    long:
+      singular: 前掲注
+      plural: 前掲注
+    short:
+      singular: 前掲注
+      plural: 前掲注
+  number:
+    long:
+      singular: 番号
+      plural: 番号
+    short:
+      singular: 番号
+      plural: 番号
+  number_of_pages:
+    long:
+      singular: 頁
+      plural: 頁
+    short:
+      singular: 頁
+      plural: 頁
+  number_of_volumes:
+    long:
+      singular: 巻
+      plural: 巻
+    short:
+      singular: 巻
+      plural: 巻
+  page_first:
+    long:
+      singular: 頁
+      plural: 頁
+    short:
+      singular: 頁
+      plural: 頁
+  printing:
+    long:
+      singular: 刷
+      plural: 刷
+    short:
+      singular: 刷
+      plural: 刷
+  version:
+    long: 版
+
+messages:
+  number.ordinal: "第{$value}"
+  term.page-label: "頁"
+  term.page-label-long: "頁"
+  term.and: "と"
+  term.et-al: "ほか"
+  term.no-date: "日付なし"
+  term.accessed: "閲覧"
+  term.retrieved: "取得"
+  role.editor.label: "編"
+  role.editor.label-long: "編集者"
+  role.editor.verb: "編集"
+  term.archive-collection-label: "コレクション"
+  term.archive-series-label: "シリーズ"
+  term.archive-box-label: "箱"
+  term.archive-folder-label: "フォルダ"
+  term.archive-item-label: "資料"
+  pattern.accessed-date: "{$date}閲覧"
+  pattern.accessed-date-colon: "閲覧：{$date}"
+  pattern.in-container: "{$container}所収"
+  pattern.in-container-colon: "所収：{$container}"
+  pattern.originally-published-as: "原題『{$title}』"
+  pattern.cited-date: "{$date}引用"
+  pattern.issued-date: "{$date}発行"
+  pattern.retrieved-date: "{$date}取得"
+  pattern.published-online: "オンライン公開"
+  pattern.published-online-date: "{$date}オンライン公開"
+  pattern.patent-number: "特許第{$number}号"
+  pattern.locator-at: "{$locator}"
+  pattern.retrieved-from: "{$url}より取得"
+  pattern.available-at: "{$url}で入手可能"
+  date.open-ended: "現在"
+
+date-formats:
+  numeric-short: "yyyy/M/d"
+  textual-long: "yyyy年M月"
+  textual-full: "yyyy年M月d日"
+  bib-default: "yyyy年M月d日"
+  year-only: "yyyy"
+  iso: "yyyy-MM-dd"
+
+grammar-options:
+  punctuation-in-quote: false
+  nbsp-before-colon: false
+  open-quote: "「"
+  close-quote: "」"
+  open-inner-quote: "『"
+  close-inner-quote: "』"
+  serial-comma: false
+  page-range-delimiter: "–"
+  title-subtitle-delimiter: "："
+  subtitle-delimiter: "，"
+  strong-terminal-comma-policy: keep-terminal
+  delimiter-suppressing-terminal-marks: "？！…"
+
+legacy-term-aliases:
+  page: term.page-label
+  pages: term.page-label
+  et_al: term.et-al
+  and: term.and
+  accessed: term.accessed
+  retrieved: term.retrieved
+  no_date: term.no-date
+  "no date": term.no-date
+  editor: role.editor.label

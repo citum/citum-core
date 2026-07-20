@@ -1,0 +1,789 @@
+locale-schema-version: "2"
+locale: ru-RU
+
+# EXPERT REVIEW NEEDED: this locale was authored from documented Russian
+# (GOST R 7.0.5-2008) citation conventions, not by a native speaker or
+# professional translator. Please have a Russian-language editor verify
+# role/term vocabulary, grammatical case/gender agreement, quote
+# characters, and date-pattern assembly before relying on this locale for
+# publication-grade output. Note: plural messages below use the binary
+# one/* selector pattern already established by de-DE/ar-AR, not full
+# CLDR one/few/many categories — a known simplification, not a regression.
+
+evaluation:
+  message-syntax: mf2
+dates:
+  months:
+    long:
+      - январь
+      - февраль
+      - март
+      - апрель
+      - май
+      - июнь
+      - июль
+      - август
+      - сентябрь
+      - октябрь
+      - ноябрь
+      - декабрь
+    short:
+      - янв.
+      - февр.
+      - март
+      - апр.
+      - май
+      - июнь
+      - июль
+      - авг.
+      - сент.
+      - окт.
+      - нояб.
+      - дек.
+  seasons:
+    - весна
+    - лето
+    - осень
+    - зима
+roles:
+  chair:
+    long:
+      singular: председатель
+      plural: председатели
+    verb: под председательством
+  collection-editor:
+    long:
+      singular: редактор серии
+      plural: редакторы серии
+    short:
+      singular: ред. сер.
+      plural: ред. сер.
+    verb: под редакцией
+    verb-short: под ред.
+  compiler:
+    long:
+      singular: составитель
+      plural: составители
+    short:
+      singular: сост.
+      plural: сост.
+    verb: составлено
+    verb-short: сост.
+  container-author:
+    long:
+      singular: автор
+      plural: авторы
+    verb: авт.
+  contributor:
+    long:
+      singular: автор раздела
+      plural: авторы разделов
+    short:
+      singular: авт. разд.
+      plural: авт. разд.
+    verb: при участии
+    verb-short: с уч.
+  curator:
+    long:
+      singular: куратор
+      plural: кураторы
+    short:
+      singular: кур.
+      plural: кур.
+    verb: куратор
+    verb-short: кур.
+  director:
+    long:
+      singular: режиссёр
+      plural: режиссёры
+    short:
+      singular: реж.
+      plural: реж.
+    verb: режиссёр
+    verb-short: реж.
+  editor:
+    long:
+      singular: редактор
+      plural: редакторы
+    short:
+      singular: ред.
+      plural: ред.
+    verb: под редакцией
+    verb-short: под ред.
+  editor-translator:
+    long:
+      singular: редактор и переводчик
+      plural: редакторы и переводчики
+    short:
+      singular: ред. и пер.
+      plural: ред. и пер.
+    verb: под редакцией и в переводе
+    verb-short: под ред. и в пер.
+  editorial-director:
+    long:
+      singular: ответственный редактор
+      plural: ответственные редакторы
+    short:
+      singular: отв. ред.
+      plural: отв. ред.
+    verb: под редакцией
+    verb-short: под ред.
+  executive-producer:
+    long:
+      singular: исполнительный продюсер
+      plural: исполнительные продюсеры
+    short:
+      singular: исполн. прод.
+      plural: исполн. прод.
+    verb: исполнительный продюсер
+    verb-short: исполн. прод.
+  guest:
+    long:
+      singular: гость
+      plural: гости
+    verb: с участием
+    verb-short: с уч.
+  host:
+    long:
+      singular: ведущий
+      plural: ведущие
+    verb: вёл
+    verb-short: вёл
+  illustrator:
+    long:
+      singular: иллюстратор
+      plural: иллюстраторы
+    short:
+      singular: ил.
+      plural: ил.
+    verb: иллюстрации
+    verb-short: ил.
+  interviewer:
+    long:
+      singular: интервьюер
+      plural: интервьюеры
+    verb: интервью
+  narrator:
+    long:
+      singular: диктор
+      plural: дикторы
+    short:
+      singular: дикт.
+      plural: дикт.
+    verb: читает
+    verb-short: чит.
+  organizer:
+    long:
+      singular: организатор
+      plural: организаторы
+    short:
+      singular: орг.
+      plural: орг.
+    verb: организовано
+    verb-short: орг.
+  original-author:
+    long:
+      singular: автор оригинала
+      plural: авторы оригинала
+    verb: авт. ориг.
+  performer:
+    long:
+      singular: исполнитель
+      plural: исполнители
+    short:
+      singular: исп.
+      plural: исп.
+    verb: исполнено
+    verb-short: исп.
+  producer:
+    long:
+      singular: продюсер
+      plural: продюсеры
+    short:
+      singular: прод.
+      plural: прод.
+    verb: продюсер
+    verb-short: прод.
+  recipient:
+    long:
+      singular: адресат
+      plural: адресаты
+    verb: адресовано
+  reviewed-author:
+    long:
+      singular: автор рецензируемой работы
+      plural: авторы рецензируемой работы
+    verb: авт.
+  script-writer:
+    long:
+      singular: сценарист
+      plural: сценаристы
+    short:
+      singular: сцен.
+      plural: сцен.
+    verb: сценарий
+    verb-short: сцен.
+  series-creator:
+    long:
+      singular: автор идеи
+      plural: авторы идеи
+    short:
+      singular: авт. идеи
+      plural: авт. идеи
+    verb: автор идеи
+    verb-short: авт. идеи
+  translator:
+    long:
+      singular: переводчик
+      plural: переводчики
+    short:
+      singular: пер.
+      plural: пер.
+    verb: перевод
+    verb-short: пер.
+terms:
+  accessed:
+    long: дата обращения
+  advance_online_publication:
+    long: онлайн-публикация до печати
+  album:
+    long: альбом
+  and:
+    long: и
+  and others:
+    long: и др.
+  anonymous:
+    long: без автора
+    short: б. а.
+  at:
+    long: в
+  audio_recording:
+    long: звукозапись
+  available at:
+    long: доступно по адресу
+  by:
+    long: авт.
+  circa:
+    long: около
+    short: ок.
+  cited:
+    long: цит. по
+  et_al:
+    long: и др.
+  film:
+    long: фильм
+  forthcoming:
+    long: в печати
+  from:
+    long: из
+  henceforth:
+    long: далее
+  ibid:
+    long: там же
+  in:
+    long: в
+  in press:
+    long: в печати
+  internet:
+    long: интернет
+  issued:
+    long: издано
+  letter:
+    long: письмо
+  loc_cit:
+    long: указ. соч.
+  no date:
+    long: без даты
+    short: б. д.
+  no_place:
+    long: без места
+    short: б. м.
+  no_publisher:
+    long: без издательства
+    short: б. и.
+  on:
+    long: на
+  online:
+    long: онлайн
+  op_cit:
+    long: указ. соч.
+  original_work_published:
+    long: оригинал издан
+  personal_communication:
+    long: личное сообщение
+  podcast:
+    long: подкаст
+  podcast_episode:
+    long: эпизод подкаста
+  preprint:
+    long: препринт
+  presented at:
+    long: доклад на
+  radio_broadcast:
+    long: радиопередача
+  radio_series:
+    long: радиосериал
+  radio_series_episode:
+    long: серия радиосериала
+  reference:
+    long:
+      singular: справочник
+      plural: справочники
+    short:
+      singular: справ.
+      plural: справ.
+  retrieved:
+    long: получено
+  review_of:
+    long: рец. на
+    short: рец. на
+  scale:
+    long: масштаб
+  special_issue:
+    long: спецвыпуск
+  special_section:
+    long: спецраздел
+  television_broadcast:
+    long: телепередача
+  television_series:
+    long: телесериал
+  television_series_episode:
+    long: серия телесериала
+  video:
+    long: видеозапись
+  working_paper:
+    long: препринт (рабочий документ)
+  article:
+    long: препринт
+  article_journal:
+    long: статья в журнале
+    short: ст. в журн.
+  article_magazine:
+    long: статья в журнале (научно-популярном)
+    short: ст. в журн.
+  article_newspaper:
+    long: статья в газете
+    short: ст. в газ.
+  bill:
+    long: законопроект
+  broadcast:
+    long: передача
+  classic:
+    long: классическое произведение
+  collection:
+    long: сборник
+  dataset:
+    long: набор данных
+  document:
+    long: документ
+    short: докум.
+  entry:
+    long: статья
+  entry_dictionary:
+    long: словарная статья
+  entry_encyclopedia:
+    long: энциклопедическая статья
+  event:
+    long: мероприятие
+  graphic:
+    long: изображение
+    short: изобр.
+  hearing:
+    long: слушание
+    verb: показания
+  interview:
+    long: интервью
+    short: интервью
+  legal_case:
+    long: судебное дело
+  legislation:
+    long: законодательный акт
+  manuscript:
+    long: рукопись
+    short: рук.
+  map:
+    long: карта
+  motion_picture:
+    long: видеозапись
+    short: видеозап.
+  musical_score:
+    long: нотное издание
+  pamphlet:
+    long: брошюра
+  paper_conference:
+    long: доклад конференции
+  patent:
+    long: патент
+  performance:
+    long: выступление
+  periodical:
+    long: периодическое издание
+  post:
+    long: сообщение
+  post_weblog:
+    long: запись в блоге
+  regulation:
+    long: постановление
+  report:
+    long: отчёт
+    short: отчёт
+  review:
+    long: рецензия
+    short: рец.
+    verb: рец. на
+  review_book:
+    long: рецензия на книгу
+    short: рец. на кн.
+    verb: рец. на кн.
+  software:
+    long: программное обеспечение
+  song:
+    long: аудиозапись
+    short: аудиозап.
+  speech:
+    long: выступление
+  standard:
+    long: стандарт
+  thesis:
+    long: диссертация
+  treaty:
+    long: договор
+  webpage:
+    long: веб-страница
+  ad:
+    long: н. э.
+  bc:
+    long: до н. э.
+  bce:
+    long: до н. э.
+  ce:
+    long: н. э.
+  open_quote:
+    long: "«"
+  close_quote:
+    long: "»"
+  open_inner_quote:
+    long: "„"
+  close_inner_quote:
+    long: "“"
+  page_range_delimiter:
+    long: "–"
+  colon:
+    long: ":"
+  comma:
+    long: ","
+  semicolon:
+    long: ";"
+  ordinal:
+    long: "-й"
+  act:
+    long:
+      singular: действие
+      plural: действия
+  appendix:
+    long:
+      singular: приложение
+      plural: приложения
+    short:
+      singular: прил.
+      plural: прил.
+  article_locator:
+    long:
+      singular: статья
+      plural: статьи
+    short:
+      singular: ст.
+      plural: ст.
+  book:
+    long:
+      singular: книга
+      plural: книги
+    short: кн.
+  canon:
+    long:
+      singular: канон
+      plural: каноны
+  chapter:
+    long:
+      singular: глава
+      plural: главы
+    short: гл.
+  column:
+    long:
+      singular: колонка
+      plural: колонки
+    short: кол.
+  elocation:
+    long:
+      singular: электронный локатор
+      plural: электронные локаторы
+    short:
+      singular: эл. лок.
+      plural: эл. лок.
+  equation:
+    long:
+      singular: уравнение
+      plural: уравнения
+    short:
+      singular: ур.
+      plural: ур.
+  figure:
+    long:
+      singular: рисунок
+      plural: рисунки
+    short: рис.
+  folio:
+    long:
+      singular: лист
+      plural: листы
+    short: л.
+  issue:
+    long:
+      singular: номер
+      plural: номера
+    short: №
+  line:
+    long:
+      singular: строка
+      plural: строки
+    short: стр.
+  note:
+    long:
+      singular: примечание
+      plural: примечания
+    short: прим.
+  opus:
+    long:
+      singular: опус
+      plural: опусы
+    short: оп.
+  page:
+    long:
+      singular: страница
+      plural: страницы
+    short:
+      singular: с.
+      plural: с.
+  paragraph:
+    long:
+      singular: абзац
+      plural: абзацы
+    short: абз.
+  part:
+    long:
+      singular: часть
+      plural: части
+    short: ч.
+  rule:
+    long:
+      singular: правило
+      plural: правила
+    short:
+      singular: прав.
+      plural: прав.
+  scene:
+    long:
+      singular: сцена
+      plural: сцены
+    short:
+      singular: сц.
+      plural: сц.
+  section:
+    long:
+      singular: раздел
+      plural: разделы
+    short: разд.
+  sub_verbo:
+    long:
+      singular: словарная статья
+      plural: словарные статьи
+    short:
+      singular: сл. ст.
+      plural: сл. ст.
+  supplement:
+    long:
+      singular: приложение
+      plural: приложения
+    short:
+      singular: прил.
+      plural: прил.
+  table:
+    long:
+      singular: таблица
+      plural: таблицы
+    short:
+      singular: табл.
+      plural: табл.
+  timestamp:
+    long: ""
+    short: ""
+  title_locator:
+    long:
+      singular: заглавие
+      plural: заглавия
+    short:
+      singular: загл.
+      plural: загл.
+  verse:
+    long:
+      singular: стих
+      plural: стихи
+    short:
+      singular: ст.
+      plural: ст.
+  volume:
+    long:
+      singular: том
+      plural: тома
+    short:
+      singular: т.
+      plural: т.
+  chapter_number:
+    long:
+      singular: глава
+      plural: главы
+    short:
+      singular: гл.
+      plural: гл.
+  citation_number:
+    long:
+      singular: номер ссылки
+      plural: номера ссылок
+    short:
+      singular: № ссылки
+      plural: № ссылок
+  collection_number:
+    long:
+      singular: номер
+      plural: номера
+    short: №
+  edition:
+    long:
+      singular: издание
+      plural: издания
+    short: изд.
+  first_reference_note_number:
+    long:
+      singular: см. сноску
+      plural: см. сноски
+    short:
+      singular: см. сноску
+      plural: см. сноски
+  number:
+    long:
+      singular: номер
+      plural: номера
+    short:
+      singular: №
+      plural: №
+  number_of_pages:
+    long:
+      singular: страница
+      plural: страницы
+    short:
+      singular: с.
+      plural: с.
+  number_of_volumes:
+    long:
+      singular: том
+      plural: тома
+    short:
+      singular: т.
+      plural: т.
+  page_first:
+    long:
+      singular: страница
+      plural: страницы
+    short:
+      singular: с.
+      plural: с.
+  printing:
+    long:
+      singular: тираж
+      plural: тиражи
+    short:
+      singular: тир.
+      plural: тир.
+  version:
+    long: версия
+
+messages:
+  number.ordinal: "{$value}-й"
+  term.page-label: "с."
+  term.page-label-long: |
+    .match {$count :plural}
+    when one {страница}
+    when * {страницы}
+  term.and: "и"
+  term.et-al: "и др."
+  term.no-date: "б. д."
+  term.accessed: "дата обращения"
+  term.retrieved: "получено"
+  role.editor.label: "ред."
+  role.editor.label-long: |
+    .match {$count :plural}
+    when one {редактор}
+    when * {редакторы}
+  role.editor.verb: "под редакцией"
+  term.archive-collection-label: "коллекция"
+  term.archive-series-label: "серия"
+  term.archive-box-label: |
+    .match {$count :plural}
+    when one {коробка}
+    when * {коробки}
+  term.archive-folder-label: |
+    .match {$count :plural}
+    when one {папка}
+    when * {папки}
+  term.archive-item-label: |
+    .match {$count :plural}
+    when one {единица хранения}
+    when * {единицы хранения}
+  pattern.accessed-date: "дата обращения {$date}"
+  pattern.accessed-date-colon: "дата обращения: {$date}"
+  pattern.in-container: "в {$container}"
+  pattern.in-container-colon: "в: {$container}"
+  pattern.originally-published-as: "первоначально опубликовано как «{$title}»"
+  pattern.cited-date: "цит. по {$date}"
+  pattern.issued-date: "издано {$date}"
+  pattern.retrieved-date: "получено {$date}"
+  pattern.published-online: "опубликовано онлайн"
+  pattern.published-online-date: "опубликовано онлайн {$date}"
+  pattern.patent-number: "патент № {$number}"
+  pattern.locator-at: "в {$locator}"
+  pattern.retrieved-from: "получено из {$url}"
+  pattern.available-at: "доступно по адресу {$url}"
+  date.open-ended: "по настоящее время"
+
+date-formats:
+  numeric-short: "d.M.yyyy"
+  textual-long: "MMMM yyyy"
+  textual-full: "d MMMM yyyy"
+  bib-default: "d MMMM yyyy"
+  year-only: "yyyy"
+  iso: "yyyy-MM-dd"
+
+grammar-options:
+  punctuation-in-quote: false
+  nbsp-before-colon: false
+  open-quote: "«"
+  close-quote: "»"
+  open-inner-quote: "„"
+  close-inner-quote: "“"
+  serial-comma: false
+  page-range-delimiter: "–"
+  title-subtitle-delimiter: ": "
+  subtitle-delimiter: ", "
+  strong-terminal-comma-policy: keep-terminal
+  delimiter-suppressing-terminal-marks: "?!…"
+
+legacy-term-aliases:
+  page: term.page-label
+  pages: term.page-label
+  et_al: term.et-al
+  and: term.and
+  accessed: term.accessed
+  retrieved: term.retrieved
+  no_date: term.no-date
+  "no date": term.no-date
+  editor: role.editor.label
