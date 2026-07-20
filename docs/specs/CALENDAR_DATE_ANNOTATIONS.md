@@ -1,7 +1,7 @@
 # Calendar Date Annotations Specification
 
 **Status:** Active
-**Version:** 1.4
+**Version:** 1.5
 **Date:** 2026-07-20
 **Related:** [Date Model](./DATE_MODEL.md), [GB/T 7714—2025 Citation Conventions](../reference/GBT_7714_CITATION_CONVENTIONS.md), bean `csl26-0kqf` (the separate, still-unimplemented computed regnal-year feature this data model unblocks), bean `csl26-k2kp` (script-aware wrap renderer, completed; spec `docs/specs/PUNCTUATION_REALIZATION.md`), [PR #1067 discussion](https://github.com/citum/citum-core/pull/1067#issuecomment-5011594655)
 
@@ -137,6 +137,20 @@ date the style renders in that scope wraps its `note` (when the input has
 one) in the configured punctuation, appended after the complete formatted
 date. This is a single style-level setting, not a per-`TemplateDate` field,
 so it never has to be repeated across date components.
+
+**Extension point: a bare (unwrapped) note.** `WrapPunctuation` currently
+has three variants — `parentheses`, `brackets`, `quotes` — so `note-wrap`
+can hide the note (option absent) or wrap it in one of those three, but
+cannot render it delimiter-free, e.g. `1947 民国三十六年` rather than
+`1947（民国三十六年）`. Not attempted here — no known GB/T or other style
+needs it — but a later revision could add a `WrapPunctuation::None`
+(or similarly named) variant, `realize_wrap`-handled as an empty
+open/close pair. That would extend the *general* wrap vocabulary (shared
+by every `wrap:`-using template construct, not a note-specific field), so
+existing behavior is unaffected; the caller would still need to opt into
+a separator explicitly via `note-wrap: { punctuation: none, inner-prefix:
+" " }` — inner-prefix/suffix already exist for exactly this purpose and
+are not auto-inferred.
 
 `note-wrap` lives on `DateConfig`, not `MultilingualConfig`: it is a
 date-rendering concern, and script-appropriate delimiter width is handled
@@ -293,6 +307,13 @@ remains tracked by `csl26-6eak`.
 
 ## Changelog
 
+- v1.5 (2026-07-20): Per review feedback, document the bare-note render
+  extension point: `note-wrap` currently always applies one of
+  `parentheses`/`brackets`/`quotes`, with no delimiter-free option
+  (`1947 民国三十六年` rather than `1947（民国三十六年）`). Not
+  implemented; a future `WrapPunctuation::None` variant would extend the
+  general wrap vocabulary, not add note-specific machinery. No behavior
+  change.
 - v1.4 (2026-07-20): Status Draft → Active. Implements the feature:
   `EdtfString` renamed to `DateValue` in place (no new wrapper type, no
   per-field reshaping — see Public data type), `DateConfig.note_wrap`,
