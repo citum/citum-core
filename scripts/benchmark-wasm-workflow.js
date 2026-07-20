@@ -7,11 +7,16 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
  * @file benchmark-wasm-workflow.js
  * @description Simulates a word processor workflow using Citum WASM bindings.
  * Measures performance metrics for citation and bibliography rendering.
+ * --mode=stateless (default) uses the one-shot renderCitation/renderBibliography
+ * API; --mode=session uses the stateful DocumentSession API.
  */
 
 const { performance } = require('node:perf_hooks');
 const fs = require('node:fs');
+const os = require('node:os');
 const path = require('node:path');
+const { pathToFileURL } = require('node:url');
+const { execFileSync } = require('node:child_process');
 
 // --- Configuration ---
 const args = process.argv.slice(2);
@@ -25,20 +30,59 @@ const REFS_COUNT = parseInt(getArg('--refs', CI_MODE ? '50' : '500'), 10);
 const CITATIONS_COUNT = parseInt(getArg('--cites', CI_MODE ? '20' : '100'), 10);
 const REFRESH_INTERVAL = parseInt(getArg('--interval', CI_MODE ? '5' : '20'), 10);
 const STYLE_PATH = getArg('--style', 'styles/embedded/apa-7th.yaml');
+const SOURCE = getArg('--source', 'local');
+const MODE = getArg('--mode', 'stateless');
 
-function runBenchmark() {
-  // Lazy-load WASM so a missing artifact gives a clear, actionable error.
-  let renderCitation, renderBibliography, validateStyle;
+// Downloads the published @citum/engine package from JSR's npm-compatible
+// registry and loads it. This is a web-target (ESM) build, so it's loaded via
+// dynamic import and initialized with the wasm bytes directly (bypassing the
+// browser fetch() its generated init() normally uses).
+async function loadFromJsr() {
+  const scratchDir = fs.mkdtempSync(path.join(os.tmpdir(), 'citum-jsr-'));
+  console.log(`[Status] Downloading @citum/engine from JSR into ${scratchDir}...`);
+  execFileSync(
+    'npm',
+    ['install', '@jsr/citum__engine', '--no-save', '--prefix', scratchDir, '--registry', 'https://npm.jsr.io'],
+    { stdio: 'inherit' }
+  );
+
+  const pkgDir = path.join(scratchDir, 'node_modules', '@jsr', 'citum__engine');
+  const jsFile = path.join(pkgDir, 'citum_bindings.js');
+  const wasmFile = path.join(pkgDir, 'citum_bindings_bg.wasm');
+
+  const mod = await import(pathToFileURL(jsFile).href);
+  await mod.default({ module_or_path: fs.readFileSync(wasmFile) });
+  return {
+    renderCitation: mod.renderCitation,
+    renderBibliography: mod.renderBibliography,
+    validateStyle: mod.validateStyle,
+    DocumentSession: mod.DocumentSession,
+  };
+}
+
+// Loads the locally-built nodejs-target WASM bindings, erroring with
+// actionable next steps if they haven't been built yet.
+function loadFromLocal() {
   const wasmJs = path.resolve(__dirname, '../crates/citum-bindings/pkg/citum_bindings.js');
   const wasmBin = path.resolve(__dirname, '../crates/citum-bindings/pkg/citum_bindings_bg.wasm');
   if (!fs.existsSync(wasmJs) || !fs.existsSync(wasmBin)) {
     console.error(
-      'WASM not built. Run: wasm-pack build --target nodejs --features full-wasm  (in crates/citum-bindings/)'
+      'WASM not built. Either:\n' +
+        '  - Build it locally: just build-wasm-nodejs\n' +
+        '    (or: wasm-pack build crates/citum-bindings --target nodejs --features full-wasm)\n' +
+        '  - Download the published build instead: node scripts/benchmark-wasm-workflow.js --source jsr'
     );
     process.exit(1);
   }
+  const { renderCitation, renderBibliography, validateStyle, DocumentSession } = require(wasmJs);
+  return { renderCitation, renderBibliography, validateStyle, DocumentSession };
+}
+
+async function runBenchmark() {
+  let renderCitation, renderBibliography, validateStyle, DocumentSession;
   try {
-    ({ renderCitation, renderBibliography, validateStyle } = require(wasmJs));
+    ({ renderCitation, renderBibliography, validateStyle, DocumentSession } =
+      SOURCE === 'jsr' ? await loadFromJsr() : loadFromLocal());
   } catch (e) {
     console.error('Failed to load WASM bindings:', e.message);
     process.exit(1);
@@ -51,10 +95,12 @@ function runBenchmark() {
   const styleYaml = fs.readFileSync(path.resolve(__dirname, '..', STYLE_PATH), 'utf8');
 
   console.log(`[Config] Style:      ${STYLE_PATH}`);
+  console.log(`[Config] Source:     ${SOURCE}`);
+  console.log(`[Config] Mode:       ${MODE}`);
   console.log(`[Config] References: ${REFS_COUNT}`);
   console.log(`[Config] Citations:  ${CITATIONS_COUNT}`);
   console.log(`[Config] Refresh:    Every ${REFRESH_INTERVAL} citations`);
-  if (CI_MODE) console.log('[Config] Mode:       CI (reduced params)');
+  if (CI_MODE) console.log('[Config] CI:         reduced params');
   console.log('----------------------------------------------------');
 
   // 1. Warmup / Validation
@@ -80,45 +126,12 @@ function runBenchmark() {
   }
   const refsJson = JSON.stringify(refs);
 
-  const citationTimes = [];
-  const bibTimes = [];
-
   console.log('Simulating authoring workflow...');
 
-  for (let i = 0; i < CITATIONS_COUNT; i++) {
-    // Simulate inserting a citation
-    const citation = {
-      id: `cite-${i}`,
-      items: [{ id: `item-${i % REFS_COUNT}` }]
-    };
-    const citationJson = JSON.stringify(citation);
-
-    const start = performance.now();
-    try {
-      renderCitation(styleYaml, refsJson, citationJson, null);
-      const end = performance.now();
-      citationTimes.push(end - start);
-    } catch (e) {
-      console.error(`\nError rendering citation ${i}:`, e);
-      break;
-    }
-
-    // Periodically update the bibliography
-    if ((i + 1) % REFRESH_INTERVAL === 0) {
-      const bStart = performance.now();
-      try {
-        renderBibliography(styleYaml, refsJson);
-        const bEnd = performance.now();
-        bibTimes.push(bEnd - bStart);
-        console.log(`[Progress] Citation ${String(i + 1).padStart(3)}/${CITATIONS_COUNT} | Bibliography refreshed (${(bEnd - bStart).toFixed(2)}ms)`);
-      } catch (e) {
-        console.error(`\nError rendering bibliography at index ${i}:`, e);
-        break;
-      }
-    } else if ((i + 1) % 10 === 0 || i === 0) {
-      console.log(`[Progress] Citation ${String(i + 1).padStart(3)}/${CITATIONS_COUNT}...`);
-    }
-  }
+  const { citationTimes, bibTimes } =
+    MODE === 'session'
+      ? runSessionWorkflow({ DocumentSession, styleYaml, refsJson })
+      : runStatelessWorkflow({ renderCitation, renderBibliography, styleYaml, refsJson });
 
   console.log('\n\nSimulation complete.');
 
@@ -135,12 +148,107 @@ function runBenchmark() {
   console.log('----------------------------------------------------');
   console.log('             Performance Statistics (WASM)');
   console.log('----------------------------------------------------');
-  console.log(`render_citation:     ${stats(citationTimes)}`);
-  console.log(`render_bibliography: ${stats(bibTimes)}`);
+  if (MODE === 'session') {
+    console.log(`insert_citation (incl. bibliography re-render): ${stats(citationTimes)}`);
+    console.log(`get_bibliography (cached read):                 ${stats(bibTimes)}`);
+  } else {
+    console.log(`render_citation:     ${stats(citationTimes)}`);
+    console.log(`render_bibliography: ${stats(bibTimes)}`);
+  }
   console.log('----------------------------------------------------');
 }
 
-try { runBenchmark(); } catch (err) {
+// Stateless mode: re-parses style + refs JSON on every call, matching the
+// engine's one-shot render_citation/render_bibliography WASM API. Only
+// re-renders the bibliography every REFRESH_INTERVAL citations.
+function runStatelessWorkflow({ renderCitation, renderBibliography, styleYaml, refsJson }) {
+  const citationTimes = [];
+  const bibTimes = [];
+
+  for (let i = 0; i < CITATIONS_COUNT; i++) {
+    const citation = {
+      id: `cite-${i}`,
+      items: [{ id: `item-${i % REFS_COUNT}` }]
+    };
+    const citationJson = JSON.stringify(citation);
+
+    const start = performance.now();
+    try {
+      renderCitation(styleYaml, refsJson, citationJson, null);
+      citationTimes.push(performance.now() - start);
+    } catch (e) {
+      console.error(`\nError rendering citation ${i}:`, e);
+      break;
+    }
+
+    if ((i + 1) % REFRESH_INTERVAL === 0) {
+      const bStart = performance.now();
+      try {
+        renderBibliography(styleYaml, refsJson);
+        const bTime = performance.now() - bStart;
+        bibTimes.push(bTime);
+        console.log(`[Progress] Citation ${String(i + 1).padStart(3)}/${CITATIONS_COUNT} | Bibliography refreshed (${bTime.toFixed(2)}ms)`);
+      } catch (e) {
+        console.error(`\nError rendering bibliography at index ${i}:`, e);
+        break;
+      }
+    } else if ((i + 1) % 10 === 0 || i === 0) {
+      console.log(`[Progress] Citation ${String(i + 1).padStart(3)}/${CITATIONS_COUNT}...`);
+    }
+  }
+
+  return { citationTimes, bibTimes };
+}
+
+// Session mode: parses the style + refs once into a DocumentSession, then
+// mutates incrementally — closer to a real word processor. Each
+// insert_citation re-renders the bibliography internally (the session API
+// doesn't yet support incremental re-rendering), so its timing already
+// includes that cost. get_bibliography() timings, taken every
+// REFRESH_INTERVAL citations, measure a cached read of the last render
+// rather than a fresh one.
+function runSessionWorkflow({ DocumentSession, styleYaml, refsJson }) {
+  const citationTimes = [];
+  const bibTimes = [];
+  const session = new DocumentSession(styleYaml, refsJson);
+
+  for (let i = 0; i < CITATIONS_COUNT; i++) {
+    const citation = {
+      id: `cite-${i}`,
+      items: [{ id: `item-${i % REFS_COUNT}` }]
+    };
+    const citationJson = JSON.stringify(citation);
+
+    const start = performance.now();
+    try {
+      session.insert_citation(citationJson, null);
+      citationTimes.push(performance.now() - start);
+    } catch (e) {
+      console.error(`\nError inserting citation ${i}:`, e);
+      break;
+    }
+
+    if ((i + 1) % REFRESH_INTERVAL === 0) {
+      const bStart = performance.now();
+      try {
+        session.get_bibliography();
+        const bTime = performance.now() - bStart;
+        bibTimes.push(bTime);
+        console.log(`[Progress] Citation ${String(i + 1).padStart(3)}/${CITATIONS_COUNT} | Bibliography read (${bTime.toFixed(2)}ms)`);
+      } catch (e) {
+        console.error(`\nError reading bibliography at index ${i}:`, e);
+        break;
+      }
+    } else if ((i + 1) % 10 === 0 || i === 0) {
+      console.log(`[Progress] Citation ${String(i + 1).padStart(3)}/${CITATIONS_COUNT}...`);
+    }
+  }
+
+  session.dispose();
+  return { citationTimes, bibTimes };
+}
+
+runBenchmark().catch(err => {
   console.error('\nFatal error:', err);
   process.exit(1);
-}
+});

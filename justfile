@@ -23,6 +23,10 @@ schema-gen:
 bootstrap setup="minimal":
     ./scripts/bootstrap.sh {{setup}}
 
+# Build nodejs-target WASM bindings for local tooling (e.g. scripts/benchmark-wasm-workflow.js)
+build-wasm-nodejs:
+    wasm-pack build crates/citum-bindings --target nodejs --features full-wasm
+
 # Regenerate docs/demo.html from docs/demo.djot (optionally override style)
 demo style="styles/embedded/chicago-author-date-18th.yaml":
     ./scripts/build-demo.sh {{style}}
