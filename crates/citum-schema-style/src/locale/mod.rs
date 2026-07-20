@@ -454,7 +454,8 @@ legacy-term-aliases:
     #[test]
     fn embedded_locale_ids_include_all_bundled_locale_files() {
         for id in [
-            "en-US", "ar-AR", "de-DE", "es-ES", "eu-ES", "fr-FR", "tr-TR",
+            "en-US", "ar-AR", "de-DE", "es-ES", "eu-ES", "fr-FR", "tr-TR", "zh-CN", "ja-JP",
+            "ko-KR", "ru-RU",
         ] {
             assert!(
                 crate::embedded::EMBEDDED_LOCALE_IDS.contains(&id),
@@ -471,6 +472,73 @@ legacy-term-aliases:
             let locale = Locale::from_yaml_str(yaml).expect("embedded locale should parse");
 
             assert_eq!(locale.locale, id);
+        }
+    }
+
+    /// Round-trip regression guard for the new ja-JP/ko-KR/ru-RU locales
+    /// (`csl26-tfi8`): parses each embedded file and spot-checks a handful
+    /// of the values a future edit to that YAML could silently regress.
+    #[test]
+    fn bundled_ja_jp_ko_kr_ru_ru_locales_are_embedded_and_parseable() {
+        for (id, editor_short, and_term) in [
+            ("ja-JP", "編", "と"),
+            ("ko-KR", "편", "및"),
+            ("ru-RU", "ред.", "и"),
+        ] {
+            let bytes = crate::embedded::get_locale_bytes(id).expect("locale should be embedded");
+            let yaml = std::str::from_utf8(bytes).expect("embedded locale should be utf-8");
+            let locale = Locale::from_yaml_str(yaml).expect("embedded locale should parse");
+
+            assert_eq!(locale.locale, id);
+            assert_eq!(
+                locale.resolved_role_term(&ContributorRole::Editor, false, &TermForm::Short, None),
+                Some(editor_short.to_string()),
+                "{id} editor short-form role term"
+            );
+            assert_eq!(
+                locale.resolved_general_term(&GeneralTerm::And, &TermForm::Long, None),
+                Some(and_term.to_string()),
+                "{id} 'and' term"
+            );
+            assert!(
+                locale.date_formats.contains_key("iso"),
+                "{id} should carry date-formats"
+            );
+        }
+    }
+
+    /// CI enforcement for the locale-completeness lint (`csl26-itri`): every
+    /// embedded v2 locale must ship `grammar-options` and `date-formats`, or
+    /// its typography/dates silently fall back to English. Scoped to just
+    /// the two completeness findings (not general lint errors) so this test
+    /// doesn't couple to unrelated pre-existing lint issues in other
+    /// embedded locales.
+    #[test]
+    fn embedded_v2_locales_pass_completeness_lint() {
+        for &id in crate::embedded::EMBEDDED_LOCALE_IDS {
+            let bytes = crate::embedded::get_locale_bytes(id).expect("locale should be embedded");
+            let raw: RawLocale =
+                serde_yaml::from_slice(bytes).expect("embedded locale should parse as RawLocale");
+
+            if raw.locale_schema_version.as_deref() != Some("2") {
+                continue;
+            }
+
+            let report = crate::lint::lint_raw_locale(&raw);
+            assert!(
+                !report
+                    .findings
+                    .iter()
+                    .any(|finding| finding.path == "grammar-options"),
+                "{id} is missing grammar-options"
+            );
+            assert!(
+                !report
+                    .findings
+                    .iter()
+                    .any(|finding| finding.path == "date-formats"),
+                "{id} is missing date-formats"
+            );
         }
     }
 

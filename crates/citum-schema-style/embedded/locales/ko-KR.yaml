@@ -1,0 +1,771 @@
+locale-schema-version: "2"
+locale: ko-KR
+
+# EXPERT REVIEW NEEDED: this locale was authored from documented Korean
+# citation conventions, not by a native speaker or professional translator.
+# Please have a Korean-language editor verify role/term vocabulary, quote
+# characters, and date-pattern assembly before relying on this locale for
+# publication-grade output.
+
+evaluation:
+  message-syntax: mf2
+dates:
+  months:
+    long:
+      - 1월
+      - 2월
+      - 3월
+      - 4월
+      - 5월
+      - 6월
+      - 7월
+      - 8월
+      - 9월
+      - 10월
+      - 11월
+      - 12월
+    short:
+      - 1월
+      - 2월
+      - 3월
+      - 4월
+      - 5월
+      - 6월
+      - 7월
+      - 8월
+      - 9월
+      - 10월
+      - 11월
+      - 12월
+  seasons:
+    - 봄
+    - 여름
+    - 가을
+    - 겨울
+roles:
+  chair:
+    long:
+      singular: 의장
+      plural: 의장
+    verb: 의장
+  collection-editor:
+    long:
+      singular: 총서 편집자
+      plural: 총서 편집자
+    short:
+      singular: 편
+      plural: 편
+    verb: 편집
+    verb-short: 편
+  compiler:
+    long:
+      singular: 편찬자
+      plural: 편찬자
+    short:
+      singular: 편찬
+      plural: 편찬
+    verb: 편찬
+    verb-short: 편찬
+  container-author:
+    long:
+      singular: 저자
+      plural: 저자
+    verb: 저
+  contributor:
+    long:
+      singular: 기고자
+      plural: 기고자
+    short:
+      singular: 기고
+      plural: 기고
+    verb: 기고
+    verb-short: 기고
+  curator:
+    long:
+      singular: 감수자
+      plural: 감수자
+    short:
+      singular: 감수
+      plural: 감수
+    verb: 감수
+    verb-short: 감수
+  director:
+    long:
+      singular: 감독
+      plural: 감독
+    short:
+      singular: 감독
+      plural: 감독
+    verb: 감독
+    verb-short: 감독
+  editor:
+    long:
+      singular: 편집자
+      plural: 편집자
+    short:
+      singular: 편
+      plural: 편
+    verb: 편집
+    verb-short: 편
+  editor-translator:
+    long:
+      singular: 편집·번역
+      plural: 편집·번역
+    short:
+      singular: 편·역
+      plural: 편·역
+    verb: 편집·번역
+    verb-short: 편·역
+  editorial-director:
+    long:
+      singular: 편집 책임자
+      plural: 편집 책임자
+    short:
+      singular: 편
+      plural: 편
+    verb: 편집
+    verb-short: 편
+  executive-producer:
+    long:
+      singular: 총괄 프로듀서
+      plural: 총괄 프로듀서
+    short:
+      singular: 총괄
+      plural: 총괄
+    verb: 총괄 제작
+    verb-short: 총괄
+  guest:
+    long:
+      singular: 게스트
+      plural: 게스트
+    verb: 게스트 출연
+    verb-short: 게스트
+  host:
+    long:
+      singular: 진행자
+      plural: 진행자
+    verb: 진행
+    verb-short: 진행
+  illustrator:
+    long:
+      singular: 삽화가
+      plural: 삽화가
+    short:
+      singular: 그림
+      plural: 그림
+    verb: 삽화
+    verb-short: 그림
+  interviewer:
+    long:
+      singular: 인터뷰어
+      plural: 인터뷰어
+    verb: 인터뷰
+  narrator:
+    long:
+      singular: 내레이터
+      plural: 내레이터
+    short:
+      singular: 내레
+      plural: 내레
+    verb: 내레이션
+    verb-short: 내레
+  organizer:
+    long:
+      singular: 주최자
+      plural: 주최자
+    short:
+      singular: 주최
+      plural: 주최
+    verb: 주최
+    verb-short: 주최
+  original-author:
+    long:
+      singular: 원저자
+      plural: 원저자
+    verb: 원저
+  performer:
+    long:
+      singular: 출연자
+      plural: 출연자
+    short:
+      singular: 출연
+      plural: 출연
+    verb: 출연
+    verb-short: 출연
+  producer:
+    long:
+      singular: 프로듀서
+      plural: 프로듀서
+    short:
+      singular: PD
+      plural: PD
+    verb: 제작
+    verb-short: 제작
+  recipient:
+    long:
+      singular: 수신자
+      plural: 수신자
+    verb: 수신
+  reviewed-author:
+    long:
+      singular: 원저자
+      plural: 원저자
+    verb: 원저
+  script-writer:
+    long:
+      singular: 각본가
+      plural: 각본가
+    short:
+      singular: 각본
+      plural: 각본
+    verb: 각본
+    verb-short: 각본
+  series-creator:
+    long:
+      singular: 원작자
+      plural: 원작자
+    short:
+      singular: 원작
+      plural: 원작
+    verb: 원작
+    verb-short: 원작
+  translator:
+    long:
+      singular: 번역자
+      plural: 번역자
+    short:
+      singular: 역
+      plural: 역
+    verb: 번역
+    verb-short: 역
+terms:
+  accessed:
+    long: 접속
+  advance_online_publication:
+    long: 온라인 우선 공개
+  album:
+    long: 앨범
+  and:
+    long: 및
+  and others:
+    long: 외
+  anonymous:
+    long: 저자 미상
+    short: 저자 미상
+  at:
+    long: 에서
+  audio_recording:
+    long: 음성 기록
+  available at:
+    long: 이용 가능
+  by:
+    long: 저
+  circa:
+    long: 경
+    short: 경
+  cited:
+    long: 인용
+  et_al:
+    long: 외
+  film:
+    long: 영화
+  forthcoming:
+    long: 근간
+  from:
+    long: 에서
+  henceforth:
+    long: 이하
+  ibid:
+    long: 위의 책
+  in:
+    long: 수록
+  in press:
+    long: 인쇄 중
+  internet:
+    long: 인터넷
+  issued:
+    long: 발행
+  letter:
+    long: 서신
+  loc_cit:
+    long: 전게서
+  no date:
+    long: 날짜 없음
+    short: 날짜 없음
+  no_place:
+    long: 출판지 불명
+    short: 출판지 불명
+  no_publisher:
+    long: 출판사 불명
+    short: 출판사 불명
+  on:
+    long: 에
+  online:
+    long: 온라인
+  op_cit:
+    long: 전게
+  original_work_published:
+    long: 원저 발행
+  personal_communication:
+    long: 개인 서신
+  podcast:
+    long: 팟캐스트
+  podcast_episode:
+    long: 팟캐스트 에피소드
+  preprint:
+    long: 프리프린트
+  presented at:
+    long: 발표
+  radio_broadcast:
+    long: 라디오 방송
+  radio_series:
+    long: 라디오 시리즈
+  radio_series_episode:
+    long: 라디오 시리즈 에피소드
+  reference:
+    long:
+      singular: 참고 문헌
+      plural: 참고 문헌
+    short:
+      singular: 참고
+      plural: 참고
+  retrieved:
+    long: 검색
+  review_of:
+    long: 서평
+    short: 서평
+  scale:
+    long: 축척
+  special_issue:
+    long: 특별호
+  special_section:
+    long: 특집
+  television_broadcast:
+    long: 텔레비전 방송
+  television_series:
+    long: 텔레비전 시리즈
+  television_series_episode:
+    long: 텔레비전 시리즈 에피소드
+  video:
+    long: 비디오
+  working_paper:
+    long: 작업 논문
+  article:
+    long: 프리프린트
+  article_journal:
+    long: 학술지 논문
+    short: 학술지 논문
+  article_magazine:
+    long: 잡지 기사
+    short: 잡지 기사
+  article_newspaper:
+    long: 신문 기사
+    short: 신문 기사
+  bill:
+    long: 법안
+  broadcast:
+    long: 방송
+  classic:
+    long: 고전
+  collection:
+    long: 컬렉션
+  dataset:
+    long: 데이터셋
+  document:
+    long: 문서
+    short: 문서
+  entry:
+    long: 항목
+  entry_dictionary:
+    long: 사전 항목
+  entry_encyclopedia:
+    long: 백과사전 항목
+  event:
+    long: 행사
+  graphic:
+    long: 도판
+    short: 도
+  hearing:
+    long: 청문회
+    verb: 증언
+  interview:
+    long: 인터뷰
+    short: 인터뷰
+  legal_case:
+    long: 판례
+  legislation:
+    long: 법령
+  manuscript:
+    long: 필사본
+    short: 필사본
+  map:
+    long: 지도
+  motion_picture:
+    long: 영상 기록
+    short: 영상
+  musical_score:
+    long: 악보
+  pamphlet:
+    long: 팜플렛
+  paper_conference:
+    long: 학술대회 논문
+  patent:
+    long: 특허
+  performance:
+    long: 공연
+  periodical:
+    long: 정기간행물
+  post:
+    long: 게시물
+  post_weblog:
+    long: 블로그 게시물
+  regulation:
+    long: 규정
+  report:
+    long: 보고서
+    short: 보고
+  review:
+    long: 서평
+    short: 서평
+    verb: 서평
+  review_book:
+    long: 서평
+    short: 서평
+    verb: 서평
+  software:
+    long: 소프트웨어
+  song:
+    long: 녹음
+    short: 녹음
+  speech:
+    long: 강연
+  standard:
+    long: 규격
+  thesis:
+    long: 학위논문
+  treaty:
+    long: 조약
+  webpage:
+    long: 웹페이지
+  ad:
+    long: 서기
+  bc:
+    long: 기원전
+  bce:
+    long: 기원전
+  ce:
+    long: 서기
+  open_quote:
+    long: "「"
+  close_quote:
+    long: "」"
+  open_inner_quote:
+    long: "『"
+  close_inner_quote:
+    long: "』"
+  page_range_delimiter:
+    long: "–"
+  colon:
+    long: ":"
+  comma:
+    long: ","
+  semicolon:
+    long: ";"
+  ordinal:
+    long: 제
+  act:
+    long:
+      singular: 막
+      plural: 막
+  appendix:
+    long:
+      singular: 부록
+      plural: 부록
+    short:
+      singular: 부록
+      plural: 부록
+  article_locator:
+    long:
+      singular: 조
+      plural: 조
+    short:
+      singular: 조
+      plural: 조
+  book:
+    long:
+      singular: 권
+      plural: 권
+    short: 권
+  canon:
+    long:
+      singular: 경전
+      plural: 경전
+  chapter:
+    long:
+      singular: 장
+      plural: 장
+    short: 장
+  column:
+    long:
+      singular: 단
+      plural: 단
+    short: 단
+  elocation:
+    long:
+      singular: 전자 위치
+      plural: 전자 위치
+    short:
+      singular: 전자 위치
+      plural: 전자 위치
+  equation:
+    long:
+      singular: 식
+      plural: 식
+    short:
+      singular: 식
+      plural: 식
+  figure:
+    long:
+      singular: 그림
+      plural: 그림
+    short: 그림
+  folio:
+    long:
+      singular: 엽
+      plural: 엽
+    short: 엽
+  issue:
+    long:
+      singular: 호
+      plural: 호
+    short: 호
+  line:
+    long:
+      singular: 행
+      plural: 행
+    short: 행
+  note:
+    long:
+      singular: 주
+      plural: 주
+    short: 주
+  opus:
+    long:
+      singular: 작품 번호
+      plural: 작품 번호
+    short: 작품 번호
+  page:
+    long:
+      singular: 쪽
+      plural: 쪽
+    short:
+      singular: 쪽
+      plural: 쪽
+  paragraph:
+    long:
+      singular: 문단
+      plural: 문단
+    short: 단락
+  part:
+    long:
+      singular: 부
+      plural: 부
+    short: 부
+  rule:
+    long:
+      singular: 규칙
+      plural: 규칙
+    short:
+      singular: 규칙
+      plural: 규칙
+  scene:
+    long:
+      singular: 장면
+      plural: 장면
+    short:
+      singular: 장면
+      plural: 장면
+  section:
+    long:
+      singular: 절
+      plural: 절
+    short: 절
+  sub_verbo:
+    long:
+      singular: 표제어
+      plural: 표제어
+    short:
+      singular: 표제어
+      plural: 표제어
+  supplement:
+    long:
+      singular: 보유
+      plural: 보유
+    short:
+      singular: 보유
+      plural: 보유
+  table:
+    long:
+      singular: 표
+      plural: 표
+    short:
+      singular: 표
+      plural: 표
+  timestamp:
+    long: ""
+    short: ""
+  title_locator:
+    long:
+      singular: 제목
+      plural: 제목
+    short:
+      singular: 제목
+      plural: 제목
+  verse:
+    long:
+      singular: 절
+      plural: 절
+    short:
+      singular: 절
+      plural: 절
+  volume:
+    long:
+      singular: 권
+      plural: 권
+    short:
+      singular: 권
+      plural: 권
+  chapter_number:
+    long:
+      singular: 장
+      plural: 장
+    short:
+      singular: 장
+      plural: 장
+  citation_number:
+    long:
+      singular: 인용 번호
+      plural: 인용 번호
+    short:
+      singular: 인용 번호
+      plural: 인용 번호
+  collection_number:
+    long:
+      singular: 호
+      plural: 호
+    short: 호
+  edition:
+    long:
+      singular: 판
+      plural: 판
+    short: 판
+  first_reference_note_number:
+    long:
+      singular: 전주
+      plural: 전주
+    short:
+      singular: 전주
+      plural: 전주
+  number:
+    long:
+      singular: 번호
+      plural: 번호
+    short:
+      singular: 번호
+      plural: 번호
+  number_of_pages:
+    long:
+      singular: 쪽
+      plural: 쪽
+    short:
+      singular: 쪽
+      plural: 쪽
+  number_of_volumes:
+    long:
+      singular: 권
+      plural: 권
+    short:
+      singular: 권
+      plural: 권
+  page_first:
+    long:
+      singular: 쪽
+      plural: 쪽
+    short:
+      singular: 쪽
+      plural: 쪽
+  printing:
+    long:
+      singular: 쇄
+      plural: 쇄
+    short:
+      singular: 쇄
+      plural: 쇄
+  version:
+    long: 버전
+
+messages:
+  number.ordinal: "제{$value}"
+  term.page-label: "쪽"
+  term.page-label-long: "쪽"
+  term.and: "및"
+  term.et-al: "외"
+  term.no-date: "날짜 없음"
+  term.accessed: "접속"
+  term.retrieved: "검색"
+  role.editor.label: "편"
+  role.editor.label-long: "편집자"
+  role.editor.verb: "편집"
+  term.archive-collection-label: "컬렉션"
+  term.archive-series-label: "시리즈"
+  term.archive-box-label: "상자"
+  term.archive-folder-label: "폴더"
+  term.archive-item-label: "자료"
+  pattern.accessed-date: "{$date} 접속"
+  pattern.accessed-date-colon: "접속: {$date}"
+  pattern.in-container: "{$container}에 수록"
+  pattern.in-container-colon: "수록: {$container}"
+  pattern.originally-published-as: "원제 《{$title}》로 발행"
+  pattern.cited-date: "{$date} 인용"
+  pattern.issued-date: "{$date} 발행"
+  pattern.retrieved-date: "{$date} 검색"
+  pattern.published-online: "온라인 공개"
+  pattern.published-online-date: "{$date} 온라인 공개"
+  pattern.patent-number: "특허 제{$number}호"
+  pattern.locator-at: "{$locator}"
+  pattern.retrieved-from: "{$url}에서 검색"
+  pattern.available-at: "{$url}에서 이용 가능"
+  date.open-ended: "현재"
+
+date-formats:
+  numeric-short: "yyyy. M. d."
+  textual-long: "yyyy년 M월"
+  textual-full: "yyyy년 M월 d일"
+  bib-default: "yyyy년 M월 d일"
+  year-only: "yyyy"
+  iso: "yyyy-MM-dd"
+
+grammar-options:
+  punctuation-in-quote: false
+  nbsp-before-colon: false
+  open-quote: "“"
+  close-quote: "”"
+  open-inner-quote: "‘"
+  close-inner-quote: "’"
+  serial-comma: false
+  page-range-delimiter: "–"
+  title-subtitle-delimiter: ": "
+  subtitle-delimiter: ", "
+  strong-terminal-comma-policy: keep-terminal
+  delimiter-suppressing-terminal-marks: "?!…"
+
+legacy-term-aliases:
+  page: term.page-label
+  pages: term.page-label
+  et_al: term.et-al
+  and: term.and
+  accessed: term.accessed
+  retrieved: term.retrieved
+  no_date: term.no-date
+  "no date": term.no-date
+  editor: role.editor.label

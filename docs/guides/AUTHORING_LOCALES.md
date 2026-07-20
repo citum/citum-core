@@ -18,8 +18,17 @@ It is the practical companion to the
   `roles:` / `locators:` maps.
 - Gendered term values: live through `MaybeGendered<T>` in the legacy locale
   maps and through the scoped `$gender` x `$count` MF2 role-label pattern.
-- Coverage as of writing: `en-US`, `de-DE`, `fr-FR`, `tr-TR`, `es-ES` carry
-  v2 `messages:` blocks. Adding new locales should follow the same shape.
+- Coverage as of writing: `en-US`, `de-DE`, `fr-FR`, `tr-TR`, `es-ES`, `zh-CN`,
+  `ar-AR`, `ja-JP`, `ko-KR`, `ru-RU` carry v2 `messages:` blocks; `zh-CN` and
+  `ar-AR` also now carry `grammar-options` and `date-formats` (previously
+  absent, silently falling back to English typography/dates — see the
+  locale-completeness lint in `lint_raw_locale`
+  ([crates/citum-schema-style/src/lint.rs](../../crates/citum-schema-style/src/lint.rs)). `ja-JP`,
+  `ko-KR`, and `ru-RU` are new locales authored at `de-DE`-level structural
+  completeness (dates, roles, terms, messages, date-formats,
+  grammar-options, legacy-term-aliases); their vocabulary has not yet had
+  native-speaker review (see the EXPERT REVIEW NEEDED comment in each
+  file). Adding new locales should follow the same shape.
 
 If a `messages:` block is absent or empty, the engine silently uses the legacy
 maps. There is no per-locale fallback alarm — author intent is signalled by
