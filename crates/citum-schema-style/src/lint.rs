@@ -95,10 +95,12 @@ struct LocaleRequirement {
     kind: LocaleRequirementKind,
 }
 
-/// Validate a raw locale's message syntax and alias targets.
+/// Validate a raw locale's message syntax, alias targets, and completeness.
 ///
 /// MF2 messages are checked for placeholder syntax, selector arity, and
 /// wildcard coverage. Legacy aliases must point to an existing message key.
+/// A v2 locale missing `grammar-options` or `date-formats` produces a
+/// warning, since both silently fall back to English defaults otherwise.
 pub fn lint_raw_locale(raw: &RawLocale) -> LintReport {
     let mut report = LintReport::default();
     let uses_mf2 = raw
@@ -125,6 +127,22 @@ pub fn lint_raw_locale(raw: &RawLocale) -> LintReport {
                 format!("target '{message_id}' does not exist in messages"),
             );
         }
+    }
+
+    let is_v2 = raw.locale_schema_version.as_deref() == Some("2");
+    if is_v2 && raw.grammar_options.is_none() {
+        report.warning(
+            "grammar-options",
+            "v2 locale has no grammar-options; typography (quotes, delimiters, \
+             page-range dashes) silently falls back to the engine's English defaults",
+        );
+    }
+    if is_v2 && raw.date_formats.is_empty() {
+        report.warning(
+            "date-formats",
+            "v2 locale has no date-formats; date assembly silently falls back to \
+             the engine's hardcoded English patterns",
+        );
     }
 
     report
@@ -959,6 +977,73 @@ mod tests {
         assert!(report.findings.iter().any(|finding| {
             finding.path == "legacy-term-aliases.page" && finding.message.contains("does not exist")
         }));
+    }
+
+    #[test]
+    fn test_lint_raw_locale_warns_for_v2_locale_missing_grammar_options_and_date_formats() {
+        let raw = RawLocale {
+            locale: "zz-ZZ".into(),
+            locale_schema_version: Some("2".into()),
+            evaluation: Some(EvaluationConfig {
+                message_syntax: MessageSyntax::Mf2,
+            }),
+            ..Default::default()
+        };
+
+        let report = lint_raw_locale(&raw);
+
+        assert!(
+            !report.has_errors(),
+            "completeness gaps are warnings, not errors"
+        );
+        assert!(
+            report
+                .findings
+                .iter()
+                .any(|finding| finding.path == "grammar-options")
+        );
+        assert!(
+            report
+                .findings
+                .iter()
+                .any(|finding| finding.path == "date-formats")
+        );
+    }
+
+    #[test]
+    fn test_lint_raw_locale_accepts_complete_v2_locale() {
+        let raw = RawLocale {
+            locale: "zz-ZZ".into(),
+            locale_schema_version: Some("2".into()),
+            evaluation: Some(EvaluationConfig {
+                message_syntax: MessageSyntax::Mf2,
+            }),
+            grammar_options: Some(crate::locale::types::GrammarOptions::default()),
+            date_formats: HashMap::from([("iso".into(), "yyyy-MM-dd".into())]),
+            ..Default::default()
+        };
+
+        let report = lint_raw_locale(&raw);
+
+        assert!(!report.has_errors());
+        assert!(
+            !report
+                .findings
+                .iter()
+                .any(|finding| finding.path == "grammar-options" || finding.path == "date-formats")
+        );
+    }
+
+    #[test]
+    fn test_lint_raw_locale_skips_completeness_check_for_v1_locale() {
+        let raw = RawLocale {
+            locale: "zz-ZZ".into(),
+            ..Default::default()
+        };
+
+        let report = lint_raw_locale(&raw);
+
+        assert!(report.findings.is_empty());
     }
 
     #[test]

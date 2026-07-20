@@ -1,6 +1,12 @@
 locale-schema-version: "2"
 locale: zh-CN
 
+# EXPERT REVIEW NEEDED: grammar-options and date-formats below were authored
+# from documented GB/T 7714 typography conventions, not by a native speaker
+# or professional translator. Please have a Chinese-language editor verify
+# quote characters, delimiters, and date-pattern assembly before relying on
+# this locale for publication-grade output.
+
 evaluation:
   message-syntax: mf2
 
@@ -148,3 +154,25 @@ legacy-term-aliases:
   no_date: term.no-date
   page: term.page-label
   pages: term.page-label
+
+date-formats:
+  numeric-short: "yyyy/M/d"
+  textual-long: "yyyy年M月"
+  textual-full: "yyyy年M月d日"
+  bib-default: "yyyy年M月d日"
+  year-only: "yyyy"
+  iso: "yyyy-MM-dd"
+
+grammar-options:
+  punctuation-in-quote: false
+  nbsp-before-colon: false
+  open-quote: "「"
+  close-quote: "」"
+  open-inner-quote: "『"
+  close-inner-quote: "』"
+  serial-comma: false
+  page-range-delimiter: "–"
+  title-subtitle-delimiter: "："
+  subtitle-delimiter: "，"
+  strong-terminal-comma-policy: keep-terminal
+  delimiter-suppressing-terminal-marks: "？！…"
