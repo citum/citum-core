@@ -66,3 +66,15 @@ Gregorian-span lookup tables, ordinal-year formatting, and a new
 parenthetical dual-year render shape. Tracked in a follow-up bean
 (csl26-0kqf, "Support GB/T 7714 §7.5.4.1 regnal/era-year annotations");
 not attempted in PR #1067.
+
+**Input capture, decoupled from calendar computation.** The data-model
+question this raised — where does the source-calendar wording come from on
+input? — is answered by the [Date Annotations
+specification](../specs/CALENDAR_DATE_ANNOTATIONS.md): every EDTF date field
+accepts an optional opaque `note` sub-field (`issued: { value, note }`) that a
+style can wrap and render, e.g. `note-wrap: parentheses` in a bibliography's
+`dates` options. `note` is verbatim, uninterpreted display text — it does not
+identify the calendar system, convert the year, or resolve a dynasty/era
+lookup, so it captures exactly the `1705（康熙四十四年）` shape above without
+depending on the (still-unimplemented) computed regnal-year capability
+`csl26-0kqf` tracks.
