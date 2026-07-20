@@ -31,7 +31,7 @@ pub use scholarly::input_reference_from_legacy_edited_book;
 use crate::reference::contributor::{
     Contributor, ContributorEntry, ContributorList, ContributorRole, SimpleName, StructuredName,
 };
-use crate::reference::date::EdtfString;
+use crate::reference::date::DateValue;
 use crate::reference::types::{
     ArchiveInfo, Collection, CollectionComponent, CollectionType, Dataset, Hearing, LegalCase,
     Monograph, MonographComponentType, MonographType, NumOrStr, Patent, Publisher, Regulation,
@@ -250,20 +250,20 @@ fn legacy_extra_str(legacy: &csl_legacy::csl_json::Reference, key: &str) -> Opti
         .map(str::to_string)
 }
 
-fn legacy_extra_date(legacy: &csl_legacy::csl_json::Reference, key: &str) -> Option<EdtfString> {
+fn legacy_extra_date(legacy: &csl_legacy::csl_json::Reference, key: &str) -> Option<DateValue> {
     legacy
         .extra
         .get(key)
         .and_then(|value| {
             serde_json::from_value::<csl_legacy::csl_json::DateVariable>(value.clone()).ok()
         })
-        .map(EdtfString::from)
+        .map(DateValue::from)
         .or_else(|| {
             legacy
                 .extra
                 .get(key)
                 .and_then(serde_json::Value::as_str)
-                .map(|value| EdtfString(value.to_string()))
+                .map(|value| DateValue::new(value.to_string()))
         })
 }
 
@@ -298,7 +298,7 @@ fn publisher_from_parts(name: Option<String>, place: Option<String>) -> Option<P
 fn relation_monograph(
     title: Option<Title>,
     author: Option<Contributor>,
-    issued: Option<EdtfString>,
+    issued: Option<DateValue>,
     genre: Option<String>,
     publisher: Option<String>,
     publisher_place: Option<String>,
@@ -341,7 +341,7 @@ fn legacy_original_relation(legacy: &csl_legacy::csl_json::Reference) -> Option<
 fn relation_event(
     title: Option<String>,
     location: Option<String>,
-    date: Option<EdtfString>,
+    date: Option<DateValue>,
 ) -> Option<WorkRelation> {
     if title.is_none() && location.is_none() && date.is_none() {
         return None;
@@ -454,10 +454,10 @@ struct RefContext {
     id: Option<RefID>,
     title: Option<String>,
     short_title: Option<String>,
-    created: EdtfString,
-    issued: EdtfString,
+    created: DateValue,
+    issued: DateValue,
     url: Option<Url>,
-    accessed: Option<EdtfString>,
+    accessed: Option<DateValue>,
     language: Option<LangID>,
     note: Option<String>,
     doi: Option<String>,
@@ -467,10 +467,10 @@ struct RefContext {
     journal_abbreviation: Option<String>,
     /// Copyright year, a publication-year substitute used when the true
     /// issue date is unknown. See `copyright_year_from_legacy`.
-    copyright: Option<EdtfString>,
+    copyright: Option<DateValue>,
     /// Printing/impression year, another publication-year substitute. See
     /// `docs/specs/DATE_MODEL.md`.
-    printing: Option<EdtfString>,
+    printing: Option<DateValue>,
 }
 
 /// Extract a GB/T-style copyright year from a CSL `c<year>` literal issued
@@ -478,11 +478,11 @@ struct RefContext {
 /// publication-year substitute when the true issue date is unknown; an
 /// earlier revision misread the `c` as EDTF circa (`~`) instead of
 /// copyright — see `docs/specs/DATE_MODEL.md`.
-fn copyright_year_from_legacy(legacy: &csl_legacy::csl_json::Reference) -> Option<EdtfString> {
+fn copyright_year_from_legacy(legacy: &csl_legacy::csl_json::Reference) -> Option<DateValue> {
     let literal = legacy.issued.as_ref()?.literal.as_deref()?;
     let year = literal.strip_prefix('c')?.trim();
     (year.len() == 4 && year.bytes().all(|byte| byte.is_ascii_digit()))
-        .then(|| EdtfString(year.to_string()))
+        .then(|| DateValue::new(year.to_string()))
 }
 
 /// Interpret a raw `issued:` note-field override that didn't reduce to a
@@ -491,20 +491,40 @@ fn copyright_year_from_legacy(legacy: &csl_legacy::csl_json::Reference) -> Optio
 /// §7.5.4.3 defines two more publication-year substitutes alongside
 /// copyright: a printing/impression year (Chinese suffix `印刷`) and an
 /// estimated year (EDTF approximate, trailing `~`).
-fn printing_year_from_legacy(legacy: &csl_legacy::csl_json::Reference) -> Option<EdtfString> {
+fn printing_year_from_legacy(legacy: &csl_legacy::csl_json::Reference) -> Option<DateValue> {
     let literal = legacy_extra_str(legacy, "issued-note-literal")?;
     let year = literal.strip_suffix("印刷")?.trim();
     (year.len() == 4 && year.bytes().all(|byte| byte.is_ascii_digit()))
-        .then(|| EdtfString(year.to_string()))
+        .then(|| DateValue::new(year.to_string()))
 }
 
 /// Interpret an estimated-year note-field override (trailing `~`) as an
 /// EDTF approximate `issued` date. See `printing_year_from_legacy`.
-fn estimated_issued_from_legacy(legacy: &csl_legacy::csl_json::Reference) -> Option<EdtfString> {
+fn estimated_issued_from_legacy(legacy: &csl_legacy::csl_json::Reference) -> Option<DateValue> {
     let literal = legacy_extra_str(legacy, "issued-note-literal")?;
     let year = literal.strip_suffix('~')?.trim();
     (year.len() == 4 && year.bytes().all(|byte| byte.is_ascii_digit()))
-        .then(|| EdtfString(format!("{year}~")))
+        .then(|| DateValue::new(format!("{year}~")))
+}
+
+/// Interpret a source-calendar note-field override — the bounded shape
+/// `<year>（<note>）` using **full-width** parentheses only (not half-width
+/// `( )`) — as an annotated `issued` date. Full-width-only keeps this
+/// disjoint from the `copyright`/`printing`/`estimated` substitutes above
+/// and from any half-width-parenthesized Latin-script literal; it does not
+/// perform calendar conversion or general-purpose date-prose parsing. See
+/// `printing_year_from_legacy`, `docs/specs/CALENDAR_DATE_ANNOTATIONS.md`.
+fn annotated_issued_from_legacy(legacy: &csl_legacy::csl_json::Reference) -> Option<DateValue> {
+    let literal = legacy_extra_str(legacy, "issued-note-literal")?;
+    let (year, rest) = literal.split_once('（')?;
+    let note = rest.strip_suffix('）')?.trim();
+    let year = year.trim();
+    (year.len() == 4 && year.bytes().all(|byte| byte.is_ascii_digit()) && !note.is_empty()).then(
+        || DateValue {
+            value: year.to_string(),
+            note: Some(note.to_string()),
+        },
+    )
 }
 
 fn legacy_type_uses_created(ref_type: &str) -> bool {
@@ -533,11 +553,13 @@ impl From<csl_legacy::csl_json::Reference> for InputReference {
         // that didn't reduce to a structured date (see
         // `copyright_year_from_legacy` and friends). Copyright and printing
         // route to their own fields, leaving `issued` empty so a style's
-        // fallback chain renders them; estimated folds into `issued` itself
-        // as an EDTF approximate date.
+        // fallback chain renders them; estimated and annotated fold into
+        // `issued` itself, as an EDTF approximate date and an annotated
+        // `DateValue` respectively.
         let copyright = copyright_year_from_legacy(&legacy);
         let printing = printing_year_from_legacy(&legacy);
         let estimated_issued = estimated_issued_from_legacy(&legacy);
+        let annotated_issued = annotated_issued_from_legacy(&legacy);
         let ctx = RefContext {
             id: Some(legacy.id.clone().into()),
             title: legacy.title.clone(),
@@ -547,24 +569,26 @@ impl From<csl_legacy::csl_json::Reference> for InputReference {
                 legacy
                     .issued
                     .clone()
-                    .map(EdtfString::from)
-                    .unwrap_or(EdtfString(String::new()))
+                    .map(DateValue::from)
+                    .unwrap_or(DateValue::new(String::new()))
             } else {
-                EdtfString(String::new())
+                DateValue::new(String::new())
             },
             issued: if copyright.is_some() || printing.is_some() {
-                EdtfString(String::new())
+                DateValue::new(String::new())
             } else if let Some(estimated) = estimated_issued.clone() {
                 estimated
+            } else if let Some(annotated) = annotated_issued.clone() {
+                annotated
             } else {
                 legacy
                     .issued
                     .clone()
-                    .map(EdtfString::from)
-                    .unwrap_or(EdtfString(String::new()))
+                    .map(DateValue::from)
+                    .unwrap_or(DateValue::new(String::new()))
             },
             url: legacy.url.as_ref().and_then(|u| Url::parse(u).ok()),
-            accessed: legacy.accessed.clone().map(EdtfString::from),
+            accessed: legacy.accessed.clone().map(DateValue::from),
             language: legacy.language.clone().map(Into::into),
             note: legacy.note.clone(),
             doi: legacy.doi.clone(),
@@ -661,27 +685,27 @@ impl From<csl_legacy::csl_json::Reference> for InputReference {
     }
 }
 
-impl From<csl_legacy::csl_json::DateVariable> for EdtfString {
+impl From<csl_legacy::csl_json::DateVariable> for DateValue {
     fn from(date: csl_legacy::csl_json::DateVariable) -> Self {
         if let Some(literal) = date.literal {
-            return EdtfString(literal);
+            return DateValue::new(literal);
         }
         if let Some(parts) = date.date_parts {
             let mut rendered = parts.iter().map(|part| render_date_part(part));
             if let Some(first) = rendered.next() {
                 if let Some(second) = rendered.next() {
-                    return EdtfString(apply_csl_circa_marker(
+                    return DateValue::new(apply_csl_circa_marker(
                         format!("{first}/{second}"),
                         date.circa,
                     ));
                 }
-                return EdtfString(apply_csl_circa_marker(first, date.circa));
+                return DateValue::new(apply_csl_circa_marker(first, date.circa));
             }
         }
         if let Some(raw) = date.raw {
-            return EdtfString(raw);
+            return DateValue::new(raw);
         }
-        EdtfString(String::new())
+        DateValue::new(String::new())
     }
 }
 
@@ -865,7 +889,10 @@ mod tests {
             original_monograph.title,
             Some(Title::Single("Original Book".to_string()))
         );
-        assert_eq!(original_monograph.issued, EdtfString("1925".to_string()));
+        assert_eq!(
+            original_monograph.issued,
+            DateValue::new("1925".to_string())
+        );
         assert!(original_monograph.author.is_some());
     }
 
@@ -891,8 +918,11 @@ mod tests {
         let ClassExtension::Monograph(monograph) = converted.extension() else {
             panic!("expected monograph");
         };
-        assert_eq!(monograph.copyright, Some(EdtfString("1988".to_string())));
-        assert_eq!(monograph.issued, EdtfString(String::new()));
+        assert_eq!(
+            monograph.copyright,
+            Some(DateValue::new("1988".to_string()))
+        );
+        assert_eq!(monograph.issued, DateValue::new(String::new()));
     }
 
     #[test]
@@ -914,8 +944,8 @@ mod tests {
         let ClassExtension::Monograph(monograph) = converted.extension() else {
             panic!("expected monograph");
         };
-        assert_eq!(monograph.printing, Some(EdtfString("1995".to_string())));
-        assert_eq!(monograph.issued, EdtfString(String::new()));
+        assert_eq!(monograph.printing, Some(DateValue::new("1995".to_string())));
+        assert_eq!(monograph.issued, DateValue::new(String::new()));
     }
 
     #[test]
@@ -938,9 +968,63 @@ mod tests {
         let ClassExtension::Monograph(monograph) = converted.extension() else {
             panic!("expected monograph");
         };
-        assert_eq!(monograph.issued, EdtfString("1936~".to_string()));
+        assert_eq!(monograph.issued, DateValue::new("1936~".to_string()));
         assert_eq!(monograph.copyright, None);
         assert_eq!(monograph.printing, None);
+    }
+
+    #[test]
+    fn legacy_annotated_year_note_override_folds_into_annotated_issued() {
+        // Calendar Date Annotations: a note-field "issued: <year>（<note>）"
+        // override (full-width parens only) captures source-calendar
+        // wording alongside the Gregorian year. It folds into `issued`
+        // itself as an annotated `DateValue`, not a separate field.
+        let legacy = csl_legacy::csl_json::Reference {
+            id: "book-6".to_string(),
+            ref_type: "book".to_string(),
+            title: Some("Annotated-Date Book".to_string()),
+            issued: Some(legacy_year(1947)),
+            note: Some("issued: 1947（民国三十六年）".to_string()),
+            ..Default::default()
+        };
+
+        let converted = InputReference::from(legacy);
+
+        let ClassExtension::Monograph(monograph) = converted.extension() else {
+            panic!("expected monograph");
+        };
+        assert_eq!(
+            monograph.issued,
+            DateValue {
+                value: "1947".to_string(),
+                note: Some("民国三十六年".to_string()),
+            }
+        );
+        assert_eq!(monograph.copyright, None);
+        assert_eq!(monograph.printing, None);
+    }
+
+    #[test]
+    fn legacy_half_width_parens_note_override_does_not_annotate_issued() {
+        // Full-width parens only: a half-width-parenthesized note-field
+        // override must not misfire the calendar-annotation path (it stays
+        // disjoint from ordinary Latin-script parenthetical text). It falls
+        // through to the plain structured `issued` date.
+        let legacy = csl_legacy::csl_json::Reference {
+            id: "book-7".to_string(),
+            ref_type: "book".to_string(),
+            title: Some("Parenthetical Note Book".to_string()),
+            issued: Some(legacy_year(1947)),
+            note: Some("issued: 1947 (reprint)".to_string()),
+            ..Default::default()
+        };
+
+        let converted = InputReference::from(legacy);
+
+        let ClassExtension::Monograph(monograph) = converted.extension() else {
+            panic!("expected monograph");
+        };
+        assert_eq!(monograph.issued, DateValue::new("1947".to_string()));
     }
 
     #[test]
@@ -1110,7 +1194,7 @@ mod tests {
             Some(Title::Single("Actual Event".to_string()))
         );
         assert_eq!(event.location, Some("Chicago".to_string()));
-        assert_eq!(event.date, Some(EdtfString("2023-05-06".to_string())));
+        assert_eq!(event.date, Some(DateValue::new("2023-05-06".to_string())));
     }
 
     #[test]

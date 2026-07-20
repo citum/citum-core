@@ -5242,6 +5242,17 @@
           "description": "How negative EDTF years with unspecified digits are rendered.",
           "$ref": "#/$defs/NegativeUnspecifiedYears",
           "default": "range"
+        },
+        "note-wrap": {
+          "description": "Wrap applied around a date's opaque `note` (e.g. a source-calendar\nannotation), appended after the complete formatted date. `None`\n(the default) hides the note entirely, even when the input has one.\nSee `docs/specs/CALENDAR_DATE_ANNOTATIONS.md`.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/WrapConfig"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
       "required": [

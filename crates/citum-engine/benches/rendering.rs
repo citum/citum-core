@@ -21,8 +21,8 @@ use citum_engine::processor::document::{DocumentFormat, djot::DjotParser};
 use citum_engine::render::plain::PlainText;
 use citum_engine::sorting::ReferenceSorter;
 use citum_engine::{
-    Bibliography, Citation, CitationItem, Contributor, EdtfString, Locale, Monograph,
-    MonographType, MultilingualString, Processor, Reference, StructuredName, Title,
+    Bibliography, Citation, CitationItem, Contributor, DateValue, Locale, Monograph, MonographType,
+    MultilingualString, Processor, Reference, StructuredName, Title,
 };
 use citum_schema::grouping::{
     BibliographyGroup, FieldMatcher, GroupSelector, GroupSort, GroupSortKey, NameSortOrder,
@@ -386,7 +386,7 @@ fn make_ref_with_title(id: &str, family: &str, given: &str, year: i32, title: &s
         editor: None,
         translator: None,
 
-        issued: EdtfString(year.to_string()),
+        issued: DateValue::new(year.to_string()),
         ..Default::default()
     }))
 }
@@ -458,7 +458,7 @@ fn make_grouped_bibliography(n: usize, num_groups: usize) -> Bibliography {
                     dropping_particle: None,
                     non_dropping_particle: None,
                 })),
-                issued: EdtfString(year.to_string()),
+                issued: DateValue::new(year.to_string()),
                 language: Some(language.into()),
                 ..Default::default()
             })),
@@ -558,7 +558,7 @@ where
         editor: None,
         translator: None,
 
-        issued: EdtfString(year.to_string()),
+        issued: DateValue::new(year.to_string()),
         publisher: None,
         url: None,
         accessed: None,

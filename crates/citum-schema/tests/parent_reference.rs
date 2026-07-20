@@ -17,7 +17,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 )]
 
 use citum_schema::reference::{
-    CollectionComponent, EdtfString, MonographComponentType, SerialComponent, SerialComponentType,
+    CollectionComponent, DateValue, MonographComponentType, SerialComponent, SerialComponentType,
     Title, WorkRelation,
 };
 
@@ -28,7 +28,7 @@ fn test_serial_component_with_container_id() {
         id: Some("article-1".into()),
         r#type: SerialComponentType::Article,
         title: Some(Title::Single("My Article".to_string())),
-        issued: EdtfString("2023".to_string()),
+        issued: DateValue::new("2023".to_string()),
         container: Some(WorkRelation::Id(parent_id.clone().into())),
         ..Default::default()
     };
@@ -46,7 +46,7 @@ fn test_collection_component_with_container_id() {
         id: Some("chapter-1".into()),
         r#type: MonographComponentType::Chapter,
         title: Some(Title::Single("My Chapter".to_string())),
-        issued: EdtfString("2023".to_string()),
+        issued: DateValue::new("2023".to_string()),
         container: Some(WorkRelation::Id(parent_id.clone().into())),
         ..Default::default()
     };

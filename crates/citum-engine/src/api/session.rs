@@ -682,7 +682,7 @@ mod tests {
         Config, Contributor, ContributorForm, ContributorList, ContributorRole, DateForm,
         MultilingualString, Processing, Rendering, StructuredName, TemplateDateVariable,
     };
-    use citum_schema::reference::{EdtfString, InputReference, Monograph, MonographType, Title};
+    use citum_schema::reference::{DateValue, InputReference, Monograph, MonographType, Title};
     use citum_schema::template::{TemplateTitle, TitleType};
     use citum_schema::{
         BibliographySpec, CitationSpec, StyleInfo, TemplateComponent, TemplateContributor,
@@ -765,7 +765,7 @@ mod tests {
                     non_dropping_particle: None,
                 }),
             ]))),
-            issued: EdtfString(issued.to_string()),
+            issued: DateValue::new(issued.to_string()),
             ..Default::default()
         }))
     }

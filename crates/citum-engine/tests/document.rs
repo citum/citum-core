@@ -32,7 +32,7 @@ use citum_schema::{
         OrgAbbreviationMemoryConfig, Processing, ProcessingCustom,
     },
     reference::{
-        Contributor, EdtfString, InputReference as Reference, Monograph, MonographType, SimpleName,
+        Contributor, DateValue, InputReference as Reference, Monograph, MonographType, SimpleName,
         Title,
     },
 };
@@ -309,7 +309,7 @@ fn given_two_authors_with_same_surname_when_both_cited_integrally_then_each_gets
                     non_dropping_particle: None,
                 },
             )),
-            issued: EdtfString("2010".to_string()),
+            issued: DateValue::new("2010".to_string()),
             ..Default::default()
         })),
     );
@@ -330,7 +330,7 @@ fn given_two_authors_with_same_surname_when_both_cited_integrally_then_each_gets
                     non_dropping_particle: None,
                 },
             )),
-            issued: EdtfString("2015".to_string()),
+            issued: DateValue::new("2015".to_string()),
             ..Default::default()
         })),
     );
@@ -388,7 +388,7 @@ fn given_org_with_short_name_when_org_abbreviation_memory_configured_and_cited_i
                 short_name: Some("WHO".to_string()),
                 location: None,
             })),
-            issued: EdtfString("2020".to_string()),
+            issued: DateValue::new("2020".to_string()),
             ..Default::default()
         })),
     );
@@ -1547,7 +1547,7 @@ fn djot_note_preserves_italic_markup_in_html_bibliography() {
                 title: Some(citum_schema::reference::Title::Single(
                     "Test Book".to_string(),
                 )),
-                issued: citum_schema::reference::EdtfString("2024".to_string()),
+                issued: citum_schema::reference::DateValue::new("2024".to_string()),
                 note: Some(citum_schema::reference::RichText::Djot {
                     djot: "_italic_".to_string(),
                 }),
@@ -1598,7 +1598,7 @@ fn djot_note_sentence_case_does_not_restart_across_markup_boundaries() {
                 title: Some(citum_schema::reference::Title::Single(
                     "Test Book".to_string(),
                 )),
-                issued: citum_schema::reference::EdtfString("2024".to_string()),
+                issued: citum_schema::reference::DateValue::new("2024".to_string()),
                 note: Some(citum_schema::reference::RichText::Djot {
                     djot: "foo _BAR_ baz".to_string(),
                 }),

@@ -31,7 +31,7 @@ use serde_json::{Map as JsonMap, Value as JsonValue};
 #[cfg(feature = "schema")]
 use schemars::JsonSchema;
 
-use super::EdtfString;
+use super::DateValue;
 use super::contributor::ContributorList;
 use super::types::common::{RefID, Title};
 
@@ -50,9 +50,9 @@ pub struct InputReference {
     /// Unified contributor list.
     pub contributors: Option<ContributorList>,
     /// Publication date.
-    pub issued: Option<EdtfString>,
+    pub issued: Option<DateValue>,
     /// Creation or origination date.
-    pub created: Option<EdtfString>,
+    pub created: Option<DateValue>,
     /// Note field.
     pub note: Option<String>,
     /// Class-specific overlay. Internal; consumers go through accessors.
@@ -250,9 +250,9 @@ struct SharedFields {
     #[serde(default)]
     contributors: Option<ContributorList>,
     #[serde(default)]
-    issued: Option<EdtfString>,
+    issued: Option<DateValue>,
     #[serde(default)]
-    created: Option<EdtfString>,
+    created: Option<DateValue>,
     #[serde(default)]
     note: Option<String>,
 }
@@ -573,7 +573,7 @@ monograph-type: book
             id: RefID("av2026".to_string()),
             title: Some(Title::Single("Pina".to_string())),
             contributors: None,
-            issued: Some(EdtfString("2011".to_string())),
+            issued: Some(DateValue::new("2011".to_string())),
             created: None,
             note: None,
             extension: ClassExtension::AudioVisual(AudioVisualFields {

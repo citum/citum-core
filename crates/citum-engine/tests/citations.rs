@@ -37,7 +37,7 @@ use citum_schema::{
         ShortenListOptions, SubsequentNameForm, Substitute, SubstituteConfig,
         SubstituteTitleQuoteMode, TitleRendering, TitlesConfig,
     },
-    reference::{EdtfString, InputReference, Monograph, MonographType, Title},
+    reference::{DateValue, InputReference, Monograph, MonographType, Title},
 };
 
 // --- Helper Functions ---
@@ -139,7 +139,7 @@ fn build_author_date_style_with_givenname_rule(rule: GivennameRule) -> Style {
 fn make_undated_book(id: &str, family: &str, given: &str, title: &str) -> InputReference {
     let mut reference = make_book(id, family, given, 2020, title);
     if let ClassExtension::Monograph(monograph) = reference.extension_mut() {
-        monograph.issued = EdtfString(String::new());
+        monograph.issued = DateValue::new(String::new());
     }
     reference
 }
@@ -1309,7 +1309,7 @@ fn sorting_empty_dates_pushes_undated_items_to_the_end() {
     fn make_undated_book(id: &str, title: &str) -> InputReference {
         let mut reference = make_book(id, "Smith", "Jane", 2000, title);
         if let ClassExtension::Monograph(monograph) = reference.extension_mut() {
-            monograph.issued = citum_schema::reference::EdtfString(String::new());
+            monograph.issued = citum_schema::reference::DateValue::new(String::new());
         }
         reference
     }
@@ -3052,7 +3052,7 @@ fn role_label_defaults_bundle_never_fires_in_citation_context() {
                     ..Default::default()
                 }),
             ]))),
-            issued: EdtfString("2020".to_string()),
+            issued: DateValue::new("2020".to_string()),
             ..Default::default()
         })),
     );
@@ -3107,7 +3107,7 @@ fn leading_non_author_contributor_renders_once_in_grouped_citation() {
                     ..Default::default()
                 }),
             ]))),
-            issued: EdtfString("2020".to_string()),
+            issued: DateValue::new("2020".to_string()),
             ..Default::default()
         })),
     );

@@ -259,7 +259,7 @@ macro_rules! ref_book {
                         ..Default::default()
                     },
                 )),
-                issued: $crate::reference::EdtfString($year.to_string()),
+                issued: $crate::reference::DateValue::new($year.to_string()),
                 ..Default::default()
             },
         ))
@@ -291,7 +291,7 @@ macro_rules! ref_book_authors {
                 author: Some($crate::reference::Contributor::ContributorList(
                     $crate::reference::ContributorList(_authors),
                 )),
-                issued: $crate::reference::EdtfString($year.to_string()),
+                issued: $crate::reference::DateValue::new($year.to_string()),
                 ..Default::default()
             },
         ))
@@ -314,7 +314,7 @@ macro_rules! ref_article {
                         ..Default::default()
                     },
                 )),
-                issued: $crate::reference::EdtfString($year.to_string()),
+                issued: $crate::reference::DateValue::new($year.to_string()),
                 container: Some($crate::reference::WorkRelation::Embedded(
                     ::std::boxed::Box::new($crate::reference::InputReference::Serial(
                         ::std::boxed::Box::new($crate::reference::Serial {
@@ -355,7 +355,7 @@ macro_rules! ref_article_authors {
                 author: Some($crate::reference::Contributor::ContributorList(
                     $crate::reference::ContributorList(_authors),
                 )),
-                issued: $crate::reference::EdtfString($year.to_string()),
+                issued: $crate::reference::DateValue::new($year.to_string()),
                 ..Default::default()
             },
         ))

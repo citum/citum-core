@@ -36,7 +36,7 @@ These role-specific dates supplement `created` and `issued`; they do not replace
 ### Date Annotations
 
 Any date field may need to retain source-calendar wording alongside its
-canonical EDTF value. The Draft
+canonical EDTF value. The
 [Date Annotations specification](./CALENDAR_DATE_ANNOTATIONS.md) defines a
 backward-compatible structured form:
 

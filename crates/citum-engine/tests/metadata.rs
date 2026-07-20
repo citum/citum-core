@@ -256,7 +256,7 @@ fn test_date_rendering_full() {
     // EDTF: 2020-05-15
     let mut item = make_book("item1", "Smith", "J", 2020, "Title");
     if let ClassExtension::Monograph(m) = item.extension_mut() {
-        m.issued = citum_schema::reference::EdtfString("2020-05-15".to_string());
+        m.issued = citum_schema::reference::DateValue::new("2020-05-15".to_string());
     }
     bib.insert("item1".to_string(), item);
 
@@ -279,7 +279,7 @@ fn test_date_rendering_day_month_abbr_year() {
     // EDTF: 2020-05-15
     let mut item = make_book("item1", "Smith", "J", 2020, "Title");
     if let ClassExtension::Monograph(m) = item.extension_mut() {
-        m.issued = citum_schema::reference::EdtfString("2020-05-15".to_string());
+        m.issued = citum_schema::reference::DateValue::new("2020-05-15".to_string());
     }
     bib.insert("item1".to_string(), item);
 
@@ -303,7 +303,7 @@ fn test_date_rendering_range() {
     // EDTF range: 2020/2022
     let mut item = make_book("item1", "Smith", "J", 2020, "Title");
     if let ClassExtension::Monograph(m) = item.extension_mut() {
-        m.issued = citum_schema::reference::EdtfString("2020/2022".to_string());
+        m.issued = citum_schema::reference::DateValue::new("2020/2022".to_string());
     }
     bib.insert("item1".to_string(), item);
 
@@ -325,7 +325,7 @@ fn test_date_rendering_negative_year() {
     let mut bib = indexmap::IndexMap::new();
     let mut item = make_book("item1", "Smith", "J", 2020, "Title");
     if let ClassExtension::Monograph(m) = item.extension_mut() {
-        m.issued = citum_schema::reference::EdtfString("-0099".to_string());
+        m.issued = citum_schema::reference::DateValue::new("-0099".to_string());
     }
     bib.insert("item1".to_string(), item);
 
@@ -346,7 +346,7 @@ fn test_date_rendering_negative_full_date() {
     let mut bib = indexmap::IndexMap::new();
     let mut item = make_book("item1", "Smith", "J", 2020, "Title");
     if let ClassExtension::Monograph(m) = item.extension_mut() {
-        m.issued = citum_schema::reference::EdtfString("-0043-03-15".to_string());
+        m.issued = citum_schema::reference::DateValue::new("-0043-03-15".to_string());
     }
     bib.insert("item1".to_string(), item);
 
@@ -367,7 +367,7 @@ fn test_date_rendering_negative_range() {
     let mut bib = indexmap::IndexMap::new();
     let mut item = make_book("item1", "Smith", "J", 2020, "Title");
     if let ClassExtension::Monograph(m) = item.extension_mut() {
-        m.issued = citum_schema::reference::EdtfString("-0099/-0043".to_string());
+        m.issued = citum_schema::reference::DateValue::new("-0099/-0043".to_string());
     }
     bib.insert("item1".to_string(), item);
 
@@ -391,7 +391,7 @@ fn test_date_rendering_open_range() {
     // EDTF open range: 2020/..
     let mut item = make_book("item1", "Smith", "J", 2020, "Title");
     if let ClassExtension::Monograph(m) = item.extension_mut() {
-        m.issued = citum_schema::reference::EdtfString("2020/..".to_string());
+        m.issued = citum_schema::reference::DateValue::new("2020/..".to_string());
     }
     bib.insert("item1".to_string(), item);
 
@@ -414,7 +414,7 @@ fn test_date_rendering_fallback() {
     // Missing date
     let mut item = make_book("item1", "Smith", "J", 2020, "Title");
     if let ClassExtension::Monograph(m) = item.extension_mut() {
-        m.issued = citum_schema::reference::EdtfString(String::new());
+        m.issued = citum_schema::reference::DateValue::new(String::new());
     }
     bib.insert("item1".to_string(), item);
 
@@ -435,8 +435,8 @@ fn test_date_rendering_uses_created_when_issued_is_missing() {
     let mut bib = indexmap::IndexMap::new();
     let mut item = make_book("item1", "Smith", "J", 2020, "Title");
     if let ClassExtension::Monograph(m) = item.extension_mut() {
-        m.created = citum_schema::reference::EdtfString("1954-05-17".to_string());
-        m.issued = citum_schema::reference::EdtfString(String::new());
+        m.created = citum_schema::reference::DateValue::new("1954-05-17".to_string());
+        m.issued = citum_schema::reference::DateValue::new(String::new());
     }
     bib.insert("item1".to_string(), item);
 

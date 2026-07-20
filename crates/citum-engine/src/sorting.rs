@@ -755,7 +755,7 @@ mod tests {
     use citum_schema::reference::contributor::MultilingualName;
     use citum_schema::reference::types::MultilingualComplex;
     use citum_schema::reference::{
-        Contributor, ContributorList, EdtfString, Monograph, MonographType, MultilingualString,
+        Contributor, ContributorList, DateValue, Monograph, MonographType, MultilingualString,
         StructuredName, Title,
     };
     use std::collections::HashMap;
@@ -844,7 +844,7 @@ mod tests {
                     translations: HashMap::new(),
                 }),
             ]))),
-            issued: EdtfString("1869".to_string()),
+            issued: DateValue::new("1869".to_string()),
             ..Default::default()
         }))
     }
@@ -1022,7 +1022,7 @@ mod tests {
         let dated_late = make_reference("r2", "book", "Jones", "Book B", 2000);
         let mut undated = make_reference("r3", "book", "Brown", "Book A", 2000);
         if let ClassExtension::Monograph(monograph) = undated.extension_mut() {
-            monograph.issued = citum_schema::reference::EdtfString(String::new());
+            monograph.issued = citum_schema::reference::DateValue::new(String::new());
         }
 
         let mut refs = vec![&undated, &dated_late, &dated_early];
@@ -1051,8 +1051,8 @@ mod tests {
         let dated = make_reference("r1", "book", "Smith", "Book D", 1999);
         let mut created_only = make_reference("r2", "book", "Jones", "Book C", 2000);
         if let ClassExtension::Monograph(monograph) = created_only.extension_mut() {
-            monograph.created = citum_schema::reference::EdtfString("1985".to_string());
-            monograph.issued = citum_schema::reference::EdtfString(String::new());
+            monograph.created = citum_schema::reference::DateValue::new("1985".to_string());
+            monograph.issued = citum_schema::reference::DateValue::new(String::new());
         }
 
         let mut refs = vec![&dated, &created_only];

@@ -603,7 +603,7 @@ mod tests {
     };
     use citum_schema::data::citation::CitationMode;
     use citum_schema::options::{AndOptions, ContributorConfig};
-    use citum_schema::reference::{EdtfString, InputReference, Monograph, MonographType, Title};
+    use citum_schema::reference::{DateValue, InputReference, Monograph, MonographType, Title};
     use citum_schema::template::{TemplateTitle, TitleType};
     use citum_schema::{BibliographySpec, CitationSpec, StyleInfo};
     use std::collections::HashMap;
@@ -649,7 +649,7 @@ mod tests {
                 id: Some("smith2020".into()),
                 r#type: MonographType::Book,
                 title: Some(Title::Single("Sample Work".to_string())),
-                issued: EdtfString("2020".to_string()),
+                issued: DateValue::new("2020".to_string()),
                 ..Default::default()
             })),
         );
@@ -666,7 +666,7 @@ mod tests {
                 title: Some(Title::Single(
                     "_Homo sapiens_ and *modern* world".to_string(),
                 )),
-                issued: EdtfString("2023".to_string()),
+                issued: DateValue::new("2023".to_string()),
                 ..Default::default()
             })),
         );
@@ -845,7 +845,7 @@ mod tests {
                 id: Some("test2024".into()),
                 r#type: MonographType::Book,
                 title: Some(Title::Single("Test Work".to_string())),
-                issued: EdtfString("2024".to_string()),
+                issued: DateValue::new("2024".to_string()),
                 ..Default::default()
             })),
         );
@@ -1413,7 +1413,7 @@ mod tests {
                 id: Some("smith2020".into()),
                 r#type: MonographType::Book,
                 title: Some(Title::Single("Sample Work".to_string())),
-                issued: EdtfString("2020".to_string()),
+                issued: DateValue::new("2020".to_string()),
                 ..Default::default()
             })),
         );
@@ -1423,7 +1423,7 @@ mod tests {
                 id: Some("jones2019".into()),
                 r#type: MonographType::Book,
                 title: Some(Title::Single("Another Work".to_string())),
-                issued: EdtfString("2019".to_string()),
+                issued: DateValue::new("2019".to_string()),
                 ..Default::default()
             })),
         );

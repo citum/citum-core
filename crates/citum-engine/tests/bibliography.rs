@@ -35,7 +35,7 @@ use citum_schema::{
         SortKey, SortSpec, SortingConfig, SortingMultilingualMode,
     },
     reference::{
-        Contributor, ContributorList, EdtfString, InputReference, Monograph, MonographType,
+        Contributor, ContributorList, DateValue, InputReference, Monograph, MonographType,
         Numbering, NumberingType, Serial, SerialComponent, SerialComponentType, SerialType,
         StructuredName, Title, WorkRelation,
         contributor::MultilingualName,
@@ -291,7 +291,7 @@ fn romanized_partition_reference(
                 translations: HashMap::new(),
             }),
         ]))),
-        issued: EdtfString("1900".to_string()),
+        issued: DateValue::new("1900".to_string()),
         ..Default::default()
     }))
 }
@@ -1239,7 +1239,7 @@ fn make_archive_eprint_reference() -> InputReference {
         author: None,
         editor: None,
         translator: None,
-        issued: EdtfString("2026-02".to_string()),
+        issued: DateValue::new("2026-02".to_string()),
         publisher: None,
         url: Some(Url::parse("https://arxiv.org/abs/2602.01234").expect("url should parse")),
         accessed: None,
@@ -1287,7 +1287,7 @@ fn make_multilingual_archive_name_reference() -> InputReference {
         author: None,
         editor: None,
         translator: None,
-        issued: EdtfString("2024".to_string()),
+        issued: DateValue::new("2024".to_string()),
         publisher: None,
         url: None,
         accessed: None,
@@ -1332,7 +1332,7 @@ fn make_historical_archive_reference() -> InputReference {
         author: None,
         editor: None,
         translator: None,
-        issued: EdtfString("-0099".to_string()),
+        issued: DateValue::new("-0099".to_string()),
         publisher: None,
         url: None,
         accessed: None,
@@ -1534,7 +1534,7 @@ fn make_article_journal_with_detail(
             non_dropping_particle: None,
         })),
         translator: None,
-        issued: EdtfString(issued.to_string()),
+        issued: DateValue::new(issued.to_string()),
         container: Some(WorkRelation::Embedded(Box::new(InputReference::Serial(
             Box::new(Serial {
                 r#type: SerialType::AcademicJournal,
@@ -1678,7 +1678,7 @@ fn make_particle_book(
         })),
         editor: None,
         translator: None,
-        issued: citum_schema::reference::EdtfString("2000".to_string()),
+        issued: citum_schema::reference::DateValue::new("2000".to_string()),
         publisher: None,
         url: None,
         accessed: None,
@@ -1721,7 +1721,7 @@ fn make_editor_only_book(
             ..Default::default()
         })),
         translator: None,
-        issued: EdtfString(year.to_string()),
+        issued: DateValue::new(year.to_string()),
         publisher: None,
         url: None,
         accessed: None,
@@ -1772,7 +1772,7 @@ fn make_multi_editor_only_book(
             citum_schema::reference::ContributorList(editors),
         )),
         translator: None,
-        issued: EdtfString(year.to_string()),
+        issued: DateValue::new(year.to_string()),
         publisher: None,
         url: None,
         accessed: None,
@@ -2089,7 +2089,7 @@ fn sorting_empty_dates_pushes_undated_items_after_dated_ones() {
     fn make_undated_book(id: &str, title: &str) -> InputReference {
         let mut reference = make_book(id, "Smith", "Jane", 2000, title);
         if let ClassExtension::Monograph(monograph) = reference.extension_mut() {
-            monograph.issued = citum_schema::reference::EdtfString(String::new());
+            monograph.issued = citum_schema::reference::DateValue::new(String::new());
         }
         reference
     }
@@ -3414,7 +3414,7 @@ fn bibliography_local_entry_links_apply_on_the_default_render_path() {
         author: None,
         editor: None,
         translator: None,
-        issued: EdtfString("2024".to_string()),
+        issued: DateValue::new("2024".to_string()),
         publisher: None,
         url: Some(Url::parse("https://example.com/linked-book").expect("valid url")),
         accessed: None,
@@ -4119,11 +4119,11 @@ fn original_published_date_variable_renders_when_reference_has_original_date() {
     let reference = InputReference::Monograph(Box::new(Monograph {
         id: Some("gatsby".into()),
         title: Some(Title::Single("The Great Gatsby".to_string())),
-        issued: EdtfString("1992".to_string()),
+        issued: DateValue::new("1992".to_string()),
         original: Some(WorkRelation::Embedded(Box::new(InputReference::Monograph(
             Box::new(Monograph {
                 id: Some("gatsby-orig".into()),
-                issued: EdtfString("1925".to_string()),
+                issued: DateValue::new("1925".to_string()),
                 ..Default::default()
             }),
         )))),
@@ -4875,7 +4875,7 @@ fn given_grouped_html_bibliography_when_journal_article_rendered_then_container_
                 dropping_particle: None,
                 non_dropping_particle: None,
             })),
-            issued: EdtfString("2020".to_string()),
+            issued: DateValue::new("2020".to_string()),
             container: Some(WorkRelation::Embedded(Box::new(InputReference::Serial(
                 Box::new(Serial {
                     r#type: SerialType::AcademicJournal,
@@ -4934,7 +4934,7 @@ fn given_grouped_html_bibliography_when_title_has_inline_djot_markup_then_markup
                 dropping_particle: None,
                 non_dropping_particle: None,
             })),
-            issued: EdtfString("2022".to_string()),
+            issued: DateValue::new("2022".to_string()),
             container: Some(WorkRelation::Embedded(Box::new(InputReference::Serial(
                 Box::new(Serial {
                     r#type: SerialType::AcademicJournal,
@@ -5005,7 +5005,7 @@ fn title_with_inner_quotes_bibliography() -> IndexMap<String, InputReference> {
             id: Some("art1".into()),
             r#type: SerialComponentType::Article,
             title: Some(Title::Single("The \"Parmenides\" dialogue".to_string())),
-            issued: EdtfString("2022".to_string()),
+            issued: DateValue::new("2022".to_string()),
             ..Default::default()
         })),
     );
@@ -5139,7 +5139,7 @@ fn given_multilingual_ref_when_rendering_html_then_data_attrs_match_displayed_fo
                     },
                 )]),
             )),
-            issued: EdtfString("2019".to_string()),
+            issued: DateValue::new("2019".to_string()),
             container: None,
             ..Default::default()
         })),

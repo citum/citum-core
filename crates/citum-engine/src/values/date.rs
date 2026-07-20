@@ -8,7 +8,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 //! This module handles date component rendering with support for different date forms,
 //! time formatting, and locale-specific date presentation.
 
-use crate::reference::{EdtfString, Reference};
+use crate::reference::{DateValue, Reference};
 use crate::values::{ComponentValues, ProcHints, ProcValues, RenderOptions};
 use citum_edtf::{Edtf, Timezone, UnspecifiedYear, Year};
 use citum_schema::locale::{GeneralTerm, TermForm};
@@ -33,7 +33,7 @@ fn month_to_string(month: u32, months: &[String]) -> String {
 /// Zero-padded numeric month (`"01"`–`"12"`) for `month: numeric` rendering.
 /// Seasons and literal dates have no numeric form and return `None` so
 /// callers fall back to the textual path.
-fn extract_month_numeric(date: &EdtfString) -> Option<String> {
+fn extract_month_numeric(date: &DateValue) -> Option<String> {
     let RefDate::Edtf(edtf) = date.parse() else {
         return None;
     };
@@ -41,7 +41,7 @@ fn extract_month_numeric(date: &EdtfString) -> Option<String> {
     (1..=12).contains(&month).then(|| format!("{month:02}"))
 }
 
-fn extract_month(date: &EdtfString, months: &[String], seasons: &[String]) -> String {
+fn extract_month(date: &DateValue, months: &[String], seasons: &[String]) -> String {
     let parsed_date = date.parse();
     let edtf = match parsed_date {
         RefDate::Edtf(edtf) => edtf,
@@ -56,7 +56,7 @@ fn extract_month(date: &EdtfString, months: &[String], seasons: &[String]) -> St
     }
 }
 
-fn event_date(reference: &Reference) -> Option<EdtfString> {
+fn event_date(reference: &Reference) -> Option<DateValue> {
     match reference.extension() {
         ClassExtension::Event(event) => event.date.clone(),
         ClassExtension::Monograph(monograph) => embedded_event_date(monograph.event.as_ref()?),
@@ -70,7 +70,7 @@ fn event_date(reference: &Reference) -> Option<EdtfString> {
     }
 }
 
-fn embedded_event_date(relation: &WorkRelation) -> Option<EdtfString> {
+fn embedded_event_date(relation: &WorkRelation) -> Option<DateValue> {
     let WorkRelation::Embedded(reference) = relation else {
         return None;
     };
@@ -203,7 +203,7 @@ fn format_display_year_legacy(year: &Year, before_era: Option<&str>) -> String {
 }
 
 #[allow(dead_code, reason = "kept for backwards compatibility")]
-fn extract_display_year_legacy(date: &EdtfString, before_era: Option<&str>) -> String {
+fn extract_display_year_legacy(date: &DateValue, before_era: Option<&str>) -> String {
     match date.parse() {
         RefDate::Edtf(edtf) => match edtf {
             Edtf::Date(date) => format_display_year_legacy(&date.year, before_era),
@@ -282,7 +282,7 @@ fn format_time(
 /// given form, delegating both endpoints of a range to
 /// [`format_single_date`] so locale patterns apply symmetrically.
 fn format_date_range(
-    date: &EdtfString,
+    date: &DateValue,
     form: &DateForm,
     locale: &citum_schema::locale::Locale,
     date_config: Option<&citum_schema::options::dates::DateConfig>,
@@ -315,7 +315,7 @@ fn format_date_range(
 /// Format a closed date range, collapsing the start point's year when both
 /// endpoints share a year and the form displays a month.
 fn format_closed_range(
-    date: &EdtfString,
+    date: &DateValue,
     interval: &citum_edtf::Interval,
     form: &DateForm,
     locale: &citum_schema::locale::Locale,
@@ -342,7 +342,7 @@ fn format_closed_range(
 
     let start = format_single_date(date, form, locale, date_config);
     let end = format_single_date(
-        &EdtfString(interval.end.to_string()),
+        &DateValue::new(interval.end.to_string()),
         form,
         locale,
         date_config,
@@ -378,19 +378,61 @@ fn format_same_year_range(
     };
 
     let start_str = format_single_date(
-        &EdtfString(start.to_string()),
+        &DateValue::new(start.to_string()),
         &start_form,
         locale,
         date_config,
     )?;
-    let end_str = format_single_date(&EdtfString(end.to_string()), &end_form, locale, date_config)?;
+    let end_str = format_single_date(
+        &DateValue::new(end.to_string()),
+        &end_form,
+        locale,
+        date_config,
+    )?;
     Some(format!("{start_str}{delimiter}{end_str}"))
+}
+
+/// Append a date's opaque `note` (e.g. a source-calendar annotation), wrapped
+/// per `DateConfig.note_wrap`, directly after the complete formatted date —
+/// after any inlined year-suffix, before the component's own outer
+/// prefix/suffix/wrap. A no-op when the style has no `note-wrap` configured
+/// for this scope, or the date carries no note. See
+/// `docs/specs/CALENDAR_DATE_ANNOTATIONS.md`.
+fn append_note<F: crate::render::format::OutputFormat<Output = String>>(
+    fmt: &F,
+    formatted: String,
+    date: &DateValue,
+    date_config: Option<&citum_schema::options::dates::DateConfig>,
+    reference: &Reference,
+    options: &RenderOptions<'_>,
+) -> String {
+    let Some(note) = date.note.as_deref().filter(|n| !n.is_empty()) else {
+        return formatted;
+    };
+    let Some(wrap) = date_config.and_then(|c| c.note_wrap.as_ref()) else {
+        return formatted;
+    };
+
+    let content = fmt.text(note);
+    let content = fmt.inner_affix(
+        wrap.inner_prefix.as_deref().unwrap_or_default(),
+        content,
+        wrap.inner_suffix.as_deref().unwrap_or_default(),
+    );
+    let marks = crate::render::format::QuoteMarks::from(&options.locale.grammar_options);
+    let item_language = crate::values::effective_item_language(reference);
+    let (script, realization) = crate::values::punctuation_realization_context(
+        item_language.as_deref(),
+        options.config.multilingual.as_ref(),
+    );
+    let wrapped = fmt.wrap_punctuation(&wrap.punctuation, content, &marks, script, realization);
+    format!("{formatted}{wrapped}")
 }
 
 /// Apply uncertainty and approximation markers to formatted date.
 fn apply_date_markers(
     value: String,
-    date: &EdtfString,
+    date: &DateValue,
     date_config: Option<&citum_schema::options::dates::DateConfig>,
 ) -> String {
     let mut result = value;
@@ -412,7 +454,7 @@ fn apply_date_markers(
 
 /// Compute the disambiguation suffix for year-based citations.
 fn compute_disamb_suffix<F: crate::render::format::OutputFormat<Output = String>>(
-    date: &EdtfString,
+    date: &DateValue,
     form: &DateForm,
     hints: &ProcHints,
     options: &RenderOptions<'_>,
@@ -496,7 +538,7 @@ fn inline_disamb_suffix(formatted: &str, form: &DateForm, year: &str, suffix: &s
     reason = "date formatting handles 6 form variants"
 )]
 fn format_single_date(
-    date: &EdtfString,
+    date: &DateValue,
     form: &DateForm,
     locale: &citum_schema::locale::Locale,
     date_config: Option<&citum_schema::options::dates::DateConfig>,
@@ -514,7 +556,7 @@ fn format_single_date(
     let numeric_months =
         date_config.is_some_and(|c| c.month == citum_schema::options::MonthFormat::Numeric);
 
-    let extract_year = |d: &EdtfString| -> String {
+    let extract_year = |d: &DateValue| -> String {
         match d.parse() {
             RefDate::Edtf(edtf) => match edtf {
                 Edtf::Date(dt) => format_display_year(
@@ -811,7 +853,7 @@ impl ComponentValues for TemplateDate {
         options: &RenderOptions<'_>,
     ) -> Option<ProcValues<F::Output>> {
         let fmt = F::default();
-        let date_opt: Option<EdtfString> = match self.date {
+        let date_opt: Option<DateValue> = match self.date {
             TemplateDateVar::Issued => reference.effective_issued_date(),
             TemplateDateVar::Accessed => reference.accessed(),
             TemplateDateVar::OriginalPublished => reference.original_date(),
@@ -821,7 +863,7 @@ impl ComponentValues for TemplateDate {
             _ => None,
         };
 
-        let Some(date) = date_opt.filter(|d| !d.0.is_empty()) else {
+        let Some(date) = date_opt.filter(|d| !d.is_empty()) else {
             // Handle fallback if date is missing
             if let Some(fallbacks) = &self.fallback {
                 for component in fallbacks {
@@ -895,6 +937,8 @@ impl ComponentValues for TemplateDate {
             } else {
                 (value, None)
             };
+
+            let value = append_note(&fmt, value, &date, date_config, reference, options);
 
             ProcValues {
                 value,
@@ -1280,13 +1324,18 @@ mod locale_pattern_tests {
     }
 
     fn full(locale: &Locale, edtf: &str) -> String {
-        format_single_date(&EdtfString(edtf.to_string()), &DateForm::Full, locale, None)
-            .expect("date should render")
+        format_single_date(
+            &DateValue::new(edtf.to_string()),
+            &DateForm::Full,
+            locale,
+            None,
+        )
+        .expect("date should render")
     }
 
     fn month_day(locale: &Locale, edtf: &str) -> String {
         format_single_date(
-            &EdtfString(edtf.to_string()),
+            &DateValue::new(edtf.to_string()),
             &DateForm::MonthDay,
             locale,
             None,
@@ -1310,7 +1359,7 @@ mod locale_pattern_tests {
     fn en_us_month_form_renders_month_name_only() {
         // given a year-month date and the month-only form
         let out = format_single_date(
-            &EdtfString("2023-06".to_string()),
+            &DateValue::new("2023-06".to_string()),
             &DateForm::Month,
             &en_us(),
             None,
@@ -1323,7 +1372,7 @@ mod locale_pattern_tests {
     fn en_us_month_form_renders_season_name() {
         // given an EDTF season date and the month-only form
         let out = format_single_date(
-            &EdtfString("2023-21".to_string()),
+            &DateValue::new("2023-21".to_string()),
             &DateForm::Month,
             &en_us(),
             None,
@@ -1335,7 +1384,7 @@ mod locale_pattern_tests {
     #[test]
     fn en_us_year_month_form_renders_season_and_year() {
         let out = format_single_date(
-            &EdtfString("2023-21".to_string()),
+            &DateValue::new("2023-21".to_string()),
             &DateForm::YearMonth,
             &en_us(),
             None,
@@ -1351,7 +1400,7 @@ mod locale_pattern_tests {
     #[test]
     fn es_es_year_month_form_renders_localized_season() {
         let out = format_single_date(
-            &EdtfString("2023-23".to_string()),
+            &DateValue::new("2023-23".to_string()),
             &DateForm::YearMonth,
             &es_es(),
             None,
@@ -1384,7 +1433,7 @@ mod locale_pattern_tests {
 
     fn year_month(locale: &Locale, edtf: &str) -> String {
         format_single_date(
-            &EdtfString(edtf.to_string()),
+            &DateValue::new(edtf.to_string()),
             &DateForm::YearMonth,
             locale,
             None,
@@ -1394,7 +1443,7 @@ mod locale_pattern_tests {
 
     fn year_month_day(locale: &Locale, edtf: &str) -> String {
         format_single_date(
-            &EdtfString(edtf.to_string()),
+            &DateValue::new(edtf.to_string()),
             &DateForm::YearMonthDay,
             locale,
             None,
@@ -1404,7 +1453,7 @@ mod locale_pattern_tests {
 
     fn day_month_abbr_year(locale: &Locale, edtf: &str) -> String {
         format_single_date(
-            &EdtfString(edtf.to_string()),
+            &DateValue::new(edtf.to_string()),
             &DateForm::DayMonthAbbrYear,
             locale,
             None,
@@ -1414,7 +1463,7 @@ mod locale_pattern_tests {
 
     fn month_abbr_day_year(locale: &Locale, edtf: &str) -> String {
         format_single_date(
-            &EdtfString(edtf.to_string()),
+            &DateValue::new(edtf.to_string()),
             &DateForm::MonthAbbrDayYear,
             locale,
             None,
@@ -1540,7 +1589,7 @@ mod numeric_month_tests {
 
     fn render(form: DateForm, edtf: &str) -> Option<String> {
         format_single_date(
-            &EdtfString(edtf.to_string()),
+            &DateValue::new(edtf.to_string()),
             &form,
             &en_us(),
             Some(&numeric_config()),
@@ -1609,7 +1658,7 @@ mod numeric_month_tests {
     fn given_long_month_config_when_year_month_day_then_unchanged() {
         // Regression guard: the default textual assembly is untouched.
         let out = format_single_date(
-            &EdtfString("2024-01-15".to_string()),
+            &DateValue::new("2024-01-15".to_string()),
             &DateForm::YearMonthDay,
             &en_us(),
             None,
@@ -1639,7 +1688,7 @@ mod range_tests {
     }
 
     fn range(locale: &Locale, edtf: &str, form: DateForm) -> Option<String> {
-        format_date_range(&EdtfString(edtf.to_string()), &form, locale, None)
+        format_date_range(&DateValue::new(edtf.to_string()), &form, locale, None)
     }
 
     #[test]

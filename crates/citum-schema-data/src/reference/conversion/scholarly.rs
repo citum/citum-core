@@ -462,8 +462,8 @@ pub(super) fn from_collection_component_ref(
                 editor: container_editor,
                 translator: None,
                 contributors: container_contributors,
-                created: EdtfString(String::new()),
-                issued: EdtfString(String::new()),
+                created: DateValue::new(String::new()),
+                issued: DateValue::new(String::new()),
                 publisher: publisher_from_parts(legacy.publisher, legacy.publisher_place),
                 edition: parent_edition,
                 numbering: parent_volume
@@ -606,14 +606,14 @@ pub fn input_reference_from_legacy_edited_book(
         editor: editor_value,
         translator: translator_value,
         contributors,
-        created: EdtfString(String::new()),
+        created: DateValue::new(String::new()),
         issued: issued
-            .map(EdtfString::from)
-            .unwrap_or(EdtfString(String::new())),
+            .map(DateValue::from)
+            .unwrap_or(DateValue::new(String::new())),
         publisher: publisher_from_parts(publisher, publisher_place),
         numbering,
         url: url.as_deref().and_then(|value| Url::parse(value).ok()),
-        accessed: accessed.map(EdtfString::from),
+        accessed: accessed.map(DateValue::from),
         language: language.map(Into::into),
         field_languages: HashMap::new(),
         note,

@@ -325,7 +325,7 @@ fn test_parse_csl_json_note_issued_range_converts_to_edtf_interval() {
 
     match reference.extension() {
         ClassExtension::Monograph(monograph) => {
-            assert_eq!(monograph.issued, EdtfString("1803/1820".to_string()));
+            assert_eq!(monograph.issued, DateValue::new("1803/1820".to_string()));
         }
         other => panic!("expected monograph, got {:?}", other),
     }
@@ -409,7 +409,7 @@ fn test_parse_csl_json_mixed_string_date_parts() {
     let legacy: csl_legacy::csl_json::Reference = serde_json::from_str(json).unwrap();
     let reference: InputReference = legacy.into();
 
-    assert_eq!(reference.issued().unwrap().0, "2017-02-21");
+    assert_eq!(reference.issued().unwrap().value, "2017-02-21");
 }
 
 #[test]
@@ -467,7 +467,7 @@ fn test_parse_csl_json_event_note_type_routes_to_event_with_chair_and_session() 
         "chair should be preserved as a custom contributor role"
     );
     assert_eq!(
-        event.date.as_ref().map(|date| date.0.clone()),
+        event.date.as_ref().map(|date| date.value.clone()),
         Some("2013-05".to_string())
     );
 }
@@ -604,9 +604,12 @@ fn unpublished_legacy_records_promote_issued_to_created() {
     let legacy: csl_legacy::csl_json::Reference = serde_json::from_str(json).unwrap();
     let reference: InputReference = legacy.into();
 
-    assert_eq!(reference.created().unwrap().0, "1973-01-01");
-    assert_eq!(reference.issued().unwrap().0, "1973-01-01");
-    assert_eq!(reference.effective_issued_date().unwrap().0, "1973-01-01");
+    assert_eq!(reference.created().unwrap().value, "1973-01-01");
+    assert_eq!(reference.issued().unwrap().value, "1973-01-01");
+    assert_eq!(
+        reference.effective_issued_date().unwrap().value,
+        "1973-01-01"
+    );
 }
 
 #[test]
@@ -615,13 +618,16 @@ fn created_date_backfills_effective_issued_date() {
         id: Some("created-only".into()),
         r#type: MonographType::Manuscript,
         title: Some(Title::Single("Created Only".to_string())),
-        created: EdtfString("1954-05-17".to_string()),
+        created: DateValue::new("1954-05-17".to_string()),
         ..Default::default()
     }));
 
     assert_eq!(reference.issued(), None);
-    assert_eq!(reference.created().unwrap().0, "1954-05-17");
-    assert_eq!(reference.effective_issued_date().unwrap().0, "1954-05-17");
+    assert_eq!(reference.created().unwrap().value, "1954-05-17");
+    assert_eq!(
+        reference.effective_issued_date().unwrap().value,
+        "1954-05-17"
+    );
 }
 
 #[test]
@@ -923,7 +929,7 @@ issued: "2019"
         ClassExtension::AudioVisual(av) => {
             assert_eq!(av.r#type, AudioVisualType::Film);
             assert_eq!(av.core.title, Some(Title::Single("Parasite".to_string())));
-            assert_eq!(av.core.issued.0, "2019");
+            assert_eq!(av.core.issued.value, "2019");
         }
         other => panic!("expected AudioVisual, got {:?}", other),
     }
@@ -975,7 +981,7 @@ issued: "1971"
                 av.core.title,
                 Some(Title::Single("A Camping We Will Go".to_string()))
             );
-            assert_eq!(av.core.issued.0, "1971");
+            assert_eq!(av.core.issued.value, "1971");
         }
         other => panic!("expected AudioVisual, got {:?}", other),
     }
@@ -1528,7 +1534,7 @@ fn conversion_maps_original_publisher_metadata_into_original_relation() {
 
     assert_eq!(
         reference.original_date(),
-        Some(EdtfString("1901".to_string()))
+        Some(DateValue::new("1901".to_string()))
     );
     assert_eq!(
         reference.original_publisher_str(),
@@ -1698,7 +1704,7 @@ fn original_date_uses_created_fallback_for_newly_supported_variants() {
 
     assert_eq!(
         reference.original_date(),
-        Some(EdtfString("1901-05-17".to_string()))
+        Some(DateValue::new("1901-05-17".to_string()))
     );
 }
 

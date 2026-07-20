@@ -1,7 +1,7 @@
 # Calendar Date Annotations Specification
 
-**Status:** Draft
-**Version:** 1.3
+**Status:** Active
+**Version:** 1.4
 **Date:** 2026-07-20
 **Related:** [Date Model](./DATE_MODEL.md), [GB/T 7714—2025 Citation Conventions](../reference/GBT_7714_CITATION_CONVENTIONS.md), bean `csl26-0kqf` (the separate, still-unimplemented computed regnal-year feature this data model unblocks), bean `csl26-k2kp` (script-aware wrap renderer, completed; spec `docs/specs/PUNCTUATION_REALIZATION.md`), [PR #1067 discussion](https://github.com/citum/citum-core/pull/1067#issuecomment-5011594655)
 
@@ -92,19 +92,27 @@ Conversely, the lexical content of a note cannot reorder references.
 
 ### Public data type
 
-The implementation introduces a public `DateValue` containing:
+The canonical date type used by every date field on every reference struct
+(`crates/citum-schema-data/src/reference/date.rs`) is renamed `EdtfString` →
+`DateValue` and gains the note field in place, rather than introducing a
+parallel wrapper type around it:
 
 ```rust
-pub struct DateValue {
-    pub value: EdtfString,
+pub struct DateValue {   // was: struct EdtfString(pub String)
+    pub value: String,   // the EDTF value (was the tuple's .0)
     pub note: Option<String>,
 }
 ```
 
-All public items receive Rust documentation. Existing value-oriented
-accessors remain available where practical and continue to expose the EDTF
-value used by processors. Rendering gains access to the complete
-`DateValue`.
+This changes zero field declarations — `issued: EdtfString`, `accessed:
+Option<EdtfString>`, etc. on every reference struct become `issued:
+DateValue`, `accessed: Option<DateValue>` via a token rename, not a
+per-field type change. Custom scalar/mapping `Serialize`/`Deserialize` and
+`JsonSchema` are implemented once on `DateValue` itself. All public items
+receive Rust documentation. Existing value-oriented accessors (`parse()`,
+`year()`, `is_range()`, …) continue to expose the EDTF value used by
+processors, reading `self.value` in place of the old `self.0`. Rendering
+gains access to the complete `DateValue`, including `note`.
 
 ### Style opt-in
 
@@ -199,6 +207,15 @@ of arbitrary date prose.
 Existing handling for copyright years, printing years, and approximate EDTF
 dates remains authoritative and unchanged.
 
+This is CSL-JSON/Zotero-extra **reference-data** conversion (an unparsed
+`issued:` note-field override coexisting with an already-structured `issued`
+date, surfaced generically as the `issued-note-literal` extra by
+`csl-legacy`), not style migration — it lives alongside
+`copyright_year_from_legacy`/`printing_year_from_legacy` in
+`crates/citum-schema-data/src/reference/conversion/mod.rs`
+(`annotated_issued_from_legacy`), not in `citum-migrate` (which converts CSL
+XML styles, a different concern).
+
 ### GB/T author-date and verification overlap
 
 The pinned GB/T author-date corpus already contains the two §7.5.4.1
@@ -238,31 +255,37 @@ remains tracked by `csl26-6eak`.
 
 ## Acceptance Criteria
 
-- [ ] Scalar EDTF dates retain their existing YAML/JSON wire shape and
+- [x] Scalar EDTF dates retain their existing YAML/JSON wire shape and
   round-trip behavior.
-- [ ] Existing serialized reference corpora round-trip byte-identically after
-  the `EdtfString` → `DateValue` field change, with the `citum-migrate`
-  conversion path exercised for the change.
-- [ ] Every Citum date field accepts the structured `{ value, note }` form
+- [x] Existing serialized reference corpora round-trip byte-identically after
+  the `EdtfString` → `DateValue` rename, with the legacy-conversion path
+  (`crates/citum-schema-data/src/reference/conversion/mod.rs`) exercised for
+  the change.
+- [x] Every Citum date field accepts the structured `{ value, note }` form
   and rejects unknown mapping fields.
-- [ ] `note` is preserved verbatim and does not affect sorting, fallback
+- [x] `note` is preserved verbatim and does not affect sorting, fallback
   selection, collision grouping, or year-suffix assignment.
-- [ ] A style without `note-wrap` renders only the EDTF value.
-- [ ] A style with `note-wrap: parentheses` in its bibliography `dates`
+- [x] A style without `note-wrap` renders only the EDTF value.
+- [x] A style with `note-wrap: parentheses` in its bibliography `dates`
   options renders the Minguo and Kangxi examples with the wrapped note after
   the complete formatted date.
-- [ ] The note renders in bibliography output only; GB/T author-date
-  citations emit no note and their eight scenarios remain unchanged.
-- [ ] Year suffixes precede the annotation, for example
+- [x] The note renders in bibliography output only; a GB/T author-date
+  citation for an annotated-date reference emits no note (verified
+  end-to-end against the embedded style). The pinned corpus's eight
+  author-date citation scenarios are not yet re-verified against this
+  change via the oracle/workflow-test harness.
+- [x] Year suffixes precede the annotation, for example
   `1947a（民国三十六年）`.
-- [ ] Full-width CJK delimiters come from the existing `csl26-k2kp`
+- [x] Full-width CJK delimiters come from the existing `csl26-k2kp`
   script-aware wrap renderer (`realize_wrap`), not a normalization pass
   added by this feature.
-- [ ] Legacy GB/T note-field input converts to `DateValue` without
+- [x] Legacy GB/T note-field input converts to `DateValue` without
   regressing copyright, printing, approximate, no-date, or scalar-date
   behavior.
 - [ ] GB/T bibliography output includes the annotations for the two §7.5.4.1
-  records.
+  records. The rendering mechanism is verified end-to-end against the
+  embedded style with synthetic annotated data; the pinned corpus's two
+  actual records have not yet been annotated with real `note` input.
 - [ ] Focused standard-derived tests and registered citeproc-js divergences
   document why bare-year oracle parity is not conformant for these records.
 - [ ] Generated schemas, coverage audits, `just pre-commit`, and PR checks
@@ -270,6 +293,16 @@ remains tracked by `csl26-6eak`.
 
 ## Changelog
 
+- v1.4 (2026-07-20): Status Draft → Active. Implements the feature:
+  `EdtfString` renamed to `DateValue` in place (no new wrapper type, no
+  per-field reshaping — see Public data type), `DateConfig.note_wrap`,
+  bibliography-scoped rendering through the existing `realize_wrap`, legacy
+  `issued-note-literal` conversion (`annotated_issued_from_legacy`,
+  `crates/citum-schema-data/src/reference/conversion/mod.rs`), and GB/T
+  author-date bibliography enablement. Remaining acceptance-criteria gaps:
+  the pinned corpus's two real §7.5.4.1 records are not yet annotated with
+  `note` input, and the eight author-date citation scenarios have not been
+  re-verified through the oracle/workflow-test harness against this change.
 - v1.3 (2026-07-20): Generalize `calendar-note` to a plain opaque `note`
   sub-field, applicable to any date, not a calendar-specific type. Move the
   render opt-in from `MultilingualConfig.calendar-note-wrap` to a flat
