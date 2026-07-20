@@ -20,12 +20,43 @@ mod common;
 use common::announce_behavior;
 
 use citum_engine::Processor;
+use citum_io::load_bibliography;
 use citum_schema::citation::{Citation, CitationItem};
 use citum_schema::reference::{
     Contributor, ContributorEntry, ContributorRole, DateValue, InputReference, Monograph,
     MonographType, StructuredName, Title,
 };
 use indexmap::IndexMap;
+use rstest::rstest;
+use std::path::PathBuf;
+
+/// Project root path resolver.
+fn project_root() -> PathBuf {
+    PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../..")
+}
+
+/// Render one reference, by id, from the real pinned GB/T 7714—2025 corpus
+/// (`tests/fixtures/test-items-library/gb-t-7714-2025.json` — the fixture
+/// PR #1067's reviewer commented against, not synthetic stand-in data),
+/// isolated to a single-entry bibliography so the assertion is a precise
+/// full-string match rather than a substring search across the ~250-item
+/// corpus.
+fn render_pinned_gbt_entry(style_name: &str, ref_id: &str) -> String {
+    let corpus_path = project_root().join("tests/fixtures/test-items-library/gb-t-7714-2025.json");
+    let corpus = load_bibliography(&corpus_path).expect("pinned GB/T corpus should load");
+    let reference = corpus
+        .get(ref_id)
+        .unwrap_or_else(|| panic!("pinned GB/T corpus should contain {ref_id}"))
+        .clone();
+    let bibliography = IndexMap::from([(ref_id.to_string(), reference)]);
+
+    let style = citum_schema::embedded::get_embedded_style(style_name)
+        .unwrap_or_else(|| panic!("{style_name} should be embedded"))
+        .unwrap_or_else(|_| panic!("{style_name} should parse"))
+        .into_resolved();
+
+    Processor::new(style, bibliography).render_bibliography()
+}
 
 /// Build a minimal book reference with an annotated `issued` date.
 fn annotated_book(id: &str, title: &str, year: &str, note: &str) -> InputReference {
@@ -157,4 +188,67 @@ fn given_two_refs_same_author_year_different_note_when_disambiguating_then_still
         "[1]Kang. First Work[M]. 1947a（民国三十六年）\n\n\
          [2]Kang. Second Work[M]. 1947b（不同的注释）"
     );
+}
+
+/// **Given** the real pinned GB/T 7714—2025 corpus reference
+/// `{ref_id}` (a Zotero-extra `issued: <year>（<note>）` note-field
+/// override, converted via `annotated_issued_from_legacy`) and a GB/T
+/// style with `note-wrap: parentheses`,
+/// **When** its bibliography entry is rendered,
+/// **Then** the entry contains the wrapped calendar annotation exactly as
+/// it appears in the corpus — a regression guard grounded in the actual
+/// fixture the feature was motivated by, not synthetic stand-in data.
+#[rstest]
+#[case::gb_t_7714_2025_author_date_minguo(
+    "gb-t-7714-2025-author-date",
+    "gbt7714.7.5.4.1:1",
+    "[1][M]. 1947（民国三十六年）"
+)]
+#[case::gb_t_7714_2025_author_date_kangxi(
+    "gb-t-7714-2025-author-date",
+    "gbt7714.7.5.4.1:2",
+    "[1][M]. 1705（康熙四十四年）"
+)]
+#[case::gb_t_7714_2025_numeric_minguo(
+    "gb-t-7714-2025-numeric",
+    "gbt7714.7.5.4.1:1",
+    "[1][M]. 1947（民国三十六年）"
+)]
+#[case::gb_t_7714_2025_numeric_kangxi(
+    "gb-t-7714-2025-numeric",
+    "gbt7714.7.5.4.1:2",
+    "[1][M]. 1705（康熙四十四年）"
+)]
+#[case::gb_t_7714_2025_note_minguo(
+    "gb-t-7714-2025-note",
+    "gbt7714.7.5.4.1:1",
+    "[1][M]. 1947（民国三十六年）"
+)]
+#[case::gb_t_7714_2025_note_kangxi(
+    "gb-t-7714-2025-note",
+    "gbt7714.7.5.4.1:2",
+    "[1][M]. 1705（康熙四十四年）"
+)]
+#[case::gb_t_7714_2025_author_date_qing_dynasty(
+    "gb-t-7714-2025-author-date",
+    "gbt7714.8.2.2:2",
+    "[1]王夫之. 宋论[M]. 刻本. 金陵：湘乡曾国荃，1865（清同治四年）"
+)]
+#[case::gb_t_7714_2025_author_date_guangxu_era(
+    "gb-t-7714-2025-author-date",
+    "gbt7714.8.12.3:1",
+    "[1]李鸿章. 奏请上海道库洋务外销要款无款可筹仍拨药厘接济事：04-01-35-0399-039[A]. 北京：中国第一历史档案馆，1887（光绪十三年三月十三日）"
+)]
+#[case::gb_t_7714_2025_author_date_republic_era(
+    "gb-t-7714-2025-author-date",
+    "gbt7714.8.12.3:3",
+    "[1]中国人民解放军武汉市军事管制委员会接管国立武汉大学的文告. [A/OL]. 武汉：武汉大学档案馆，1949（中华民国三十八年八月）. https://archive.whu.edu.cn/index/forwardView/20/51"
+)]
+fn given_pinned_gbt_record_when_rendering_bibliography_then_note_is_wrapped(
+    #[case] style_name: &str,
+    #[case] ref_id: &str,
+    #[case] expected: &str,
+) {
+    let rendered = render_pinned_gbt_entry(style_name, ref_id);
+    assert_eq!(rendered, expected);
 }

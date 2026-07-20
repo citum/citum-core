@@ -1,7 +1,7 @@
 # Calendar Date Annotations Specification
 
 **Status:** Active
-**Version:** 1.5
+**Version:** 1.6
 **Date:** 2026-07-20
 **Related:** [Date Model](./DATE_MODEL.md), [GB/T 7714—2025 Citation Conventions](../reference/GBT_7714_CITATION_CONVENTIONS.md), bean `csl26-0kqf` (the separate, still-unimplemented computed regnal-year feature this data model unblocks), bean `csl26-k2kp` (script-aware wrap renderer, completed; spec `docs/specs/PUNCTUATION_REALIZATION.md`), [PR #1067 discussion](https://github.com/citum/citum-core/pull/1067#issuecomment-5011594655)
 
@@ -296,17 +296,35 @@ remains tracked by `csl26-6eak`.
 - [x] Legacy GB/T note-field input converts to `DateValue` without
   regressing copyright, printing, approximate, no-date, or scalar-date
   behavior.
-- [ ] GB/T bibliography output includes the annotations for the two §7.5.4.1
-  records. The rendering mechanism is verified end-to-end against the
-  embedded style with synthetic annotated data; the pinned corpus's two
-  actual records have not yet been annotated with real `note` input.
-- [ ] Focused standard-derived tests and registered citeproc-js divergences
-  document why bare-year oracle parity is not conformant for these records.
+- [x] GB/T bibliography output includes the annotations for the §7.5.4.1
+  records — and, it turns out, three more already-annotated records
+  elsewhere in the pinned corpus (`gbt7714.8.2.2:2`, `:8.12.3:1`,
+  `:8.12.3:3`), all five verified against the real
+  `tests/fixtures/test-items-library/gb-t-7714-2025.json` corpus across
+  all three GB/T styles (`author-date`, `numeric`, `note`), not synthetic
+  data.
+- [x] Focused standard-derived tests
+  (`crates/citum-engine/tests/date_annotations.rs`) and a registered
+  citeproc-js divergence (`div-015`,
+  `docs/adjudication/DIVERGENCE_REGISTER.md`) document why bare-year
+  oracle parity is not conformant for these records.
 - [ ] Generated schemas, coverage audits, `just pre-commit`, and PR checks
   pass before the feature is marked Active.
 
 ## Changelog
 
+- v1.6 (2026-07-20): Per review feedback (PR #1068), enable `note-wrap`
+  in `gb-t-7714-2025-numeric` and `gb-t-7714-2025-note`, not just
+  `-author-date`. Verified against the real pinned corpus
+  (`tests/fixtures/test-items-library/gb-t-7714-2025.json`), which turned
+  out to already contain five annotated records — not just the two
+  §7.5.4.1 examples — across `gbt7714.7.5.4.1:1`/`:2`, `gbt7714.8.2.2:2`,
+  `gbt7714.8.12.3:1`, `gbt7714.8.12.3:3`. Added a Rust regression test
+  against the real corpus (`crates/citum-engine/tests/date_annotations.rs`)
+  and registered the expected citeproc-js divergence (`div-015`,
+  `docs/adjudication/DIVERGENCE_REGISTER.md`). Confirmed
+  `gb-t-7714-2025-numeric` is not in `core-quality-baseline.json`'s
+  CI-gated style set, so no oracle-comparator masking code was needed.
 - v1.5 (2026-07-20): Per review feedback, document the bare-note render
   extension point: `note-wrap` currently always applies one of
   `parentheses`/`brackets`/`quotes`, with no delimiter-free option
