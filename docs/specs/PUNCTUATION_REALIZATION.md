@@ -1,8 +1,8 @@
 # Punctuation Realization Layer Specification
 
 **Status:** Active (increments 1–3 implemented)
-**Version:** 1.4
-**Date:** 2026-07-19
+**Version:** 1.5
+**Date:** 2026-07-20
 **Related:** [`MULTILINGUAL.md`](./MULTILINGUAL.md) §3.2a,
 [`PUNCTUATION_NORMALIZATION.md`](./PUNCTUATION_NORMALIZATION.md),
 [`CALENDAR_DATE_ANNOTATIONS.md`](./CALENDAR_DATE_ANNOTATIONS.md),
@@ -126,6 +126,17 @@ Notes:
 - The table is closed. New marks require a spec revision, mirroring the
   deliberate narrowness of the collision-policy fields in
   [`PUNCTUATION_NORMALIZATION.md`](./PUNCTUATION_NORMALIZATION.md).
+- **Not every style that opts into CJK realization uses every mark.** GB/T
+  7714's area/terminal `period` and its `[J]`/`[M]`-style type-code brackets
+  stay literal ASCII rather than the `period`/`brackets` marks: GB/T
+  7714-2015 §7.2 specifies both as ASCII regardless of the cited item's
+  script, and the citeproc-js oracle agrees, unlike comma/colon/parentheses,
+  which do realize full-width for Chinese-script entries under this style
+  (registered as `div-014` in
+  [`DIVERGENCE_REGISTER.md`](../adjudication/DIVERGENCE_REGISTER.md)). A
+  style's realization default does not obligate it to mark every punctuation
+  role semantically — literal authoring remains correct wherever the width
+  genuinely does not vary by script.
 
 ### 3. Style schema: the token form
 
@@ -353,6 +364,15 @@ Non-normative pointers:
 
 ## Changelog
 
+- v1.5 (2026-07-20): PR #1073 review clarification. Documented that not every
+  CJK-realizing style marks every punctuation role semantically: GB/T 7714's
+  area/terminal period and type-code brackets stay literal ASCII per GB/T
+  7714-2015 §7.2 and the citeproc-js oracle, unlike comma/colon/parentheses,
+  which do realize full-width for that style. Registered as `div-014` in
+  `DIVERGENCE_REGISTER.md`. The comma/colon/parentheses width for
+  Western-script entries within a GB/T bibliography (`bylan` vs. `mixed`
+  presets) remains an open question pending domain-expert review
+  (`csl26-xnu9`).
 - v1.4 (2026-07-19): Implemented increment 3 by migrating the embedded GB/T
   7714 family to semantic marks, declaring a CJK realization default with the
   standard's ASCII bracket override, retaining registered citeproc-js
