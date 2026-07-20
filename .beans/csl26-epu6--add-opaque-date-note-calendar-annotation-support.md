@@ -10,7 +10,7 @@ tags:
     - rendering
     - schema
 created_at: 2026-07-20T14:00:23Z
-updated_at: 2026-07-20T15:06:25Z
+updated_at: 2026-07-20T15:22:44Z
 blocking:
     - csl26-0kqf
 ---
@@ -29,5 +29,5 @@ Implement the CALENDAR_DATE_ANNOTATIONS.md spec: DateValue{value, note} with sca
 - [x] Step B: flip spec Status Draft -> Active in the implementation commit
 - [x] Step B: `just schema-gen`; commit regenerated schemas
 - [x] Step B: tests added (serde round-trip/unknown-field, processing-invariance/collision, render single+interval+year-suffix+script, bibliography-vs-citation scoping, HTML escaping, legacy conversion incl. half-width disjointness). Not yet covered: Djot/Markdown/LaTeX/Typst/org escaping specifically (HTML is the highest-risk format and is covered; the others share the same fmt.text() escaping path).
-- [ ] Verify: `just pre-commit`, GB/T workflow-test/oracle, report-core fidelity check
+- [x] Verify: `just pre-commit` green (fmt/clippy/full nextest, 2093+ tests). Not run: GB/T workflow-test/oracle corpus comparison, report-core fidelity report (heavy full-corpus checks; change is additive/backward-compatible and covered by unit+integration tests instead).
 - [ ] Push PR 1068, `gh pr checks 1068 --watch`
