@@ -1,8 +1,8 @@
 # Punctuation Realization Layer Specification
 
 **Status:** Active (increments 1–3 implemented)
-**Version:** 1.5
-**Date:** 2026-07-20
+**Version:** 1.6
+**Date:** 2026-07-21
 **Related:** [`MULTILINGUAL.md`](./MULTILINGUAL.md) §3.2a,
 [`PUNCTUATION_NORMALIZATION.md`](./PUNCTUATION_NORMALIZATION.md),
 [`CALENDAR_DATE_ANNOTATIONS.md`](./CALENDAR_DATE_ANNOTATIONS.md),
@@ -313,7 +313,34 @@ carry marks as the normalization phase is extracted.
 4. **Future.** Locale-supplied realization (after per-item locale
    loading); additional script classes (`cyrillic`, `arabic`) with their
    own evidence rules; per-segment realization in mixed-script compound
-   citations (`csl26-p05x`).
+   citations (`csl26-p05x`); a style-declared punctuation-width preset
+   (below), tracked as `csl26-xnu9`.
+
+**Punctuation-width presets.** The GB/T-community ecosystem
+(biblatex-gb7714-2025, gbt7714-bibtex-style, Zotero CSL styles) converges on
+a closed four-preset space for punctuation width, confirmed against
+domain-expert review of PR #1073
+([comment `5032704432`](https://github.com/citum/citum-core/pull/1073#issuecomment-5032704432)):
+
+- `half` — all structural punctuation ASCII/Narrow, in every script context.
+- `full` — all full-width, including the terminal period.
+- `mixed` — full-width except period, slashes, dashes, and square brackets.
+  This is bibtex's `GB` (2025 default), biblatex's `mixed`, the Zotero
+  bilingual-CSL default, and **the citeproc-js oracle's actual behavior**.
+- `bylan` — full-width for CJK/square-script items (Chinese, Japanese,
+  Korean), half-width for alphabetic-script items (Latin, Cyrillic). Citum's
+  current GB/T default (`realization-default: cjk`, §5).
+
+`half`, `full`, and `mixed` are **script-independent** fixed tables: the
+selected width does not vary by item script. `bylan` is the one
+script-*conditional* preset, and it is also the only one the current
+`realization-default` + per-item-evidence mechanism (§5) expresses natively
+— that mechanism only ever overrides *toward* CJK for a style that has
+opted in. Expressing `half`/`full`/`mixed` requires an unconditional
+realization mode that ignores per-item script evidence entirely, which is
+not yet designed. `csl26-xnu9` tracks both this mechanism gap and the
+choice of Citum's target default (`bylan` today vs. the oracle-faithful
+`mixed`).
 
 ## Implementation Notes
 
@@ -364,6 +391,23 @@ Non-normative pointers:
 
 ## Changelog
 
+- v1.6 (2026-07-21): Domain-expert follow-up on v1.5's open question
+  (PR #1073, [comment `5032704432`](https://github.com/citum/citum-core/pull/1073#issuecomment-5032704432)).
+  Documented the closed four-preset punctuation-width space
+  (`half`/`full`/`mixed`/`bylan`) in §8, corrected `mixed`'s definition
+  (full-width except period, slashes, dashes, *and square brackets* — not
+  just period and brackets), and recorded that `mixed` is the citeproc-js
+  oracle's actual behavior as well as bibtex's 2025 default and the Zotero
+  bilingual-CSL default, while Citum currently ships `bylan`. Noted that
+  `half`/`full`/`mixed` need a script-independent ("unconditional")
+  realization mode not yet designed, unlike `bylan` which the existing
+  `realization-default` mechanism expresses natively. Confirmed the engine's
+  existing script resolver (`script_class`,
+  `crates/citum-engine/src/values/mod.rs`) already classifies Japanese and
+  Korean as CJK/full-width alongside Chinese under `bylan`, and that the
+  embedded `ja-JP` locale already authors full-width structural punctuation
+  and CJK quote glyphs — no code or locale change needed. Target default and
+  mechanism design remain open, tracked as `csl26-xnu9`.
 - v1.5 (2026-07-20): PR #1073 review clarification. Documented that not every
   CJK-realizing style marks every punctuation role semantically: GB/T 7714's
   area/terminal period and type-code brackets stay literal ASCII per GB/T
