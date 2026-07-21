@@ -585,7 +585,13 @@ impl<'a> Renderer<'a> {
             .as_ref()
             .filter(|resolved| resolved.type_variants.is_some())
             .cloned()
-            .map(|resolved| Cow::Owned(resolve_localized_type_variant(resolved, None, &ref_type)))
+            .map(|resolved| {
+                Cow::Owned(resolve_localized_type_variant(
+                    resolved,
+                    spec.type_variants.as_ref(),
+                    &ref_type,
+                ))
+            })
             .or_else(|| {
                 resolve_type_variant(spec.type_variants.as_ref(), &ref_type).map(Cow::Borrowed)
             })

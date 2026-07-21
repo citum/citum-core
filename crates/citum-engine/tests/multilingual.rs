@@ -341,6 +341,43 @@ fn given_gb_t_numeric_style_when_rendering_cjk_script_book_then_delimiters_stay_
 }
 
 #[test]
+fn english_article_journal_falls_back_to_section_type_variant() {
+    announce_behavior(
+        "GB/T 7714 numeric's bilingual bibliography falls back to the section-level \
+         article-journal type-variant for English items, instead of the locale \
+         override's flat, delimiter-less template (the `en` locale block only \
+         redefines book/thesis/map and chapter/entry-* type-variants) — csl26-7hsx.",
+    );
+    let style = citum_schema::embedded::get_embedded_style("gb-t-7714-2025-numeric")
+        .expect("gb-t-7714-2025-numeric should be embedded")
+        .expect("gb-t-7714-2025-numeric should parse")
+        .into_resolved();
+    let fixture = serde_json::json!({
+        "id": "coffee-drinking",
+        "type": "article-journal",
+        "title": "Coffee drinking and cancer of the pancreas",
+        "container-title": "Br Med J",
+        "language": "en-US",
+        "volume": "283",
+        "issue": "6292",
+        "page": "628",
+        "issued": { "date-parts": [[1981]] },
+    });
+    let legacy: csl_legacy::csl_json::Reference =
+        serde_json::from_value(fixture).expect("article-journal fixture should parse");
+    let reference: InputReference = legacy.into();
+    let bibliography = IndexMap::from([("coffee-drinking".to_string(), reference)]);
+
+    let processor = Processor::new(style, bibliography);
+    let rendered = processor.render_bibliography();
+
+    assert_eq!(
+        rendered,
+        "[1]Coffee drinking and cancer of the pancreas[J]. Br Med J, 1981, 283(6292): 628"
+    );
+}
+
+#[test]
 fn given_style_without_latin_punctuation_option_when_rendering_latin_book_then_full_width_delimiters_are_unchanged()
  {
     announce_behavior(
