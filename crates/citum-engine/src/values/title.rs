@@ -11,7 +11,7 @@ use crate::render::format::unicode_quote_marks;
 use crate::render::rich_text::{
     InlineRenderContext, render_djot_inline_with_transform_and_context,
 };
-use crate::values::text_case::{self, apply_text_case, capitalize_first_word};
+use crate::values::text_case::{self, apply_text_case_with_language};
 use crate::values::{
     ComponentValues, ProcHints, ProcValues, RenderOptions, effective_component_language,
 };
@@ -155,24 +155,37 @@ fn looks_like_djot_markup(value: &str) -> bool {
 ///
 /// The closure is used as the Djot text-leaf transform, so `.nocase` spans
 /// bypass it automatically via the rich-text renderer.
-fn make_case_transform(case: TextCase, quote_depth: usize) -> impl FnMut(&str) -> String {
+fn make_case_transform(
+    case: TextCase,
+    quote_depth: usize,
+    language: Option<&str>,
+) -> impl FnMut(&str) -> String {
     let mut seen_alpha = false;
+    let language = text_case::language_identifier_for_tag(language);
     move |text: &str| {
         let cased = match case {
             TextCase::Sentence | TextCase::SentenceApa | TextCase::SentenceNlm => {
-                let lowered = text.to_lowercase();
+                let lowered = text_case::apply_text_case_with_language_id(
+                    text,
+                    TextCase::Lowercase,
+                    &language,
+                );
                 if seen_alpha {
                     lowered
                 } else {
                     // Capitalize the first alphabetic character we encounter
-                    let result = capitalize_first_word(&lowered);
+                    let result = text_case::apply_text_case_with_language_id(
+                        &lowered,
+                        TextCase::CapitalizeFirst,
+                        &language,
+                    );
                     if result.chars().any(|c: char| c.is_alphabetic()) {
                         seen_alpha = true;
                     }
                     result
                 }
             }
-            _ => apply_text_case(text, case),
+            _ => text_case::apply_text_case_with_language_id(text, case, &language),
         };
         smarten_title_quotes_at_depth(&cased, quote_depth)
     }
@@ -185,6 +198,7 @@ fn render_part_with_case<F: crate::render::format::OutputFormat<Output = String>
     fmt: &F,
     case: Option<TextCase>,
     quote_depth: usize,
+    language: Option<&str>,
 ) -> (String, bool) {
     let context = InlineRenderContext { quote_depth };
     if looks_like_djot_markup(value) {
@@ -193,7 +207,7 @@ fn render_part_with_case<F: crate::render::format::OutputFormat<Output = String>
                 value,
                 fmt,
                 context,
-                make_case_transform(tc, quote_depth),
+                make_case_transform(tc, quote_depth, language),
             ),
             None => {
                 render_djot_inline_with_transform_and_context(value, fmt, context, move |text| {
@@ -203,7 +217,10 @@ fn render_part_with_case<F: crate::render::format::OutputFormat<Output = String>
         }
     } else {
         let result = match case {
-            Some(tc) => smarten_title_quotes_at_depth(&apply_text_case(value, tc), quote_depth),
+            Some(tc) => smarten_title_quotes_at_depth(
+                &apply_text_case_with_language(value, tc, language),
+                quote_depth,
+            ),
             None => smarten_title_quotes_at_depth(value, quote_depth),
         };
         (result, false)
@@ -220,10 +237,11 @@ fn render_structured_title<F: crate::render::format::OutputFormat<Output = Strin
     case: Option<TextCase>,
     short: bool,
     quote_depth: usize,
-    primary_delimiter: &str,
-    subtitle_delimiter: &str,
+    language: Option<&str>,
+    delimiters: (&str, &str),
 ) -> (String, bool) {
-    let (main_rendered, has_link) = render_part_with_case(&st.main, fmt, case, quote_depth);
+    let (main_rendered, has_link) =
+        render_part_with_case(&st.main, fmt, case, quote_depth, language);
     if short {
         return (main_rendered, has_link);
     }
@@ -245,10 +263,12 @@ fn render_structured_title<F: crate::render::format::OutputFormat<Output = Strin
 
     let mut rendered_subtitles = Vec::with_capacity(subs.len());
     for sub in subs {
-        let (sub_rendered, sub_link) = render_part_with_case(sub, fmt, subtitle_case, quote_depth);
+        let (sub_rendered, sub_link) =
+            render_part_with_case(sub, fmt, subtitle_case, quote_depth, language);
         has_link |= sub_link;
         rendered_subtitles.push(sub_rendered);
     }
+    let (primary_delimiter, subtitle_delimiter) = delimiters;
     let subtitle_group = rendered_subtitles.join(subtitle_delimiter);
 
     let mut rendered = main_rendered;
@@ -263,25 +283,24 @@ fn resolve_effective_text_case(
     template: &TemplateTitle,
     reference: &Reference,
     options: &RenderOptions<'_>,
+    language: Option<&str>,
 ) -> Option<TextCase> {
     // 1. Template-level override takes precedence
     if let Some(tc) = template.rendering.text_case {
-        return Some(apply_language_fallback(tc, reference));
+        return Some(apply_language_fallback(tc, language));
     }
 
     // 2. Global title-category config
     let ref_type = reference.ref_type();
-    let lang = reference.language();
-    let lang_str = lang.as_deref();
 
     if let Some(rendering) = crate::render::component::get_title_category_rendering(
         &template.title,
         Some(&ref_type),
-        lang_str,
+        language,
         &options.config,
     ) && let Some(tc) = rendering.text_case
     {
-        return Some(apply_language_fallback(tc, reference));
+        return Some(apply_language_fallback(tc, language));
     }
 
     None
@@ -300,15 +319,15 @@ pub(crate) fn resolve_substitute_text_case(
     options: &RenderOptions<'_>,
 ) -> Option<TextCase> {
     let ref_type = reference.ref_type();
-    let lang = reference.language();
+    let language = effective_title_language(title_type, reference);
     let rendering = crate::render::component::get_title_category_rendering(
         title_type,
         Some(&ref_type),
-        lang.as_deref(),
+        language.as_deref(),
         &options.config,
     )?;
     let tc = rendering.text_case?;
-    Some(apply_language_fallback(tc, reference))
+    Some(apply_language_fallback(tc, language.as_deref()))
 }
 
 fn resolve_effective_title_rendering(
@@ -359,9 +378,19 @@ fn effective_title_quote_depth(
 }
 
 /// Apply language-aware fallback: non-English → as-is for English-specific transforms.
-fn apply_language_fallback(case: TextCase, reference: &Reference) -> TextCase {
-    let lang = reference.language();
-    text_case::resolve_text_case(case, lang.as_deref())
+fn apply_language_fallback(case: TextCase, language: Option<&str>) -> TextCase {
+    text_case::resolve_text_case(case, language)
+}
+
+pub(crate) fn effective_title_language(
+    title_type: &TitleType,
+    reference: &Reference,
+) -> Option<String> {
+    let component = TemplateComponent::Title(TemplateTitle {
+        title: title_type.clone(),
+        ..Default::default()
+    });
+    effective_component_language(reference, &component)
 }
 
 impl ComponentValues for TemplateTitle {
@@ -414,7 +443,9 @@ impl ComponentValues for TemplateTitle {
         }
 
         let title = resolve_primary_title(reference, &self.title)?;
-        let effective_case = resolve_effective_text_case(self, reference, options);
+        let effective_language = effective_title_language(&self.title, reference);
+        let effective_case =
+            resolve_effective_text_case(self, reference, options, effective_language.as_deref());
         let effective_title_rendering = resolve_effective_title_rendering(self, reference, options);
         let (value, has_explicit_link, pre_formatted) = render_title_variant::<F>(
             &title,
@@ -423,6 +454,7 @@ impl ComponentValues for TemplateTitle {
             effective_title_rendering.as_ref(),
             options,
             quote_depth,
+            effective_language.as_deref(),
         );
 
         if value.is_empty() {
@@ -487,21 +519,21 @@ fn render_title_variant<F: crate::render::format::OutputFormat<Output = String>>
     effective_title_rendering: Option<&TitleRendering>,
     options: &RenderOptions<'_>,
     quote_depth: usize,
+    language: Option<&str>,
 ) -> (String, bool, bool) {
     let fmt = F::default();
     match title {
         Title::Structured(st) => {
             let short = matches!(form, Some(TitleForm::Short));
-            let (primary_delimiter, subtitle_delimiter) =
-                structured_title_delimiters(effective_title_rendering, options.locale);
+            let delimiters = structured_title_delimiters(effective_title_rendering, options.locale);
             let (value, has_link) = render_structured_title(
                 st,
                 &fmt,
                 effective_case,
                 short,
                 quote_depth,
-                primary_delimiter,
-                subtitle_delimiter,
+                language,
+                delimiters,
             );
             let pre_formatted = if short {
                 looks_like_djot_markup(&st.main)
@@ -522,14 +554,14 @@ fn render_title_variant<F: crate::render::format::OutputFormat<Output = String>>
                 options.locale.locale.as_str(),
             );
             let (rendered, has_link) =
-                render_part_with_case(&value, &fmt, effective_case, quote_depth);
+                render_part_with_case(&value, &fmt, effective_case, quote_depth, language);
             let pre_formatted = looks_like_djot_markup(&value);
             (rendered, has_link, pre_formatted)
         }
         _ => {
             let value = title_text(title, form);
             let (rendered, has_link) =
-                render_part_with_case(&value, &fmt, effective_case, quote_depth);
+                render_part_with_case(&value, &fmt, effective_case, quote_depth, language);
             let pre_formatted = looks_like_djot_markup(&value);
             (rendered, has_link, pre_formatted)
         }

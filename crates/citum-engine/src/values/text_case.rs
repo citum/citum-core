@@ -11,6 +11,8 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 
 use citum_schema::NoteStartTextCase;
 use citum_schema::options::titles::TextCase;
+use icu_casemap::CaseMapper;
+use icu_locale::LanguageIdentifier;
 
 /// Apply a text-case transform to a single plain-text segment.
 ///
@@ -21,16 +23,54 @@ use citum_schema::options::titles::TextCase;
 /// not here — this function operates on already-resolved text segments.
 #[must_use]
 pub fn apply_text_case(text: &str, case: TextCase) -> String {
+    apply_text_case_with_language(text, case, None)
+}
+
+/// Apply a text-case transform using locale-tailored Unicode case mappings.
+///
+/// `language` accepts a BCP 47 language tag. Missing or malformed tags use
+/// the Unicode root locale, preserving deterministic default behavior.
+#[must_use]
+pub fn apply_text_case_with_language(text: &str, case: TextCase, language: Option<&str>) -> String {
+    let language = language_identifier_for_tag(language);
+    apply_text_case_with_language_id(text, case, &language)
+}
+
+pub(crate) fn apply_text_case_with_language_id(
+    text: &str,
+    case: TextCase,
+    language: &LanguageIdentifier,
+) -> String {
     match case {
         TextCase::AsIs => text.to_string(),
-        TextCase::Lowercase => text.to_lowercase(),
-        TextCase::Uppercase => text.to_uppercase(),
-        TextCase::CapitalizeFirst => capitalize_first_word(text),
+        TextCase::Lowercase => lowercase(text, language),
+        TextCase::Uppercase => uppercase(text, language),
+        TextCase::CapitalizeFirst => capitalize_first_word_with_language_id(text, language),
         TextCase::Sentence | TextCase::SentenceApa | TextCase::SentenceNlm => {
-            to_sentence_case(text)
+            to_sentence_case_with_language_id(text, language)
         }
-        TextCase::Title => to_title_case(text),
+        TextCase::Title => to_title_case_with_language_id(text, language),
     }
+}
+
+pub(crate) fn language_identifier_for_tag(language: Option<&str>) -> LanguageIdentifier {
+    super::parse_language_identifier(language).unwrap_or_else(root_language_identifier)
+}
+
+fn root_language_identifier() -> LanguageIdentifier {
+    icu_locale::langid!("und")
+}
+
+fn lowercase(text: &str, language: &LanguageIdentifier) -> String {
+    CaseMapper::new()
+        .lowercase_to_string(text, language)
+        .into_owned()
+}
+
+fn uppercase(text: &str, language: &LanguageIdentifier) -> String {
+    CaseMapper::new()
+        .uppercase_to_string(text, language)
+        .into_owned()
 }
 
 /// Apply text-case to a structured title (main + subtitles).
@@ -45,21 +85,39 @@ pub fn apply_to_structured_parts(
     subtitles: &[&str],
     case: TextCase,
 ) -> (String, Vec<String>) {
+    apply_to_structured_parts_with_language(main, subtitles, case, None)
+}
+
+/// Apply locale-tailored text casing to a structured title (main + subtitles).
+#[must_use]
+pub fn apply_to_structured_parts_with_language(
+    main: &str,
+    subtitles: &[&str],
+    case: TextCase,
+    language: Option<&str>,
+) -> (String, Vec<String>) {
+    let language = language_identifier_for_tag(language);
     match case {
         TextCase::SentenceApa => {
-            let main_cased = to_sentence_case(main);
-            let subs_cased = subtitles.iter().map(|s| to_sentence_case(s)).collect();
+            let main_cased = to_sentence_case_with_language_id(main, &language);
+            let subs_cased = subtitles
+                .iter()
+                .map(|s| to_sentence_case_with_language_id(s, &language))
+                .collect();
             (main_cased, subs_cased)
         }
         TextCase::SentenceNlm => {
-            let main_cased = to_sentence_case(main);
+            let main_cased = to_sentence_case_with_language_id(main, &language);
             // NLM: subtitles keep only explicit/protected capitals (lowercase the rest)
-            let subs_cased = subtitles.iter().map(|s| s.to_lowercase()).collect();
+            let subs_cased = subtitles.iter().map(|s| lowercase(s, &language)).collect();
             (main_cased, subs_cased)
         }
         _ => {
-            let main_cased = apply_text_case(main, case);
-            let subs_cased = subtitles.iter().map(|s| apply_text_case(s, case)).collect();
+            let main_cased = apply_text_case_with_language_id(main, case, &language);
+            let subs_cased = subtitles
+                .iter()
+                .map(|s| apply_text_case_with_language_id(s, case, &language))
+                .collect();
             (main_cased, subs_cased)
         }
     }
@@ -107,7 +165,7 @@ pub(crate) fn apply_note_start_text_case(
         NoteStartTextCase::CapitalizeFirst => TextCase::CapitalizeFirst,
         NoteStartTextCase::Lowercase => TextCase::Lowercase,
     };
-    apply_text_case(value, resolve_text_case(case, language))
+    apply_text_case_with_language(value, resolve_text_case(case, language), language)
 }
 
 /// Returns true if any character in `word` other than the first is uppercase.
@@ -153,7 +211,13 @@ fn rebuild_with_original_whitespace(text: &str, parts: &[String]) -> String {
 /// first, except words carrying internal capitalization (acronyms, mixed-case
 /// names), which are preserved exactly as written — including the first word,
 /// which is left unmodified rather than force-capitalized.
+#[cfg(test)]
 fn to_sentence_case(text: &str) -> String {
+    let language = root_language_identifier();
+    to_sentence_case_with_language_id(text, &language)
+}
+
+fn to_sentence_case_with_language_id(text: &str, language: &LanguageIdentifier) -> String {
     if text.is_empty() {
         return String::new();
     }
@@ -168,9 +232,12 @@ fn to_sentence_case(text: &str) -> String {
         if has_internal_uppercase(word) {
             parts.push((*word).to_string());
         } else if i == 0 {
-            parts.push(capitalize_first_word(&word.to_lowercase()));
+            parts.push(capitalize_first_word_with_language_id(
+                &lowercase(word, language),
+                language,
+            ));
         } else {
-            parts.push(word.to_lowercase());
+            parts.push(lowercase(word, language));
         }
     }
 
@@ -185,15 +252,19 @@ fn to_sentence_case(text: &str) -> String {
 /// first token is a numeral, not a word), so it is left as-is instead of
 /// capitalizing the first letter found later in the string (which would
 /// wrongly produce `"35 Mm film"`).
+#[cfg(test)]
 pub(crate) fn capitalize_first_word(text: &str) -> String {
+    let language = root_language_identifier();
+    capitalize_first_word_with_language_id(text, &language)
+}
+
+fn capitalize_first_word_with_language_id(text: &str, language: &LanguageIdentifier) -> String {
     let mut result = String::with_capacity(text.len());
     let mut found_first = false;
     let mut blocked_by_digit = false;
     for ch in text.chars() {
         if !found_first && !blocked_by_digit && ch.is_alphabetic() {
-            for upper in ch.to_uppercase() {
-                result.push(upper);
-            }
+            result.push_str(&uppercase(&ch.to_string(), language));
             found_first = true;
         } else {
             if !found_first && ch.is_ascii_digit() {
@@ -211,7 +282,16 @@ pub(crate) fn capitalize_first_word(text: &str) -> String {
 /// Use this variant when the input may already contain rendered markup from a
 /// pre-formatted component. For plain-text input, behaviour is identical to
 /// [`capitalize_first_word`].
+#[cfg(test)]
 pub(crate) fn capitalize_first_word_markup_aware(text: &str) -> String {
+    capitalize_first_word_markup_aware_with_language(text, None)
+}
+
+pub(crate) fn capitalize_first_word_markup_aware_with_language(
+    text: &str,
+    language: Option<&str>,
+) -> String {
+    let language = language_identifier_for_tag(language);
     let bytes = text.as_bytes();
     let len = bytes.len();
     let mut i = 0;
@@ -280,9 +360,7 @@ pub(crate) fn capitalize_first_word_markup_aware(text: &str) -> String {
             let ch_len = ch.len_utf8();
             let mut result = String::with_capacity(text.len());
             result.push_str(text.get(..i).unwrap_or_default());
-            for upper in ch.to_uppercase() {
-                result.push(upper);
-            }
+            result.push_str(&uppercase(&ch.to_string(), &language));
             result.push_str(text.get(i + ch_len..).unwrap_or_default());
             return result;
         }
@@ -296,12 +374,18 @@ pub(crate) fn capitalize_first_word_markup_aware(text: &str) -> String {
 /// Apply a text-case transform to a pre-formatted string that may contain
 /// rendered markup.
 ///
-/// Delegates to [`capitalize_first_word_markup_aware`] for `CapitalizeFirst`;
-/// all other cases fall back to [`apply_text_case`].
-pub(crate) fn apply_text_case_markup_aware(text: &str, case: TextCase) -> String {
+/// Delegates to locale-aware markup capitalization for `CapitalizeFirst` and
+/// applies the requested locale-aware transform for all other cases.
+pub(crate) fn apply_text_case_markup_aware_with_language(
+    text: &str,
+    case: TextCase,
+    language: Option<&str>,
+) -> String {
     match case {
-        TextCase::CapitalizeFirst => capitalize_first_word_markup_aware(text),
-        _ => apply_text_case(text, case),
+        TextCase::CapitalizeFirst => {
+            capitalize_first_word_markup_aware_with_language(text, language)
+        }
+        _ => apply_text_case_with_language(text, case, language),
     }
 }
 
@@ -329,29 +413,29 @@ fn contains_hyphen_like(text: &str) -> bool {
 /// is capitalized. Otherwise interior stop-word components stay lowercase.
 /// Splits on both the ASCII hyphen and the en dash (see [`HYPHEN_LIKE_CHARS`]),
 /// preserving whichever separator character was actually used.
-fn capitalize_hyphenated(word: &str, force_all: bool) -> String {
+fn capitalize_hyphenated(word: &str, force_all: bool, language: &LanguageIdentifier) -> String {
     let mut result = String::with_capacity(word.len());
     let mut last_end = 0;
     for (idx, sep) in word.match_indices(HYPHEN_LIKE_CHARS) {
         let part = word.get(last_end..idx).unwrap_or_default();
-        result.push_str(&capitalize_hyphen_part(part, force_all));
+        result.push_str(&capitalize_hyphen_part(part, force_all, language));
         result.push_str(sep);
         last_end = idx + sep.len();
     }
     let tail = word.get(last_end..).unwrap_or_default();
-    result.push_str(&capitalize_hyphen_part(tail, force_all));
+    result.push_str(&capitalize_hyphen_part(tail, force_all, language));
     result
 }
 
-fn capitalize_hyphen_part(part: &str, force_all: bool) -> String {
+fn capitalize_hyphen_part(part: &str, force_all: bool, language: &LanguageIdentifier) -> String {
     if force_all {
-        capitalize_first_word(part)
+        capitalize_first_word_with_language_id(part, language)
     } else {
         let alpha_core = part.trim_matches(|c: char| !c.is_alphanumeric());
         if TITLE_CASE_STOP_WORDS.contains(&alpha_core) {
             part.to_string()
         } else {
-            capitalize_first_word(part)
+            capitalize_first_word_with_language_id(part, language)
         }
     }
 }
@@ -366,7 +450,13 @@ fn trim_trailing_closing_punctuation(word: &str) -> &str {
 /// Interior stop words (articles, short prepositions, conjunctions) stay lowercase.
 /// The first word after `:`, `?`, or `!` is always capitalized.
 /// Hyphenated compounds capitalize each non-stop-word component.
+#[cfg(test)]
 fn to_title_case(text: &str) -> String {
+    let language = root_language_identifier();
+    to_title_case_with_language_id(text, &language)
+}
+
+fn to_title_case_with_language_id(text: &str, language: &LanguageIdentifier) -> String {
     if text.is_empty() {
         return String::new();
     }
@@ -386,12 +476,12 @@ fn to_title_case(text: &str) -> String {
             // preserve exactly as written, regardless of position.
             parts.push((*word).to_string());
         } else {
-            let lower = word.to_lowercase();
+            let lower = lowercase(word, language);
             if i == 0 || i == last_idx || capitalize_next {
                 if contains_hyphen_like(&lower) {
-                    parts.push(capitalize_hyphenated(&lower, true));
+                    parts.push(capitalize_hyphenated(&lower, true, language));
                 } else {
-                    parts.push(capitalize_first_word(&lower));
+                    parts.push(capitalize_first_word_with_language_id(&lower, language));
                 }
             } else {
                 // Strip leading/trailing punctuation when checking stop words so that
@@ -400,9 +490,9 @@ fn to_title_case(text: &str) -> String {
                 if TITLE_CASE_STOP_WORDS.contains(&alpha_core) {
                     parts.push(lower);
                 } else if contains_hyphen_like(&lower) {
-                    parts.push(capitalize_hyphenated(&lower, false));
+                    parts.push(capitalize_hyphenated(&lower, false, language));
                 } else {
-                    parts.push(capitalize_first_word(&lower));
+                    parts.push(capitalize_first_word_with_language_id(&lower, language));
                 }
             }
         }
@@ -466,6 +556,75 @@ mod tests {
         assert_eq!(capitalize_first_word("in Korean"), "In Korean");
     }
 
+    #[test]
+    fn turkish_case_mapping_handles_dotted_and_dotless_i() {
+        assert_eq!(
+            apply_text_case_with_language("istanbul ızmir", TextCase::Uppercase, Some("tr-TR"),),
+            "İSTANBUL IZMİR"
+        );
+        assert_eq!(
+            apply_text_case_with_language("İSTANBUL IĞDIR", TextCase::Lowercase, Some("tr-TR"),),
+            "istanbul ığdır"
+        );
+        assert_eq!(
+            apply_text_case_with_language("istanbul", TextCase::CapitalizeFirst, Some("tr")),
+            "İstanbul"
+        );
+        assert_eq!(
+            apply_text_case_with_language("istanbul ızmir", TextCase::Uppercase, Some("tr_TR")),
+            "İSTANBUL IZMİR"
+        );
+    }
+
+    #[test]
+    fn azerbaijani_case_mapping_uses_turkic_rules() {
+        assert_eq!(
+            apply_text_case_with_language("izmir ı", TextCase::Uppercase, Some("az-Latn-AZ")),
+            "İZMİR I"
+        );
+    }
+
+    #[test]
+    fn sentence_case_uses_the_supplied_language() {
+        assert_eq!(
+            apply_text_case_with_language("istanbul Izmir", TextCase::Sentence, Some("tr-TR"),),
+            "İstanbul ızmir"
+        );
+    }
+
+    #[test]
+    fn structured_subtitles_use_the_supplied_language() {
+        let (main, subtitles) = apply_to_structured_parts_with_language(
+            "istanbul tarihi",
+            &["izmir incelemesi"],
+            TextCase::SentenceApa,
+            Some("tr-TR"),
+        );
+
+        assert_eq!(main, "İstanbul tarihi");
+        assert_eq!(subtitles, ["İzmir incelemesi"]);
+    }
+
+    #[test]
+    fn malformed_language_tag_uses_root_case_mapping() {
+        assert_eq!(
+            apply_text_case_with_language("istanbul", TextCase::Uppercase, Some("not_a_language"),),
+            "ISTANBUL"
+        );
+    }
+
+    #[test]
+    fn locale_override_suffix_preserves_base_language_mapping() {
+        assert_eq!(
+            apply_text_case_with_language(
+                "istanbul",
+                TextCase::Uppercase,
+                Some("tr-TR-citum_override"),
+            ),
+            "İSTANBUL"
+        );
+    }
+
     // --- capitalize_first_word_markup_aware ---
 
     #[test]
@@ -481,6 +640,18 @@ mod tests {
         assert_eq!(
             capitalize_first_word_markup_aware("<em>the collected essays</em>"),
             "<em>The collected essays</em>"
+        );
+    }
+
+    #[test]
+    fn capitalize_markup_aware_uses_the_supplied_language() {
+        assert_eq!(
+            apply_text_case_markup_aware_with_language(
+                "<em>istanbul</em>",
+                TextCase::CapitalizeFirst,
+                Some("tr-TR"),
+            ),
+            "<em>İstanbul</em>"
         );
     }
 

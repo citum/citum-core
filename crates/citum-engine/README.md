@@ -20,8 +20,9 @@ citum-engine = "0.73"
 citum-io = "0.73"
 ```
 
-Default features include `icu`, which enables ICU-backed collation and locale
-support used by sorting and rendering. Optional features:
+Locale-tailored text casing is available in every build through ICU4X. Default
+features also include `icu`, which enables ICU-backed collation for sorting.
+Optional features:
 
 | Feature | Purpose |
 |---|---|

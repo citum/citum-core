@@ -270,6 +270,11 @@ jobs:
           shared-key: "citum-core-rust"
           cache-workspace-crates: true
 
+      # Restored target caches can contain v8 build metadata without the
+      # downloaded native archive; rebuild only this package's artifacts.
+      - name: Invalidate cached rusty_v8 build artifacts
+        run: cargo clean -p v8
+
       - name: Check formatting
         run: cargo fmt --all -- --check
 

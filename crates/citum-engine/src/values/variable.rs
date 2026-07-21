@@ -223,22 +223,34 @@ fn assemble_archive_hierarchy(
     }
 }
 
-fn make_rich_text_case_transform(case: TextCase) -> impl FnMut(&str) -> String {
+fn make_rich_text_case_transform(
+    case: TextCase,
+    language: Option<&str>,
+) -> impl FnMut(&str) -> String {
     let mut seen_alpha = false;
+    let language = crate::values::text_case::language_identifier_for_tag(language);
     move |text: &str| match case {
         TextCase::Sentence | TextCase::SentenceApa | TextCase::SentenceNlm => {
-            let lowered = text.to_lowercase();
+            let lowered = crate::values::text_case::apply_text_case_with_language_id(
+                text,
+                TextCase::Lowercase,
+                &language,
+            );
             if seen_alpha {
                 lowered
             } else {
-                let result = crate::values::text_case::capitalize_first_word(&lowered);
+                let result = crate::values::text_case::apply_text_case_with_language_id(
+                    &lowered,
+                    TextCase::CapitalizeFirst,
+                    &language,
+                );
                 if result.chars().any(char::is_alphabetic) {
                     seen_alpha = true;
                 }
                 result
             }
         }
-        _ => crate::values::text_case::apply_text_case(text, case),
+        _ => crate::values::text_case::apply_text_case_with_language_id(text, case, &language),
     }
 }
 
@@ -351,6 +363,7 @@ impl ComponentValues for TemplateVariable {
         _hints: &ProcHints,
         options: &RenderOptions<'_>,
     ) -> Option<ProcValues<F::Output>> {
+        let language = reference.language();
         // Rich-text variables carry format metadata — handle before the plain-string path.
         let rich_text: Option<RichText> = match self.variable {
             SimpleVariable::Note => reference.note(),
@@ -364,15 +377,20 @@ impl ComponentValues for TemplateVariable {
             }
             let fmt = F::default();
             let (value, pre_formatted) = match (rt, self.rendering.text_case) {
-                (RichText::Plain(s), Some(tc)) => {
-                    (crate::values::text_case::apply_text_case(&s, tc), false)
-                }
+                (RichText::Plain(s), Some(tc)) => (
+                    crate::values::text_case::apply_text_case_with_language(
+                        &s,
+                        tc,
+                        language.as_deref(),
+                    ),
+                    false,
+                ),
                 (RichText::Plain(s), None) => (s, false),
                 (RichText::Djot { djot }, Some(tc)) => (
                     crate::render::rich_text::render_djot_inline_with_transform(
                         &djot,
                         &fmt,
-                        make_rich_text_case_transform(tc),
+                        make_rich_text_case_transform(tc, language.as_deref()),
                     )
                     .0,
                     true,
@@ -396,7 +414,11 @@ impl ComponentValues for TemplateVariable {
 
         value.filter(|s: &String| !s.is_empty()).map(|value| {
             let value = if let Some(tc) = self.rendering.text_case {
-                crate::values::text_case::apply_text_case(&value, tc)
+                crate::values::text_case::apply_text_case_with_language(
+                    &value,
+                    tc,
+                    language.as_deref(),
+                )
             } else {
                 value
             };

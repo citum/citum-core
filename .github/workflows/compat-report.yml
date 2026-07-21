@@ -60,6 +60,11 @@ jobs:
           cache-workspace-crates: true
           cache-directories: /home/runner/.cache/sccache
 
+      # Restored target caches can contain v8 build metadata without the
+      # downloaded native archive; rebuild only this package's artifacts.
+      - name: Invalidate cached rusty_v8 build artifacts
+        run: cargo clean -p v8
+
       - name: Configure environment
         run: |
           echo "RUSTC_WRAPPER=sccache" >> "$GITHUB_ENV"

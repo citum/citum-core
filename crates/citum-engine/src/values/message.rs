@@ -52,7 +52,11 @@ impl ComponentValues for TemplateMessage {
         }
 
         if let Some(tc) = self.rendering.text_case {
-            value = crate::values::text_case::apply_text_case(&value, tc);
+            value = crate::values::text_case::apply_text_case_with_language(
+                &value,
+                tc,
+                Some(options.locale.locale.as_str()),
+            );
         }
 
         if value.trim().is_empty() {
