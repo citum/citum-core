@@ -1,0 +1,31 @@
+name: Commit Policy
+
+permissions:
+  contents: read
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  commit-policy:
+    name: Commit Policy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Validate squash-merge title
+        if: github.event_name == 'pull_request'
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: python3 scripts/validate-pr-title.py "$PR_TITLE"
+
+      - name: Validate accepted commit messages
+        uses: asamarts/alint@9a341559646a0a128957a0f70671e0835fb38dcb  # v0.13.0
+        env:
+          ALINT_BASE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}

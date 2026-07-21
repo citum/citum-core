@@ -132,7 +132,8 @@ jobs:
           python3 -m unittest \
             scripts/test_infer_release_bump.py \
             scripts/test_coverage_analysis.py \
-            scripts/test_release_workflow.py
+            scripts/test_release_workflow.py \
+            scripts/test_validate_pr_title.py
 
   release-dry-runs:
     name: Release Dry Runs
