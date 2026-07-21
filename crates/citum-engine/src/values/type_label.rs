@@ -30,7 +30,11 @@ impl ComponentValues for TemplateTypeLabel {
         }
 
         if let Some(tc) = effective_rendering.text_case {
-            value = crate::values::text_case::apply_text_case(&value, tc);
+            value = crate::values::text_case::apply_text_case_with_language(
+                &value,
+                tc,
+                Some(options.locale.locale.as_str()),
+            );
         }
 
         if value.is_empty() {

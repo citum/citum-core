@@ -11,7 +11,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 use crate::processor::rendering::get_variable_key;
 use crate::reference::Reference;
 use crate::render::format::OutputFormat;
-use crate::values::text_case::apply_text_case;
+use crate::values::text_case::apply_text_case_with_language;
 use crate::values::title::resolve_substitute_text_case;
 use crate::values::{ProcHints, ProcValues, RenderContext, RenderOptions};
 use citum_schema::options::{
@@ -590,7 +590,10 @@ fn resolve_title_substitute<F: OutputFormat<Output = String>>(
     // config (keyed by reference type) applies here — see
     // `resolve_substitute_text_case`.
     let title_str = match resolve_substitute_text_case(title_type, reference, options) {
-        Some(case) => apply_text_case(&title_str, case),
+        Some(case) => {
+            let language = crate::values::title::effective_title_language(title_type, reference);
+            apply_text_case_with_language(&title_str, case, language.as_deref())
+        }
         None => title_str,
     };
     let value = if options.context == RenderContext::Citation && quote_in_citation {

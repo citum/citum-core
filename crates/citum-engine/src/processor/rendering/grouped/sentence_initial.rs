@@ -123,7 +123,9 @@ impl Renderer<'_> {
                     crate::values::text_case::resolve_text_case(TextCase::CapitalizeFirst, locale);
                 if let Some(prefix) = component.prefix.as_mut() {
                     // Explicit template prefix (e.g. ". Translated by ") — capitalize it.
-                    *prefix = crate::values::text_case::apply_text_case(prefix, case);
+                    *prefix = crate::values::text_case::apply_text_case_with_language(
+                        prefix, case, locale,
+                    );
                 } else if contributor.rendering.prefix.is_some() {
                     // A static YAML `prefix:` (e.g. "Narrated by ") already supplies
                     // the sentence-initial capital as authored. The contributor's own
@@ -134,12 +136,17 @@ impl Renderer<'_> {
                     // into the rendered value.  Capitalize the first word so that
                     // sentence-initial contributors read "Edited by …" not "edited by …".
                     component.value = if component.pre_formatted {
-                        crate::values::text_case::apply_text_case_markup_aware(
+                        crate::values::text_case::apply_text_case_markup_aware_with_language(
                             &component.value,
                             case,
+                            locale,
                         )
                     } else {
-                        crate::values::text_case::apply_text_case(&component.value, case)
+                        crate::values::text_case::apply_text_case_with_language(
+                            &component.value,
+                            case,
+                            locale,
+                        )
                     };
                 }
             }
@@ -152,15 +159,27 @@ impl Renderer<'_> {
                 // Groups are always pre-formatted (rendered markup); use the markup-aware
                 // variant so HTML tags and LaTeX/Typst command prefixes are not corrupted.
                 component.value =
-                    crate::values::text_case::apply_text_case_markup_aware(&component.value, case);
+                    crate::values::text_case::apply_text_case_markup_aware_with_language(
+                        &component.value,
+                        case,
+                        locale,
+                    );
             }
             TemplateComponent::Message(message) if !message.message.starts_with("term.") => {
                 let case =
                     crate::values::text_case::resolve_text_case(TextCase::CapitalizeFirst, locale);
                 component.value = if component.pre_formatted {
-                    crate::values::text_case::apply_text_case_markup_aware(&component.value, case)
+                    crate::values::text_case::apply_text_case_markup_aware_with_language(
+                        &component.value,
+                        case,
+                        locale,
+                    )
                 } else {
-                    crate::values::text_case::apply_text_case(&component.value, case)
+                    crate::values::text_case::apply_text_case_with_language(
+                        &component.value,
+                        case,
+                        locale,
+                    )
                 };
             }
             TemplateComponent::Term(_) | TemplateComponent::Message(_)

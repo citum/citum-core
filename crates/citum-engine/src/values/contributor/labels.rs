@@ -194,7 +194,7 @@ pub(super) fn apply_label_case(
     match text_case {
         Some(case) => {
             let resolved = crate::values::text_case::resolve_text_case(case, Some(language));
-            crate::values::text_case::apply_text_case(&term, resolved)
+            crate::values::text_case::apply_text_case_with_language(&term, resolved, Some(language))
         }
         None => term,
     }

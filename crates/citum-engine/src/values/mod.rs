@@ -350,14 +350,14 @@ pub fn effective_component_language(
     }
 }
 
-/// Resolve a BCP 47 language tag to its effective ISO 15924 script code.
+/// Parse a language tag after applying Citum's accepted normalization and fallback rules.
 ///
-/// An explicit script subtag takes precedence. Otherwise, the tag's language
-/// and region are expanded with CLDR likely-subtags data. Missing, malformed,
-/// private-use-only, and unrecognized language evidence resolves to `None`;
-/// this function never supplies a default script.
-#[must_use]
-pub fn resolve_language_script(lang: Option<&str>) -> Option<String> {
+/// Underscores are normalized to BCP 47 separators, and unrecognized rightmost
+/// subtags are progressively removed so Citum-specific locale suffixes do not
+/// hide an otherwise valid language identifier.
+pub(crate) fn parse_language_identifier(
+    lang: Option<&str>,
+) -> Option<icu_locale::LanguageIdentifier> {
     use std::borrow::Cow;
 
     let lang = lang?.trim();
@@ -370,7 +370,26 @@ pub fn resolve_language_script(lang: Option<&str>) -> Option<String> {
     } else {
         Cow::Borrowed(lang)
     };
-    let mut langid = normalized.parse::<icu_locale::Locale>().ok()?.id;
+    let mut candidate = normalized.as_ref();
+    while !candidate.is_empty() {
+        if let Ok(locale) = candidate.parse::<icu_locale::Locale>() {
+            return Some(locale.id);
+        }
+        candidate = candidate.rsplit_once('-')?.0;
+    }
+
+    None
+}
+
+/// Resolve a BCP 47 language tag to its effective ISO 15924 script code.
+///
+/// An explicit script subtag takes precedence. Otherwise, the tag's language
+/// and region are expanded with CLDR likely-subtags data. Missing, malformed,
+/// private-use-only, and unrecognized language evidence resolves to `None`;
+/// this function never supplies a default script.
+#[must_use]
+pub fn resolve_language_script(lang: Option<&str>) -> Option<String> {
+    let mut langid = parse_language_identifier(lang)?;
 
     if let Some(script) = langid.script {
         return Some(script.to_string());

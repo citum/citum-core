@@ -50,6 +50,162 @@ use citum_schema::{
 use rstest::rstest;
 use std::collections::HashMap;
 
+#[rstest]
+#[case(
+    "en-US",
+    Some("tr-TR"),
+    "istanbul ızmir",
+    "uppercase",
+    "İSTANBUL IZMİR"
+)]
+#[case("az-Latn-AZ", None, "İSTANBUL IĞDIR", "lowercase", "istanbul ığdır")]
+fn given_item_language_when_title_case_is_explicit_then_mapping_is_locale_tailored(
+    #[case] item_language: &str,
+    #[case] field_language: Option<&str>,
+    #[case] title: &str,
+    #[case] text_case: &str,
+    #[case] expected: &str,
+) {
+    let style: Style = serde_yaml::from_str(&format!(
+        r#"
+info:
+  title: Locale-tailored title casing
+bibliography:
+  template:
+    - title: primary
+      text-case: {text_case}
+"#,
+    ))
+    .unwrap();
+    let mut reference_json = serde_json::json!({
+        "class": "monograph",
+        "type": "book",
+        "id": "item",
+        "title": title,
+        "language": item_language
+    });
+    if let Some(field_language) = field_language {
+        reference_json["field-languages"] = serde_json::json!({ "title": field_language });
+    }
+    let reference: InputReference = serde_json::from_value(reference_json).unwrap();
+    let processor = Processor::new(
+        style,
+        indexmap::indexmap! { "item".to_string() => reference },
+    );
+
+    assert_eq!(processor.render_bibliography(), expected);
+}
+
+#[rstest]
+#[case("- variable: publisher-place", "en-US", "tr-TR", "ISTANBUL")]
+#[case("- variable: publisher-place", "tr_TR", "en-US", "İSTANBUL")]
+#[case("- number: edition", "en-US", "tr-TR", "ISTANBUL")]
+#[case("- number: edition", "tr_TR", "en-US", "İSTANBUL")]
+fn given_title_and_entry_languages_when_casing_non_title_fields_then_entry_language_wins(
+    #[case] component: &str,
+    #[case] item_language: &str,
+    #[case] title_language: &str,
+    #[case] expected: &str,
+) {
+    let style: Style = serde_yaml::from_str(&format!(
+        r#"
+info:
+  title: Field-scoped locale casing
+bibliography:
+  template:
+    {component}
+      text-case: uppercase
+"#,
+    ))
+    .unwrap();
+    let reference: InputReference = serde_json::from_value(serde_json::json!({
+        "class": "monograph",
+        "type": "book",
+        "id": "item",
+        "title": "istanbul",
+        "publisher": { "name": "publisher", "place": "istanbul" },
+        "edition": "istanbul",
+        "language": item_language,
+        "field-languages": { "title": title_language }
+    }))
+    .unwrap();
+    let processor = Processor::new(
+        style,
+        indexmap::indexmap! { "item".to_string() => reference },
+    );
+
+    assert_eq!(processor.render_bibliography(), expected);
+}
+
+#[test]
+fn turkish_title_case_preserves_djot_nocase_spans() {
+    let style: Style = serde_yaml::from_str(
+        r#"
+info:
+  title: Locale-tailored protected title casing
+bibliography:
+  template:
+    - title: primary
+      text-case: uppercase
+"#,
+    )
+    .unwrap();
+    let reference: InputReference = serde_json::from_value(serde_json::json!({
+        "class": "monograph",
+        "type": "book",
+        "id": "item",
+        "title": "istanbul [izmir]{.nocase}",
+        "language": "tr-TR"
+    }))
+    .unwrap();
+    let processor = Processor::new(
+        style,
+        indexmap::indexmap! { "item".to_string() => reference },
+    );
+
+    assert_eq!(processor.render_bibliography(), "İSTANBUL izmir");
+}
+
+#[rstest]
+#[case("- term: in\n      text-case: uppercase", "İÇİNDE")]
+#[case("- message: custom.case-test\n      text-case: uppercase", "İSTANBUL")]
+fn given_turkish_locale_when_locale_text_is_uppercased_then_mapping_is_locale_tailored(
+    #[case] component: &str,
+    #[case] expected: &str,
+) {
+    let style: Style = serde_yaml::from_str(&format!(
+        r#"
+info:
+  title: Locale-tailored locale casing
+options:
+  messages:
+    custom.case-test: istanbul
+bibliography:
+  template:
+    {component}
+"#,
+    ))
+    .unwrap();
+    let reference: InputReference = serde_json::from_value(serde_json::json!({
+        "class": "monograph",
+        "type": "book",
+        "id": "item",
+        "title": "unused"
+    }))
+    .unwrap();
+    let tr_yaml = std::str::from_utf8(
+        citum_schema::embedded::get_locale_bytes("tr-TR").expect("tr-TR must be embedded"),
+    )
+    .unwrap();
+    let processor = Processor::with_locale(
+        style,
+        indexmap::indexmap! { "item".to_string() => reference },
+        citum_schema::Locale::from_yaml_str(tr_yaml).unwrap(),
+    );
+
+    assert_eq!(processor.render_bibliography(), expected);
+}
+
 #[test]
 fn localized_citation_layouts_select_their_term_locale() {
     let style: Style = serde_yaml::from_str(

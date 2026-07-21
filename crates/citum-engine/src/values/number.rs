@@ -238,7 +238,12 @@ impl ComponentValues for TemplateNumber {
             // Free-text number values (e.g. `edition`) honor an explicit
             // text-case override the same way string variables do.
             let value = if let Some(tc) = effective_rendering.text_case {
-                crate::values::text_case::apply_text_case(&value, tc)
+                let language = reference.language();
+                crate::values::text_case::apply_text_case_with_language(
+                    &value,
+                    tc,
+                    language.as_deref(),
+                )
             } else {
                 value
             };

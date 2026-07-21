@@ -784,7 +784,11 @@ impl Processor {
                 citum_schema::options::titles::TextCase::CapitalizeFirst,
                 Some(self.locale.locale.as_str()),
             );
-            crate::values::text_case::apply_text_case_markup_aware(&wrapped, case)
+            crate::values::text_case::apply_text_case_markup_aware_with_language(
+                &wrapped,
+                case,
+                Some(self.locale.locale.as_str()),
+            )
         } else {
             wrapped
         };

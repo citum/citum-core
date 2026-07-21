@@ -53,10 +53,32 @@ fn language_script_resolution_prefers_explicit_script_evidence() {
 }
 
 #[test]
+fn language_identifier_parsing_normalizes_and_trims_shared_tag_forms() {
+    let underscore = super::parse_language_identifier(Some(" tr_TR ")).unwrap();
+    assert_eq!(underscore.language.as_str(), "tr");
+    assert_eq!(
+        underscore
+            .region
+            .map(|region| region.to_string())
+            .as_deref(),
+        Some("TR")
+    );
+
+    let suffixed = super::parse_language_identifier(Some("tr-TR-citum_override")).unwrap();
+    assert_eq!(suffixed.language, underscore.language);
+    assert_eq!(suffixed.region, underscore.region);
+
+    assert_eq!(super::parse_language_identifier(Some("_")), None);
+    assert_eq!(super::parse_language_identifier(Some("  ")), None);
+}
+
+#[test]
 fn language_script_resolution_uses_likely_subtags_for_recognized_languages() {
     for (language, expected) in [
         ("en", "Latn"),
         ("en_US", "Latn"),
+        ("sr_Latn_RS", "Latn"),
+        ("tr-TR-citum_override", "Latn"),
         ("en-u-ca-gregory", "Latn"),
         ("ru-RU", "Cyrl"),
         ("ar", "Arab"),

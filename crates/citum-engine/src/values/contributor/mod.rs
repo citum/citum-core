@@ -147,7 +147,11 @@ fn normalized_role_term(
     // after a `". "` prefix) must opt in here explicitly.
     match effective_rendering.text_case {
         Some(citum_schema::options::titles::TextCase::CapitalizeFirst) => {
-            crate::values::text_case::capitalize_first_word(&term_str)
+            crate::values::text_case::apply_text_case_with_language(
+                &term_str,
+                citum_schema::options::titles::TextCase::CapitalizeFirst,
+                Some(options.locale.locale.as_str()),
+            )
         }
         _ => term_str,
     }
