@@ -9,7 +9,9 @@ tags:
     - style
     - gb-t
 created_at: 2026-07-17T22:53:37Z
-updated_at: 2026-07-17T22:53:55Z
+updated_at: 2026-07-21T14:01:37Z
+blocked_by:
+    - csl26-7hsx
 ---
 
 node scripts/oracle.js tests/fixtures/csl-m/gb-t-7714-2025-numeric.csl --json --scope both --refs-fixture tests/fixtures/test-items-library/gb-t-7714-2025.json --citations-fixture tests/fixtures/test-items-library/gb-t-7714-2025-numeric-citations.json --case-insensitive
@@ -31,3 +33,11 @@ gbt7714.7.1.3:2, gbt7714.7.2.1:7, gbt7714.7.2.3:7, gbt7714.8.11.3.2:5, gbt7714.8
 - [ ] Triage each of the 18 ids by root cause (anonymous-author substitution, missing components, ordering)
 - [ ] Fix the underlying template/engine gaps
 - [ ] Confirm gb-t-7714-2025-numeric reaches its declared min_pass_rate: 1.0 gate
+
+## Update (2026-07-21)
+
+Root cause identified and fixed by csl26-7hsx: `resolve_localized_type_variant`'s callers passed `None` for the section-level `type_variants` fallback tier, so English items whose type wasn't redefined in the style's `en` locale override (e.g. `gbt7714.7.1.3:2`, the Coffee-drinking periodical) skipped straight to the locale block's flat, delimiter-less template — not a substitution/anonymous-author gap as originally diagnosed here.
+
+After the fix, oracle re-run (`node scripts/oracle.js ... gb-t-7714-2025-numeric`) shows raw bibliography matches rising from 143/203 to 146/203. Of the original 18 tracked ids: 4 now raw-match the oracle exactly (`gbt7714.7.2.1:7`, `gbt7714.7.2.3:7`, `gbt7714.8.11.3.2:5`, `gbt7714.8.9.2:4`); the remaining 14 (including `gbt7714.7.1.3:2`) now have every structural component (title/volume/issue/year/pages) matching — their only remaining divergence is the pre-existing, already-registered Latin-script punctuation convention (full-width vs GB/T's own Latin half-width rule; see csl26-5y6k / MULTILINGUAL.md §3.2a), not a new or distinct bug.
+
+Remaining scope for this bean: re-triage the *other* raw bibliography failures (57 total, up from an original baseline of ~60) not among these 18 tracked ids, since this fix's scope was limited to the locale-type-variant fallback.
