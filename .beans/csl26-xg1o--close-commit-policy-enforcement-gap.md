@@ -8,13 +8,13 @@ tags:
     - ci
     - hooks
 created_at: 2026-07-21T20:21:42Z
-updated_at: 2026-07-21T20:24:43Z
+updated_at: 2026-07-21T20:42:03Z
 ---
 
 ## Checklist
 
-- [ ] Add an always-on commit-policy workflow.
-- [ ] Validate squash-merge PR titles from the alint policy.
+- [x] Add an always-on commit-policy workflow.
+- [x] Validate squash-merge PR titles from the alint policy.
 - [x] Add regression coverage and validate the workflow.
 - [ ] Audit and synchronize the Tangled mirror once.
 

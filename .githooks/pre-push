@@ -3,7 +3,7 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-EMPTY_TREE="4b825dc642cb6eb9a060e54bf8d69288fbee4904"
+source "$ROOT_DIR/scripts/pre-push-policy-base.sh"
 
 # Check for Co-Authored-By commits in the push range
 printf '[PRE-PUSH] Checking for Co-Authored-By commits...\n'
@@ -16,15 +16,14 @@ while read -r local_ref local_sha remote_ref remote_sha; do
     continue
   fi
 
-  if [[ "$remote_sha" =~ ^0+$ ]]; then
-    # New branch: only validate commits not already reachable from origin/main,
-    # so the scope allowlist doesn't retroactively fail pre-allowlist history.
-    remote_sha="$(git -C "$ROOT_DIR" merge-base "$local_sha" "refs/remotes/origin/main" 2>/dev/null || echo "$EMPTY_TREE")"
-  fi
+  # Commits already accepted on origin/main are CI-governed history. When a
+  # secondary mirror lags behind it, validate only the commits new to origin;
+  # otherwise an old fixed history violation would block mirror catch-up.
+  policy_base="$(pre_push_policy_base "$ROOT_DIR" "$local_sha" "$remote_sha")"
 
   # Check commit trailers for Co-Authored-By (match line-start to avoid false
   # positives when commit bodies mention the string as documentation/code).
-  if git -C "$ROOT_DIR" log --format=%B "$remote_sha..$local_sha" \
+  if git -C "$ROOT_DIR" log --format=%B "$policy_base..$local_sha" \
       | grep -qE '^Co-Authored-By:'; then
     printf '[ERROR] Commit contains Co-Authored-By footer.\n'
     printf '[ERROR] Direct commits must not have Co-Authored-By footers.\n'
@@ -36,7 +35,7 @@ while read -r local_ref local_sha remote_ref remote_sha; do
   # Validate conventional commits (scope allowlist, format, body) via alint.
   # The authoritative scope list lives in .alint.yml — no duplication here.
   if command -v alint &>/dev/null; then
-    if ! ALINT_BASE_SHA="$remote_sha" alint check --base "$remote_sha" \
+    if ! ALINT_BASE_SHA="$policy_base" alint check --base "$policy_base" \
         "$ROOT_DIR" 2>&1; then
       printf '[ERROR] alint check failed.\n' >&2
       exit 1
@@ -60,7 +59,7 @@ while read -r local_ref local_sha remote_ref remote_sha; do
     if [[ "$path" =~ \.(rs)$ ]] || [[ "$path" == "Cargo.toml" ]] || [[ "$path" == "Cargo.lock" ]]; then
       changed_rs_or_cargo+=("$path")
     fi
-  done < <(git -C "$ROOT_DIR" diff --name-only --diff-filter=ACMR "$remote_sha" "$local_sha")
+  done < <(git -C "$ROOT_DIR" diff --name-only --diff-filter=ACMR "$policy_base" "$local_sha")
 
   # If Rust files changed, run the gate
   if (( ${#changed_rs_or_cargo[@]} > 0 )); then
