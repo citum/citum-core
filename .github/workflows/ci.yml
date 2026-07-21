@@ -135,6 +135,9 @@ jobs:
             scripts/test_release_workflow.py \
             scripts/test_validate_pr_title.py
 
+      - name: Run hook regression tests
+        run: ./scripts/test_pre_push_policy_base.sh
+
   release-dry-runs:
     name: Release Dry Runs
     needs: changes
