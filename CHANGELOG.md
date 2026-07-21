@@ -5,6 +5,128 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.77.0] - 2026-07-21
+
+### Bug Fixes
+
+**engine**
+
+- Separate component editor fallback ([`aab5772`](https://github.com/citum/citum-core/commit/aab57727bacf24cbfbc7ae9cee214d22c585f900))
+
+
+**locale**
+
+- Localize ordinal number forms ([`c5b21d4`](https://github.com/citum/citum-core/commit/c5b21d4fec3e7adc4e1e2c9c7582f7e65c4121b9))
+
+- Fill zh-CN/ar-AR locale gaps ([`1e39658`](https://github.com/citum/citum-core/commit/1e3965858f9242528c8881a4312c786a11bf1f38))
+
+
+**scripts**
+
+- Gate on adjusted fidelity counts ([`1d3e7df`](https://github.com/citum/citum-core/commit/1d3e7df199ea2c022c6d117dd95285af55b7859c))
+
+
+**styles**
+
+- Gb/t latin refs get latin punctuation ([`f60d8aa`](https://github.com/citum/citum-core/commit/f60d8aa299280f2d7bdad279a38c986d1b2f1117))
+
+
+
+### Documentation
+
+**migrate**
+
+- Add migration approach review audit ([`4f20726`](https://github.com/citum/citum-core/commit/4f20726da64d2aa5c511fde5d1b63b2a2eb2a1fd))
+
+- Record tier-0 alias negative result ([`558c67e`](https://github.com/citum/citum-core/commit/558c67e20aff58314ac8f8fb1355b4de5a46b21a))
+
+
+**spec**
+
+- Define GB/T date model and policy ([`0b8d69a`](https://github.com/citum/citum-core/commit/0b8d69ac4a9039492e989d411c0f3f8d2bd9f093))
+
+- Define punctuation realization layer ([`a3deac2`](https://github.com/citum/citum-core/commit/a3deac25c5f8f9d85e92578a364b80a4c87d73e5))
+
+- Define per-item term localization ([`52dcd0d`](https://github.com/citum/citum-core/commit/52dcd0da61096bcf6aff1bec97e7c0011cf9e956))
+
+- Define bidi output handling ([`84a6cc3`](https://github.com/citum/citum-core/commit/84a6cc319173a2580feb2b7d49f824d3556de3e5))
+
+- Add date annotation as a note ([`dd8afb0`](https://github.com/citum/citum-core/commit/dd8afb07b43ecdacc5a346b8d709b22fff077f28))
+
+- Document bare-note extension point ([`1d4f1d1`](https://github.com/citum/citum-core/commit/1d4f1d15139aef6037f14e590fb78f5f6daf4f48))
+
+- Amend punctuation-width bean ([`ca2ffcf`](https://github.com/citum/citum-core/commit/ca2ffcffabfb74a0815e28f17d52057b2d16adc0))
+
+
+
+### Features
+
+**engine**
+
+- Close GB/T numeric fidelity gaps ([`9004614`](https://github.com/citum/citum-core/commit/9004614c1c1bc45c9dc49679d2685ebf4d031e32))
+
+- Add script-aware punctuation remap ([`c6bd91c`](https://github.com/citum/citum-core/commit/c6bd91cbbc2cd50c7ff44845d261327d03a45a82))
+
+- Resolve ISO 15924 scripts ([`d689d19`](https://github.com/citum/citum-core/commit/d689d19e47e154bd5858d168b66f7df42a1b38b6))
+
+- Realize script-aware wrap glyphs ([`721f571`](https://github.com/citum/citum-core/commit/721f57107c70232c3c0b9d4d04cc65cfaeae343e))
+
+- Realize semantic punctuation ([`187e8eb`](https://github.com/citum/citum-core/commit/187e8ebc7176af2e2620261fd8c02dd78473704f))
+
+- Render opaque date notes ([`4478585`](https://github.com/citum/citum-core/commit/4478585be91bc64e0d644b166beae9cb1e482d53))
+
+
+**locale**
+
+- Add ja-JP/ko-KR/ru-RU locales ([`3d795a0`](https://github.com/citum/citum-core/commit/3d795a0ffeeeb7bac016b560045576f30d81fe52))
+
+
+**migrate**
+
+- Support CSL-M layouts ([`63fdb10`](https://github.com/citum/citum-core/commit/63fdb1047c8090f4cd97dccc3f2284183275b7a2))
+
+
+**schema**
+
+- Add CSL-M foundations ([`b44c6ac`](https://github.com/citum/citum-core/commit/b44c6ac0518dd15207e6f7e9cd776aeb9e74818c))
+
+- Preserve GB/T reference data ([`3bff0dd`](https://github.com/citum/citum-core/commit/3bff0ddf72c5c70fe59d35d4c3f7ba87e82c3169))
+
+- Preserve GB/T monograph metadata ([`0057f0f`](https://github.com/citum/citum-core/commit/0057f0f1546d2c208fc8daac1358f605d82f7638))
+
+- Support GB/T date ranges ([`fe8cfe0`](https://github.com/citum/citum-core/commit/fe8cfe093d91bf25b666f25e73c5cd621ce6e5d5))
+
+- Support GB/T date roles ([`22e044b`](https://github.com/citum/citum-core/commit/22e044bbaba50187c83b921ddee26c6f096d9b5e))
+
+
+**styles**
+
+- Add GB/T 7714 family ([`364be5f`](https://github.com/citum/citum-core/commit/364be5f81d43845f9bc05b40c2176158555b230f))
+
+- Extend GB/T note-wrap rollout ([`e23e098`](https://github.com/citum/citum-core/commit/e23e0989e1d73d2b65e7a20eaa2645332a7488a6))
+
+
+**tooling**
+
+- Wasm bench build + jsr/session opts ([`81b2a03`](https://github.com/citum/citum-core/commit/81b2a03d778a290d34c98860373482f8af1e5463))
+
+
+
+### Performance
+
+**engine**
+
+- Cache locale expander per thread ([`36c0b65`](https://github.com/citum/citum-core/commit/36c0b65999824a8e7ccb475a25727ee95fc2229f))
+
+
+
+### Refactor
+
+**styles**
+
+- Use semantic punctuation ([`13aa4d6`](https://github.com/citum/citum-core/commit/13aa4d6acaa84430fb4fc13261e04e2d94e9a16e))
+
+
 ## [0.76.0] - 2026-07-15
 
 ### Bug Fixes
