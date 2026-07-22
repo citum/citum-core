@@ -27,7 +27,9 @@ const {
   explainCitationMismatchFromDiv008,
   explainCitationMismatchFromDiv010,
   explainBibliographyMismatchFromDiv010,
+  explainBibliographyMismatchFromDiv011,
   isLatinScriptLanguage,
+  stripGbtDateAnnotations,
 } = require('./lib/oracle-divergences');
 const { loadVerificationPolicy, resolveRegisteredDivergence } = require('./lib/verification-policy');
 
@@ -513,6 +515,83 @@ test('div-010 masks a Latin-script bibliography mismatch that is punctuation-onl
 
   assert.equal(adjustment?.divergenceId, 'div-010');
   assert.deepEqual(adjustment?.itemIds, ['gbt-latin-book']);
+});
+
+test('stripGbtDateAnnotations removes era parentheticals, approximate-year brackets, and printing suffix', () => {
+  assert.equal(stripGbtDateAnnotations('1947（民国三十六年）'), '1947');
+  assert.equal(stripGbtDateAnnotations('1705 (康熙四十四年)'), '1705');
+  assert.equal(stripGbtDateAnnotations('[1936]'), '1936');
+  assert.equal(stripGbtDateAnnotations('1995印刷'), '1995');
+  assert.equal(stripGbtDateAnnotations('1957—1990'), '1957—1990');
+});
+
+test('div-011 masks a GB/T era-year annotation citeproc-js drops, confirmed against the standard\'s own §7.5.4.1 example', () => {
+  const policy = loadVerificationPolicy();
+  const divergenceRule = resolveRegisteredDivergence(policy, 'div-011');
+  const entry = {
+    id: 'gbt7714.7.5.4.1:1',
+    oracle: '[74][M]. 1947',
+    citum: '[74][M]. 1947（民国三十六年）',
+    match: false,
+  };
+  const testItems = {
+    'gbt7714.7.5.4.1:1': { id: 'gbt7714.7.5.4.1:1', note: 'issued: 1947（民国三十六年）' },
+  };
+
+  const adjustment = explainBibliographyMismatchFromDiv011(entry, testItems, divergenceRule);
+
+  assert.equal(adjustment?.divergenceId, 'div-011');
+  assert.deepEqual(adjustment?.itemIds, ['gbt7714.7.5.4.1:1']);
+});
+
+test('div-011 masks citeproc-js adding a spurious uncertainty bracket to an open-ended date range (§8.4.2)', () => {
+  const policy = loadVerificationPolicy();
+  const divergenceRule = resolveRegisteredDivergence(policy, 'div-011');
+  const entry = {
+    id: 'gbt7714.8.4.2:2',
+    oracle: '[111]…北京：北京图书馆，1957—[1990]',
+    citum: '[111]…北京：北京图书馆，1957—1990',
+    match: false,
+  };
+  const testItems = {
+    'gbt7714.8.4.2:2': { id: 'gbt7714.8.4.2:2', note: 'issued: 1957/1990' },
+  };
+
+  const adjustment = explainBibliographyMismatchFromDiv011(entry, testItems, divergenceRule);
+
+  assert.equal(adjustment?.divergenceId, 'div-011');
+});
+
+test('div-011 does not mask a mismatch on an item without a note-field issued override', () => {
+  const policy = loadVerificationPolicy();
+  const divergenceRule = resolveRegisteredDivergence(policy, 'div-011');
+  const entry = {
+    id: 'gbt-no-override',
+    oracle: '[1]. 1947',
+    citum: '[1]. 1947（民国三十六年）',
+    match: false,
+  };
+  const testItems = {
+    'gbt-no-override': { id: 'gbt-no-override' },
+  };
+
+  assert.equal(explainBibliographyMismatchFromDiv011(entry, testItems, divergenceRule), null);
+});
+
+test('div-011 does not mask a mismatch that survives annotation stripping', () => {
+  const policy = loadVerificationPolicy();
+  const divergenceRule = resolveRegisteredDivergence(policy, 'div-011');
+  const entry = {
+    id: 'gbt7714.7.5.4.1:1',
+    oracle: '[74][M]. 1947',
+    citum: '[74][M]. 1948（民国三十六年）',
+    match: false,
+  };
+  const testItems = {
+    'gbt7714.7.5.4.1:1': { id: 'gbt7714.7.5.4.1:1', note: 'issued: 1947（民国三十六年）' },
+  };
+
+  assert.equal(explainBibliographyMismatchFromDiv011(entry, testItems, divergenceRule), null);
 });
 
 test('registered divergence adjustments skip order inspection without failures', () => {
