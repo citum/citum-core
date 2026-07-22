@@ -43,6 +43,27 @@ fn embedded_render_locales() -> &'static HashMap<String, Locale> {
     })
 }
 
+/// Look up a loaded embedded locale exactly matching `locale_id`, falling
+/// back to another loaded locale sharing the same primary BCP 47 subtag
+/// (e.g. `de-AT` falls back to a loaded `de-DE`). Returns `None` when
+/// neither matches; the caller decides the ultimate fallback (the style
+/// locale, per `docs/specs/PER_ITEM_TERM_LOCALE.md` §3 and
+/// `MULTILINGUAL.md` §3.4).
+pub(crate) fn lookup_embedded_locale(locale_id: &str) -> Option<&'static Locale> {
+    let locales = embedded_render_locales();
+    let key = locale_id.to_ascii_lowercase();
+    locales.get(&key).or_else(|| {
+        let primary = key.split(['-', '_']).next()?;
+        locales.iter().find_map(|(candidate, locale)| {
+            candidate
+                .split(['-', '_'])
+                .next()
+                .is_some_and(|candidate_primary| candidate_primary == primary)
+                .then_some(locale)
+        })
+    })
+}
+
 /// The renderer for citation and bibliography templates.
 ///
 /// The `Renderer` is responsible for taking compiled templates and applying them
@@ -243,8 +264,23 @@ impl<'a> Renderer<'a> {
         }
     }
 
-    /// Select the embedded rendering locale for an explicitly matched localized layout.
-    fn locale_for_reference(&self, reference: &Reference, context: RenderContext) -> &Locale {
+    /// Select the rendering locale for one reference.
+    ///
+    /// A matched `citation.locales[]`/`bibliography.locales[]` branch is
+    /// authoritative and returns its embedded locale unchanged (structure
+    /// and rendering locale, including typography, both come from the
+    /// branch). Otherwise, under `options.multilingual.term-locale: item`,
+    /// returns a hybrid locale that speaks the item's terms/dates inside the
+    /// style's typography (see `docs/specs/PER_ITEM_TERM_LOCALE.md`); an
+    /// item language with no loaded locale falls back to the style locale
+    /// silently here — [`crate::api::warnings::term_locale_fallback_warnings`]
+    /// surfaces that case as a diagnostic. Otherwise returns the style
+    /// locale, today's default behavior byte for byte.
+    fn locale_for_reference(
+        &self,
+        reference: &Reference,
+        context: RenderContext,
+    ) -> Cow<'a, Locale> {
         let language = crate::values::effective_item_language(reference);
         let selected = match context {
             RenderContext::Citation => self
@@ -258,25 +294,24 @@ impl<'a> Renderer<'a> {
                 .as_ref()
                 .and_then(|spec| spec.resolve_localized_template(language.as_deref())),
         };
-        let Some(locale_id) = selected.and_then(|resolved| resolved.locale) else {
-            return self.locale;
-        };
 
-        let locales = embedded_render_locales();
-        let key = locale_id.to_ascii_lowercase();
-        locales
-            .get(&key)
-            .or_else(|| {
-                let primary = key.split(['-', '_']).next()?;
-                locales.iter().find_map(|(candidate, locale)| {
-                    candidate
-                        .split(['-', '_'])
-                        .next()
-                        .is_some_and(|candidate_primary| candidate_primary == primary)
-                        .then_some(locale)
-                })
-            })
-            .unwrap_or(self.locale)
+        if let Some(locale_id) = selected.and_then(|resolved| resolved.locale) {
+            return Cow::Borrowed(lookup_embedded_locale(&locale_id).unwrap_or(self.locale));
+        }
+
+        let term_locale_is_item = self
+            .config
+            .multilingual
+            .as_ref()
+            .is_some_and(|ml| ml.term_locale == citum_schema::options::TermLocale::Item);
+
+        if term_locale_is_item
+            && let Some(item_locale) = language.as_deref().and_then(lookup_embedded_locale)
+        {
+            return Cow::Owned(self.locale.with_term_surfaces_from(item_locale));
+        }
+
+        Cow::Borrowed(self.locale)
     }
 
     /// Resolve multilingual contributor names using the style's config.
@@ -606,9 +641,12 @@ impl<'a> Renderer<'a> {
     }
 
     /// Initialize render options for a citation.
+    ///
+    /// `locale` is resolved by the caller via [`Self::locale_for_reference`]
+    /// so the `Cow` it may own outlives this borrow of `RenderOptions`.
     fn citation_render_options<'b>(
         &'b self,
-        reference: &Reference,
+        locale: &'b Locale,
         mode: citum_schema::citation::CitationMode,
         suppress_author: bool,
         locator_raw: Option<&'b CitationLocator>,
@@ -617,7 +655,7 @@ impl<'a> Renderer<'a> {
         RenderOptions {
             config: self.config.clone(),
             bibliography_config: self.bibliography_config.clone(),
-            locale: self.locale_for_reference(reference, RenderContext::Citation),
+            locale,
             context: RenderContext::Citation,
             mode,
             suppress_author,
@@ -642,8 +680,9 @@ impl<'a> Renderer<'a> {
         F: crate::render::format::OutputFormat<Output = String>,
     {
         let fmt = F::default();
+        let locale = self.locale_for_reference(reference, RenderContext::Citation);
         let options = self.citation_render_options(
-            reference,
+            locale.as_ref(),
             citum_schema::citation::CitationMode::Integral,
             false,
             item.locator.as_ref(),
