@@ -20,8 +20,8 @@ use super::document::{format_bibliography, format_by_kind};
 use super::{
     CitationOccurrence, CitationOccurrenceItem, DocumentOptions, FormatDocumentError,
     FormattedBibliography, FormattedCitation, OutputFormatKind, RefsInput, StyleInput, Warning,
-    WarningLevel, unknown_enum_warnings, unknown_reference_class_warnings,
-    unknown_reference_field_warnings,
+    WarningLevel, term_locale_fallback_warnings, unknown_enum_warnings,
+    unknown_reference_class_warnings, unknown_reference_field_warnings,
 };
 use crate::processor::Processor;
 use crate::reference::{Bibliography, Citation};
@@ -367,6 +367,7 @@ impl DocumentSession {
         let mut processor = Processor::new(self.style.clone(), self.bibliography_cache.clone());
         warnings.extend(self.ref_warnings.iter().cloned());
         warnings.extend(unknown_enum_warnings(&processor));
+        warnings.extend(term_locale_fallback_warnings(&processor));
 
         if let Some(opts) = &self.document_options {
             // Rebuild the processor with the document-level integral-name override

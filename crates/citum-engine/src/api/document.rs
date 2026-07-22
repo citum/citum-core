@@ -22,7 +22,8 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
 use super::warnings::{
-    unknown_enum_warnings, unknown_reference_class_warnings, unknown_reference_field_warnings,
+    term_locale_fallback_warnings, unknown_enum_warnings, unknown_reference_class_warnings,
+    unknown_reference_field_warnings,
 };
 use super::{
     BibliographyEntry, CitationOccurrence, DocumentOptions, EntryMetadata, FormattedBibliography,
@@ -232,6 +233,7 @@ pub fn format_document_with_style(
     warnings.extend(unknown_reference_class_warnings(&processor.bibliography));
     warnings.extend(unknown_reference_field_warnings(&processor.bibliography));
     warnings.extend(unknown_enum_warnings(&processor));
+    warnings.extend(term_locale_fallback_warnings(&processor));
 
     if let Some(opts) = &request.document_options {
         // Rebuild the processor with the document-level integral-name override

@@ -15,6 +15,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 use crate::processor::Processor;
 use crate::reference::Bibliography;
 use citum_schema::locale::{GeneralTerm, TermForm};
+use citum_schema::options::TermLocale;
 use citum_schema::reference::{
     ClassExtension, CollectionType, ContributorRole as ReferenceRole, MonographComponentType,
     MonographType, ReferenceClass, SerialComponentType,
@@ -22,6 +23,52 @@ use citum_schema::reference::{
 use citum_schema::template::ContributorRole as TemplateRole;
 
 use super::{Warning, WarningLevel};
+
+/// Scan the bibliography for tagged items whose effective language has no
+/// loaded locale under `options.multilingual.term-locale: item`.
+///
+/// A no-op unless `term-locale: item` is active in the citation or
+/// bibliography scope. Untagged items resolve to the style locale by design
+/// (positive-evidence rule, `PER_ITEM_TERM_LOCALE.md` §3) and never warn;
+/// only items that *do* carry a language with no matching loaded locale are
+/// reported, so the silent style-locale fallback stays discoverable. Reuses
+/// [`crate::processor::rendering::lookup_embedded_locale`] — the same
+/// exact-tag → primary-language lookup the renderer itself uses — so this
+/// scanner and the render-time fallback never diverge.
+pub fn term_locale_fallback_warnings(processor: &Processor) -> Vec<Warning> {
+    let term_locale_is_item = |config: &citum_schema::options::Config| {
+        config
+            .multilingual
+            .as_ref()
+            .is_some_and(|ml| ml.term_locale == TermLocale::Item)
+    };
+    let active = term_locale_is_item(&processor.get_citation_config())
+        || term_locale_is_item(&processor.get_bibliography_config());
+    if !active {
+        return Vec::new();
+    }
+
+    processor
+        .bibliography
+        .iter()
+        .filter_map(|(ref_id, reference)| {
+            let language = crate::values::effective_item_language(reference)?;
+            if crate::processor::rendering::lookup_embedded_locale(&language).is_some() {
+                return None;
+            }
+            Some(Warning {
+                level: WarningLevel::Warning,
+                code: "term_locale_unavailable".to_string(),
+                citation_id: None,
+                ref_id: Some(ref_id.clone()),
+                message: format!(
+                    "Reference '{ref_id}' has language '{language}' but no loaded locale matches it; \
+                     term-locale: item falls back to the style locale for this reference's terms."
+                ),
+            })
+        })
+        .collect()
+}
 
 /// Scan the bibliography for unknown reference classes and return compatibility warnings.
 pub fn unknown_reference_class_warnings(bibliography: &Bibliography) -> Vec<Warning> {
