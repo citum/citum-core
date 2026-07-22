@@ -9,7 +9,7 @@ tags:
     - fidelity
     - multilingual
 created_at: 2026-07-16T10:56:59Z
-updated_at: 2026-07-22T20:06:30Z
+updated_at: 2026-07-22T21:59:30Z
 blocked_by:
     - csl26-8uxa
 ---
@@ -142,3 +142,116 @@ the era-annotation case.
 - [ ] Re-verify against tests/fixtures/test-items-library/gb-t-7714-2025.json
       (target: adjusted 203/203, matching numeric/note)
 - [ ] Flip verification-policy.yaml count_toward_fidelity: true, min_pass_rate: 1.0
+
+## Progress (2026-07-22, later session): recipe validated to 68%, then reverted — new blockers found
+
+Implemented the Bug 1 + Bug 2 fix plan above: rewrote `bibliography.type-variants`
+to 14 keys matching base's exact selector strings (`article,dataset,preprint`;
+`article-journal,article-magazine`; `article-newspaper`;
+`chapter,entry-dictionary,entry-encyclopedia`; `periodical`;
+`manuscript,personal_communication,pamphlet`; `book,thesis,map`; `software`;
+`paper-conference`; `patent`; `graphic`; `webpage,post,post-weblog`; `report`;
+`standard`), each built from a shared leading block:
+
+```yaml
+- group:
+    - contributor: author
+      form: long
+      name-order: family-first
+      delimiter: { mark: comma }
+      sort-separator: ' '
+      and: none
+    - date: issued
+      form: year
+      fallback:
+        - date: copyright
+          form: year
+          prefix: c
+        - date: printing
+          form: year
+          suffix: 印刷
+        - date: accessed
+          form: year
+          wrap: { punctuation: brackets }
+        - message: term.no-date
+          form: short
+  delimiter: { mark: comma }
+  suffix: '. '
+```
+followed by the rest of base's per-type fields (delimiters ported from base),
+with body-position `date:issued form:year` occurrences removed (redundant
+with the front block) but body-position `date:issued form:year-month-day`
+occurrences **kept** — GB/T §7.5.4.2 mandates full-precision dates in the body
+for online/report/patent/newspaper/archival types regardless of the
+author-date front-matter year.
+
+This surfaced a genuine **engine bug**, independent of this style: dates were
+being silently deduplicated by `TemplateComponentTracker` (a
+Contributor-only, `cs:substitute`-equivalent suppression mechanism) whenever
+the same `date: issued` variable appeared twice in a template — which is
+exactly what author-date's front+body dual-date shape does on purpose. Fixed
+in `crates/citum-engine/src/processor/rendering/mod.rs`
+(`TemplateComponent::Date(_) => None` in `get_variable_key`, full exemption)
+and **landed separately** from this bean's YAML work, since it's a real
+cross-cutting defect (also fixed a second, pre-existing occurrence in
+`taylor-and-francis-chicago-author-date-core.yaml`'s `interview:` variant).
+See commit history on `fix/gbt-date-annotation-fidelity` — do not re-derive
+this fix if resuming this bean; it's already in `main`/merged upstream by the
+time this bean is picked back up.
+
+With the YAML recipe above **and** the engine fix, the corpus went from
+**raw 0/203 → 111/203, adjusted 0/203 → 139/203 (68%)** — real, verified
+progress. But **the YAML change was reverted** (not committed) before
+closing out, because triaging the remaining 64 failures surfaced three new,
+unresolved design questions the recipe above doesn't answer — landing it
+would have meant shipping (and test-pinning) behavior with evidence against
+its correctness:
+
+### New finding 1 — no-author items: 佚名 (anonymous term), not title-substitution
+
+`gbt7714.7.5.4.1:1` (Minguo-era, no author): oracle renders
+`佚名，1947. [M]` (佚名 = "anonymous" — a placeholder **term**, à la
+`term.no-date`'s "无日期"). The recipe above instead lets `contributor:
+author` fall through to Citum's existing title-substitution behavior,
+producing `1947（民国三十六年）. [M]` with no leading placeholder at all (and
+in an earlier synthetic test, title substituting into the author slot
+instead). **The real GB/T author-date convention needs an explicit
+`message: term.anonymous`-shaped fallback in the author position**, mirroring
+how `term.no-date` handles the missing-date case — this doesn't exist yet
+and needs its own small feature, not just a punctuation port. Also directly
+affects the archival "does the era annotation legitimately render twice
+(front block + body block)" question raised by the reverted
+`date_annotations.rs` assertions — unresolved, do not re-pin those tests
+without re-deriving against a confirmed-correct rendering.
+
+### New finding 2 — organizational author for `standard` type
+
+`gbt7714.8.9.2:1`: oracle shows the issuing committee as the author slot
+(`全国信息与文献标准化技术委员会，2021. GB/T 3792—2021 title[S]`); Citum's
+`standard` type-variant has no path to promote the issuing-org/publisher
+field into the author position, so it falls through to some other
+substitution and drops the org name entirely. Likely needs a
+`substitute.template` extension (currently only covers `editor`) — a
+distinct, possibly non-trivial sub-feature, not addressed by the recipe.
+
+### New finding 3 — disambiguation-suffix ordering swap
+
+`gbt7714.9.3.1.3:2` / `:3`: two same-author-same-year references get `2000b`
+/`2000c` swapped relative to the oracle's ordering. This looks like a
+pre-existing disambiguation-ordering algorithm difference (not
+type-variant/punctuation related) — plausibly out of scope for this bean
+entirely; may deserve its own bean if confirmed.
+
+### Where things stand
+
+- The 14-key type-variant restructuring **shape** (base-matching keys, shared
+  leading block, full-precision body dates preserved) is validated and
+  should be the starting point for the next attempt — just don't reuse it
+  verbatim for the author slot until finding 1 is resolved.
+- Do not re-add the reverted YAML from `git log` blindly; it encodes the
+  title-substitution behavior finding 1 says is wrong.
+- Recommend resolving finding 1 (佚名 term) first — it's likely the single
+  highest-leverage fix (affects the `7.5.4.1`/`7.5.4.3` cluster and probably
+  more no-author items in the wider corpus), then finding 2 (org-as-author,
+  narrower blast radius — `standard` type only), then assess finding 3
+  separately.

@@ -851,11 +851,12 @@ fn key_base(key: &str) -> Cow<'_, str> {
     }
 }
 
-/// Get a unique key for a template component's variable.
+/// Get a unique key for a template component's variable, for
+/// [`TemplateComponentTracker`] dedup/substitution tracking.
 ///
-/// The key includes rendering context (prefix/suffix) to allow the same variable
-/// to render multiple times if it appears in semantically different contexts.
-/// This enables styles like Chicago that require year after author AND after publisher.
+/// Contributor/Variable/Number/Identifier key by variable + rendering context
+/// (prefix/suffix); Title also keys by form. `Date` components are exempt —
+/// see the `Date` arm below.
 #[must_use]
 pub fn get_variable_key(component: &TemplateComponent) -> Option<String> {
     use citum_schema::template::Rendering;
@@ -893,7 +894,12 @@ pub fn get_variable_key(component: &TemplateComponent) -> Option<String> {
             || make_key("contributor", &c.contributor, &c.rendering),
             |role| make_key("contributor", role, &c.rendering),
         ),
-        TemplateComponent::Date(d) => make_key("date", &d.date, &d.rendering),
+        // Dates are never auto-suppressed for reappearing in a template — CSL
+        // restricts variable-consumption tracking to cs:substitute (names
+        // only). A style that writes `date: issued` twice (e.g. a short
+        // citation year up front, a full precise date later) means for both
+        // to render regardless of matching form or rendering context.
+        TemplateComponent::Date(_) => None,
         TemplateComponent::Variable(v) => make_key("variable", &v.variable, &v.rendering),
         TemplateComponent::Title(t) => {
             let mut key = format!("title:{:?}", t.title);
