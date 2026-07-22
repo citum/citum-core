@@ -1,7 +1,7 @@
 # Per-Item Term Localization Specification
 
-**Status:** Draft
-**Version:** 1.0
+**Status:** Active
+**Version:** 1.1
 **Date:** 2026-07-18
 **Related:** [`MULTILINGUAL.md`](./MULTILINGUAL.md) §3.3–3.4,
 [`LOCALE_MESSAGES.md`](./LOCALE_MESSAGES.md),
@@ -116,6 +116,14 @@ typography once the punctuation realization layer
 ([`PUNCTUATION_REALIZATION.md`](./PUNCTUATION_REALIZATION.md)) gives
 typography a principled per-item selector. V1 keeps the split hard.
 
+One narrower consequence of the same split: the *locale identifier* used to
+gate English-only casing transforms (`text-case` on a switched term) is the
+style locale, not the item locale, even though the term text itself is the
+item's. A German role label rendered under an en-US style is casing-gated as
+if it were English text. This is a byproduct of keeping typography-adjacent
+behavior on the style side rather than a separately designed feature; it may
+be revisited alongside the typography selector above.
+
 ### 5. Precedence
 
 A matched `citation.locales[]` or `bibliography.locales[]` branch is
@@ -164,25 +172,25 @@ Non-normative pointers:
 
 ## Acceptance Criteria
 
-- [ ] `term-locale` absent or `style`: byte-identical output for all
+- [x] `term-locale` absent or `style`: byte-identical output for all
   existing styles and fixtures.
-- [ ] With `term-locale: item` in bibliography options, a German-language
+- [x] With `term-locale: item` in bibliography options, a German-language
   reference in an en-US-locale style renders German role labels and terms
   ("hrsg. von", "In:") while English references are unchanged, in one
   bibliography.
-- [ ] Citations and bibliography scope independently (item terms in one,
+- [x] Citations and bibliography scope independently (item terms in one,
   style terms in the other).
-- [ ] Month names and date patterns follow the item locale under `item`;
+- [x] Month names and date patterns follow the item locale under `item`;
   quote characters and collision policy follow the style locale in the
   same entry.
-- [ ] An item whose language has no loaded locale falls back to style
+- [x] An item whose language has no loaded locale falls back to style
   locale terms and emits the standard silent-fallback diagnostic.
-- [ ] Untagged items render style-locale terms.
-- [ ] Items matched by a `citation.locales[]`/`bibliography.locales[]`
+- [x] Untagged items render style-locale terms.
+- [x] Items matched by a `citation.locales[]`/`bibliography.locales[]`
   branch render with the branch locale regardless of `term-locale`.
-- [ ] Sort order, grouping, year suffixes, and disambiguation are
+- [x] Sort order, grouping, year suffixes, and disambiguation are
   identical under `style` and `item` for the same input.
-- [ ] Generated schemas include `term-locale`; all new public Rust items
+- [x] Generated schemas include `term-locale`; all new public Rust items
   are documented.
 
 ## Changelog
@@ -191,3 +199,5 @@ Non-normative pointers:
   architecture audit §2(g). Defines the opt-in, the switching term set,
   fallback chain, the terms/typography split, and precedence against
   locale-scoped layout branches.
+- v1.1 (2026-07-22): Implemented and activated (`csl26-838l`). Added the §4
+  note on the casing-gate/style-id boundary; all acceptance criteria met.
