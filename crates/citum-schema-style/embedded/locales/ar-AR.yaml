@@ -118,6 +118,9 @@ date-formats:
   year-only: "yyyy"
   iso: "yyyy-MM-dd"
 
+number-formats:
+  digit-system: arabic-indic
+
 grammar-options:
   punctuation-in-quote: false
   nbsp-before-colon: false

@@ -523,6 +523,11 @@
       "description": "Number formatting options for a locale.",
       "type": "object",
       "properties": {
+        "digit-system": {
+          "description": "Digit glyph system used when rendering number template components.",
+          "$ref": "#/$defs/DigitSystem",
+          "default": "western"
+        },
         "decimal-separator": {
           "description": "Decimal separator (e.g., \".\" for en-US, \",\" for de-DE).",
           "type": "string",
@@ -542,6 +547,31 @@
           "default": 1
         }
       }
+    },
+    "DigitSystem": {
+      "description": "Digit glyph system used by a locale when rendering numeric values.",
+      "oneOf": [
+        {
+          "description": "ASCII Western digits (`0` through `9`).",
+          "type": "string",
+          "const": "western"
+        },
+        {
+          "description": "Arabic-Indic digits (`٠` through `٩`).",
+          "type": "string",
+          "const": "arabic-indic"
+        },
+        {
+          "description": "Extended Arabic-Indic digits (`۰` through `۹`).",
+          "type": "string",
+          "const": "extended-arabic-indic"
+        },
+        {
+          "description": "Devanagari digits (`०` through `९`).",
+          "type": "string",
+          "const": "devanagari"
+        }
+      ]
     },
     "GrammarOptions": {
       "description": "Grammar options that vary by language or regional convention.",
