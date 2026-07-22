@@ -1,7 +1,7 @@
 ---
 # csl26-xnu9
 title: Add punctuation-width style preset (half|mixed|full|bylan)
-status: draft
+status: completed
 type: task
 priority: normal
 tags:
@@ -9,7 +9,7 @@ tags:
     - punctuation
     - style
 created_at: 2026-07-20T12:12:23Z
-updated_at: 2026-07-21T11:38:41Z
+updated_at: 2026-07-22T14:26:58Z
 parent: csl26-0ugp
 ---
 
@@ -97,3 +97,7 @@ punctuation-width preset already has a home in the existing
 `DocumentOptionsOverride` (`crates/citum-engine/src/processor/document/types.rs`,
 frontmatter `options:` block) — no new override layer is needed, just a
 field on that existing struct when this bean is implemented.
+
+## Summary of Changes
+
+Implemented punctuation-width presets with shared document/style overlays, switched embedded GB/T to mixed, regenerated schemas, and updated the punctuation realization specifications.

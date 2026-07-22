@@ -421,13 +421,15 @@ pub enum ScriptClass {
     Latin,
     /// CJK-script realization: full-width delimiters (`（`, `【`, …).
     Cjk,
+    /// Mixed table: full-width except periods and square brackets.
+    Mixed,
 }
 
 /// Resolve the effective script class from positive script evidence only.
 ///
 /// Returns `None` when the language tag carries no usable evidence for either
-/// supported class, including known but unsupported scripts such as Cyrillic —
-/// the positive-evidence rule (`MULTILINGUAL.md` §3.2a). Callers realizing wrap
+/// supported class. Latin and Cyrillic both select the narrow/Latin class;
+/// unrecognized scripts have no positive evidence. Callers realizing wrap
 /// punctuation should fall back to the style-declared default via
 /// [`wrap_script_class`] rather than treating `None` as a script itself.
 #[must_use]
@@ -436,7 +438,7 @@ pub fn script_class(lang: Option<&str>) -> Option<ScriptClass> {
         Some("Hani" | "Hans" | "Hant" | "Jpan" | "Kore" | "Hang" | "Bopo") => {
             Some(ScriptClass::Cjk)
         }
-        Some("Latn") => Some(ScriptClass::Latin),
+        Some("Latn" | "Cyrl") => Some(ScriptClass::Latin),
         Some(_) | None => None,
     }
 }
@@ -463,6 +465,7 @@ pub fn wrap_script_class(lang: Option<&str>, default: ScriptClass) -> ScriptClas
     match default {
         ScriptClass::Latin => ScriptClass::Latin,
         ScriptClass::Cjk => script_class(lang).unwrap_or(ScriptClass::Cjk),
+        ScriptClass::Mixed => ScriptClass::Mixed,
     }
 }
 
@@ -490,10 +493,26 @@ pub fn punctuation_realization_context<'a>(
     ScriptClass,
     Option<&'a citum_schema::options::PunctuationRealization>,
 ) {
-    let script = wrap_script_class(lang, realization_default_script_class(multilingual));
-    let key = match script {
+    let legacy_script = wrap_script_class(lang, realization_default_script_class(multilingual));
+    let script = match multilingual.and_then(|config| config.punctuation_width) {
+        Some(citum_schema::options::PunctuationWidth::Half) => ScriptClass::Latin,
+        Some(citum_schema::options::PunctuationWidth::Full) => ScriptClass::Cjk,
+        Some(citum_schema::options::PunctuationWidth::Mixed) => ScriptClass::Mixed,
+        Some(citum_schema::options::PunctuationWidth::Bylan) => {
+            wrap_script_class(lang, ScriptClass::Cjk)
+        }
+        None => legacy_script,
+    };
+    let override_script = script_class(lang).unwrap_or(match script {
+        // `mixed` has no corresponding script override table; CJK owns the
+        // full-width side of its default realization table.
+        ScriptClass::Mixed => ScriptClass::Cjk,
+        script => script,
+    });
+    let key = match override_script {
         ScriptClass::Latin => "latin",
         ScriptClass::Cjk => "cjk",
+        ScriptClass::Mixed => "cjk",
     };
     let realization = multilingual
         .and_then(|config| config.scripts.get(key))

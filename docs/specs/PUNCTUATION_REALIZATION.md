@@ -1,8 +1,8 @@
 # Punctuation Realization Layer Specification
 
 **Status:** Active (increments 1–3 implemented)
-**Version:** 1.6
-**Date:** 2026-07-21
+**Version:** 1.7
+**Date:** 2026-07-22
 **Related:** [`MULTILINGUAL.md`](./MULTILINGUAL.md) §3.2a,
 [`PUNCTUATION_NORMALIZATION.md`](./PUNCTUATION_NORMALIZATION.md),
 [`CALENDAR_DATE_ANNOTATIONS.md`](./CALENDAR_DATE_ANNOTATIONS.md),
@@ -38,8 +38,8 @@ quote movement, and delimiter suppression remain governed by
 [`PUNCTUATION_NORMALIZATION.md`](./PUNCTUATION_NORMALIZATION.md); quote
 *character* selection, which already realizes through locale
 `grammar-options` (`open-quote`/`close-quote`) and is unchanged; bidi
-handling; locale-file participation in realization tables (future work
-gated on per-item locale loading, see
+handling; locale-file participation in realization tables (future work; the
+per-item term-locale foundation is available, see
 [`PER_ITEM_TERM_LOCALE.md`](./PER_ITEM_TERM_LOCALE.md)); and per-segment
 realization inside mixed-script compound citations (`csl26-p05x`).
 
@@ -115,11 +115,11 @@ Notes:
   exactly as for the existing remap (`MULTILINGUAL.md` §3.2a); overrides
   may legitimately carry no-break or narrow no-break spaces inside the
   realization string (a French `colon` as `" : "` with U+00A0/U+202F);
-  and locale-wide spacing *conventions* — the French two-part-punctuation
+and locale-wide spacing *conventions* — the French two-part-punctuation
   spacing rule with its France/Québec variant — stay a locale-typography
   concern tracked as the [`PUNCTUATION_NORMALIZATION.md`](./PUNCTUATION_NORMALIZATION.md)
-  follow-up, becoming expressible here as locale-supplied realization
-  strings once locale participation lands (§4).
+follow-up, tracked as `csl26-w1op` (locale-supplied realization strings,
+§4).
 - `quotes` is deliberately absent: quote glyphs realize through locale
   `grammar-options` today and continue to. A future revision may unify the
   two tables; v1 does not.
@@ -206,11 +206,9 @@ Script classes for v1 are `latin` and `cjk`, matching the existing
 etc. by adding table rows, not mechanism.
 
 Locale files do **not** participate in v1: realization is selected by the
-*item's* script, while locale files are loaded per *style locale*. Once
-per-item locale loading exists
-([`PER_ITEM_TERM_LOCALE.md`](./PER_ITEM_TERM_LOCALE.md)), a locale-supplied
-realization layer between steps 1 and 2 becomes possible and is noted as a
-future extension.
+item's script. Per-item term-locale loading is available
+([`PER_ITEM_TERM_LOCALE.md`](./PER_ITEM_TERM_LOCALE.md)); `csl26-w1op` tracks
+the remaining locale-supplied realization layer between steps 1 and 2.
 
 ### 5. Effective script and the realization default
 
@@ -310,8 +308,8 @@ carry marks as the normalization phase is extracted.
    from literal full-width punctuation to semantic marks +
    `realization-default: cjk`; demote the remap to shim status in docs and
    `MULTILINGUAL.md` §3.2a. Implemented for the GB/T family.
-4. **Future.** Locale-supplied realization (after per-item locale
-   loading); additional script classes (`cyrillic`, `arabic`) with their
+4. **Future.** Locale-supplied realization (`csl26-w1op`); additional script classes
+   (`cyrillic`, `arabic`) with their
    own evidence rules; per-segment realization in mixed-script compound
    citations (`csl26-p05x`); a style-declared punctuation-width preset
    (below), tracked as `csl26-xnu9`.
@@ -331,16 +329,14 @@ domain-expert review of PR #1073
   Korean), half-width for alphabetic-script items (Latin, Cyrillic). Citum's
   current GB/T default (`realization-default: cjk`, §5).
 
-`half`, `full`, and `mixed` are **script-independent** fixed tables: the
-selected width does not vary by item script. `bylan` is the one
-script-*conditional* preset, and it is also the only one the current
-`realization-default` + per-item-evidence mechanism (§5) expresses natively
-— that mechanism only ever overrides *toward* CJK for a style that has
-opted in. Expressing `half`/`full`/`mixed` requires an unconditional
-realization mode that ignores per-item script evidence entirely, which is
-not yet designed. `csl26-xnu9` tracks both this mechanism gap and the
-choice of Citum's target default (`bylan` today vs. the oracle-faithful
-`mixed`).
+`options.multilingual.punctuation-width` selects these tables directly.
+`half`, `full`, and `mixed` are script-independent; `bylan` is
+script-conditional, with CJK as its fallback when evidence is absent or
+unsupported. Cyrillic resolves narrow under `bylan`. Explicit per-script
+`realization` entries override a preset for their named marks. Presets only
+affect the six semantic marks in §2; literal punctuation (including slash and
+hyphen) is never rewritten. Embedded GB/T 7714 styles select `mixed` for
+citeproc-js compatibility.
 
 ## Implementation Notes
 
@@ -390,6 +386,10 @@ Non-normative pointers:
   per-script `realization`; all new public Rust items are documented.
 
 ## Changelog
+
+- v1.7 (2026-07-22): Implemented `punctuation-width` presets and the
+  document/style-overlay configuration path. Settled GB/T on oracle-faithful
+  `mixed`; explicit realizations retain precedence and literals remain fixed.
 
 - v1.6 (2026-07-21): Domain-expert follow-up on v1.5's open question
   (PR #1073, [comment `5032704432`](https://github.com/citum/citum-core/pull/1073#issuecomment-5032704432)).

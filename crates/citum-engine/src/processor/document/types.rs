@@ -107,6 +107,16 @@ pub struct DocumentOrgAbbreviationOverride {
     pub contexts: Option<citum_schema::options::IntegralNameContexts>,
 }
 
+/// Per-document multilingual presentation overrides.
+#[derive(Debug, Clone, Default, Deserialize, Serialize, PartialEq)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "kebab-case", deny_unknown_fields)]
+pub struct DocumentMultilingualOverride {
+    /// Semantic punctuation-width preset for this document.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub punctuation_width: Option<citum_schema::options::PunctuationWidth>,
+}
+
 impl DocumentOrgAbbreviationOverride {
     /// Apply this override to a base org-abbreviation-memory config.
     pub(super) fn apply_to(
@@ -196,6 +206,27 @@ mod tests {
     }
 
     #[test]
+    fn test_document_options_override_applies_punctuation_width() {
+        use super::DocumentOptionsOverride;
+        use citum_schema::Style;
+        use citum_schema::options::PunctuationWidth;
+
+        let parsed: DocumentOptionsOverride =
+            serde_yaml::from_str("multilingual:\n  punctuation-width: mixed\n").unwrap();
+        let mut style: Style = serde_yaml::from_str("info: { id: test, title: Test }").unwrap();
+        parsed.apply_bibliography_to(&mut style);
+        assert_eq!(
+            style
+                .options
+                .unwrap()
+                .multilingual
+                .unwrap()
+                .punctuation_width,
+            Some(PunctuationWidth::Mixed)
+        );
+    }
+
+    #[test]
     fn test_document_options_override_unknown_field_errors() {
         use super::DocumentOptionsOverride;
 
@@ -276,6 +307,9 @@ pub struct DocumentOptionsOverride {
     /// Bibliography presentation overrides.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub bibliography: Option<DocumentBibliographyOverride>,
+    /// Multilingual presentation overrides.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub multilingual: Option<DocumentMultilingualOverride>,
 }
 
 impl DocumentOptionsOverride {
@@ -286,6 +320,16 @@ impl DocumentOptionsOverride {
     /// templates. Locale and integral-name-memory are handled by the pipeline
     /// and CLI layers respectively.
     pub(super) fn apply_bibliography_to(&self, style: &mut Style) {
+        if let Some(multilingual) = &self.multilingual
+            && let Some(width) = multilingual.punctuation_width
+        {
+            style
+                .options
+                .get_or_insert_with(Default::default)
+                .multilingual
+                .get_or_insert_with(Default::default)
+                .punctuation_width = Some(width);
+        }
         let Some(bib_override) = &self.bibliography else {
             return;
         };

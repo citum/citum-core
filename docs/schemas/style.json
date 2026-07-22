@@ -4279,6 +4279,17 @@
           "description": "Script class to realize semantic wrap punctuation (`wrap: parentheses`/`brackets`)\nas, for items with no usable script evidence. Unset defaults to `latin`,\nmatching today's unconditional half-width output. See\n`docs/specs/PUNCTUATION_REALIZATION.md` §5.",
           "$ref": "#/$defs/RealizationDefault"
         },
+        "punctuation-width": {
+          "description": "Named punctuation realization preset. When absent, the legacy\n`realization-default` behavior remains in effect.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PunctuationWidth"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "term-locale": {
           "description": "Whether locale-sensitive term/message/date-pattern lookups (roles,\nlocators, terms, date names and patterns) resolve against the style\nlocale or each item's own effective language. Unset defaults to\n`style`, matching today's behavior byte for byte. Typography\n(`grammar-options`) always stays with the style locale regardless of\nthis setting. See `docs/specs/PER_ITEM_TERM_LOCALE.md`.",
           "$ref": "#/$defs/TermLocale"
@@ -4516,6 +4527,31 @@
           "description": "Untagged items realize full-width CJK delimiters (e.g. GB/T 7714).",
           "type": "string",
           "const": "cjk"
+        }
+      ]
+    },
+    "PunctuationWidth": {
+      "description": "Named table used to realize semantic structural punctuation.",
+      "oneOf": [
+        {
+          "description": "Use ASCII/Narrow punctuation for every item.",
+          "type": "string",
+          "const": "half"
+        },
+        {
+          "description": "Use full-width punctuation for every semantic mark.",
+          "type": "string",
+          "const": "full"
+        },
+        {
+          "description": "Use full-width punctuation except ASCII periods and square brackets.",
+          "type": "string",
+          "const": "mixed"
+        },
+        {
+          "description": "Use full-width punctuation for CJK items and narrow punctuation otherwise.",
+          "type": "string",
+          "const": "bylan"
         }
       ]
     },

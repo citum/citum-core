@@ -39,6 +39,10 @@ pub struct MultilingualConfig {
         skip_serializing_if = "RealizationDefault::is_latin"
     )]
     pub realization_default: RealizationDefault,
+    /// Named punctuation realization preset. When absent, the legacy
+    /// `realization-default` behavior remains in effect.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub punctuation_width: Option<PunctuationWidth>,
     /// Whether locale-sensitive term/message/date-pattern lookups (roles,
     /// locators, terms, date names and patterns) resolve against the style
     /// locale or each item's own effective language. Unset defaults to
@@ -241,6 +245,21 @@ pub enum RealizationDefault {
     Latin,
     /// Untagged items realize full-width CJK delimiters (e.g. GB/T 7714).
     Cjk,
+}
+
+/// Named table used to realize semantic structural punctuation.
+#[derive(Debug, PartialEq, Eq, Clone, Copy, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[serde(rename_all = "kebab-case")]
+pub enum PunctuationWidth {
+    /// Use ASCII/Narrow punctuation for every item.
+    Half,
+    /// Use full-width punctuation for every semantic mark.
+    Full,
+    /// Use full-width punctuation except ASCII periods and square brackets.
+    Mixed,
+    /// Use full-width punctuation for CJK items and narrow punctuation otherwise.
+    Bylan,
 }
 
 impl RealizationDefault {

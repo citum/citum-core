@@ -148,14 +148,14 @@ fn script_class_requires_positive_latin_or_cjk_evidence() {
             "{language}"
         );
     }
-    for language in ["en", "fr-Latn", "sr-Latn"] {
+    for language in ["en", "fr-Latn", "sr-Latn", "ru-RU"] {
         assert_eq!(
             super::script_class(Some(language)),
             Some(super::ScriptClass::Latin),
             "{language}"
         );
     }
-    for language in ["ru-RU", "ar", "he", "el", "", "und", "mul", "zxx"] {
+    for language in ["ar", "he", "el", "", "und", "mul", "zxx"] {
         assert_eq!(super::script_class(Some(language)), None, "{language}");
     }
     assert_eq!(super::script_class(None), None);
@@ -188,7 +188,7 @@ fn wrap_script_class_gates_evidence_override_on_the_declared_default() {
     );
     assert_eq!(
         super::wrap_script_class(Some("ru"), super::ScriptClass::Cjk),
-        super::ScriptClass::Cjk
+        super::ScriptClass::Latin
     );
     assert_eq!(
         super::wrap_script_class(None, super::ScriptClass::Cjk),

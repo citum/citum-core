@@ -280,11 +280,11 @@ fn punctuation_test_book(
 }
 
 #[test]
-fn given_gb_t_numeric_style_when_rendering_latin_script_book_then_delimiters_are_latin_punctuation()
-{
+fn given_gb_t_numeric_style_when_rendering_latin_script_book_then_delimiters_follow_mixed_punctuation()
+ {
     announce_behavior(
-        "GB/T 7714 numeric renders Latin-script references with Latin punctuation \
-         (`: , ( )`), not the style's CJK-facing full-width delimiters — csl26-fn9x.",
+        "GB/T 7714 numeric uses the mixed preset for Latin-script references: \
+         full-width comma, colon, and parentheses while period and brackets stay narrow.",
     );
     let style = citum_schema::embedded::get_embedded_style("gb-t-7714-2025-numeric")
         .expect("gb-t-7714-2025-numeric should be embedded")
@@ -306,7 +306,7 @@ fn given_gb_t_numeric_style_when_rendering_latin_script_book_then_delimiters_are
 
     assert_eq!(
         rendered,
-        "[1]AI and the future of banking[M]. New York: Wiley, 1988"
+        "[1]AI and the future of banking[M]. New York：Wiley，1988"
     );
 }
 
@@ -373,7 +373,7 @@ fn english_article_journal_falls_back_to_section_type_variant() {
 
     assert_eq!(
         rendered,
-        "[1]Coffee drinking and cancer of the pancreas[J]. Br Med J, 1981, 283(6292): 628"
+        "[1]Coffee drinking and cancer of the pancreas[J]. Br Med J，1981，283（6292）：628"
     );
 }
 
@@ -624,6 +624,90 @@ bibliography:
 "#;
 
     assert_eq!(render_realization_group(style, "zh"), "(Left, Right)");
+}
+
+#[rstest::rstest]
+#[case::half("half", "zh", "Left, Right. ")]
+#[case::full("full", "en", "Left，Right。")]
+#[case::mixed("mixed", "zh", "Left，Right. ")]
+#[case::bylan_cjk("bylan", "zh", "Left，Right。")]
+#[case::bylan_latin("bylan", "en", "Left, Right. ")]
+#[case::bylan_cyrillic("bylan", "ru", "Left, Right. ")]
+fn punctuation_width_presets_realize_semantic_marks(
+    #[case] width: &str,
+    #[case] language: &str,
+    #[case] expected: &str,
+) {
+    let style = format!(
+        r#"
+info: {{ id: punctuation-width-{width}, title: Punctuation Width }}
+options:
+  multilingual:
+    punctuation-width: {width}
+bibliography:
+  template:
+    - group:
+        - variable: publisher-place
+        - variable: publisher
+      delimiter: {{ mark: comma }}
+      suffix: {{ mark: period }}
+"#
+    );
+    assert_eq!(render_realization_group(&style, language), expected);
+}
+
+#[test]
+fn punctuation_width_presets_preserve_literal_punctuation_and_allow_realization_overrides() {
+    let style = r#"
+info: { id: punctuation-width-override, title: Punctuation Width Override }
+options:
+  multilingual:
+    punctuation-width: full
+    scripts:
+      cjk:
+        realization:
+          comma: "、"
+bibliography:
+  template:
+    - group:
+        - variable: publisher-place
+        - variable: publisher
+      delimiter: { mark: comma }
+      suffix: "/-"
+"#;
+    assert_eq!(render_realization_group(style, "zh"), "Left、Right/-");
+}
+
+#[test]
+fn punctuation_width_uses_effective_default_for_untagged_override_selection() {
+    let style: Style = serde_yaml::from_str(
+        r#"
+info: { id: punctuation-width-untagged-override, title: Punctuation Width }
+options:
+  multilingual:
+    punctuation-width: half
+    scripts:
+      latin:
+        realization:
+          comma: "|"
+bibliography:
+  template:
+    - group:
+        - variable: publisher-place
+        - variable: publisher
+      delimiter: { mark: comma }
+"#,
+    )
+    .expect("untagged override style should parse");
+    let bibliography = IndexMap::from([(
+        "untagged-book".to_string(),
+        punctuation_test_book("untagged-book", "Untitled", "und", "Left", "Right"),
+    )]);
+
+    assert_eq!(
+        Processor::new(style, bibliography).render_bibliography(),
+        "Left|Right"
+    );
 }
 
 fn render_contributor_delimiter(style_yaml: &str, language: &str) -> String {
