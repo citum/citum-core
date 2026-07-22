@@ -210,6 +210,46 @@ impl Locale {
             })
             .clone()
     }
+
+    /// Build a rendering locale that speaks `item`'s terms, roles, locators,
+    /// messages, and date names/patterns inside `self`'s (the style's)
+    /// typography and identity.
+    ///
+    /// This is the `options.multilingual.term-locale: item` hybrid: "terms
+    /// are the item speaking; typography is the document speaking" (see
+    /// `docs/specs/PER_ITEM_TERM_LOCALE.md` §4). The field list is written
+    /// out explicitly, not built by cloning `self` and overwriting a few
+    /// fields, so that a field added to `Locale` later must be placed on one
+    /// side of the split deliberately rather than silently inheriting the
+    /// wrong one.
+    #[must_use]
+    pub fn with_term_surfaces_from(&self, item: &Locale) -> Locale {
+        Locale {
+            // Identity and typography: stay with the style locale. The id
+            // is also read as a data-translation target (multilingual
+            // titles/archive names) and for term-casing tailoring; both
+            // uses are out of scope for this switch (§4).
+            locale: self.locale.clone(),
+            punctuation_in_quote: self.punctuation_in_quote,
+            sort_articles: self.sort_articles.clone(),
+            locale_schema_version: self.locale_schema_version.clone(),
+            number_formats: self.number_formats.clone(),
+            grammar_options: self.grammar_options.clone(),
+            // Word and date surfaces: switch to the item locale.
+            dates: item.dates.clone(),
+            roles: item.roles.clone(),
+            role_combinations: item.role_combinations.clone(),
+            locators: item.locators.clone(),
+            terms: item.terms.clone(),
+            evaluation: item.evaluation.clone(),
+            messages: item.messages.clone(),
+            date_formats: item.date_formats.clone(),
+            legacy_term_aliases: item.legacy_term_aliases.clone(),
+            vocab: item.vocab.clone(),
+            type_terms: item.type_terms.clone(),
+            evaluator: item.evaluator.clone(),
+        }
+    }
 }
 
 #[cfg(test)]
