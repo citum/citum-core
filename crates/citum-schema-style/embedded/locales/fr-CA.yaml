@@ -1,0 +1,32 @@
+locale-schema-version: "2"
+locale: fr-CA
+# Québec French retains the no-break space before a colon but uses ordinary
+# semicolon spacing. The embedded loader inherits all lexical data from fr-FR.
+punctuation-realization:
+  colon: " : "
+  semicolon: "; "
+
+date-formats:
+  numeric-short: "d/M/yyyy"
+  textual-long: "MMMM yyyy"
+  textual-full: "d MMMM yyyy"
+  bib-default: "d MMMM yyyy"
+  year-only: "yyyy"
+  iso: "yyyy-MM-dd"
+
+grammar-options:
+  punctuation-in-quote: false
+  nbsp-before-colon: true
+  open-quote: "«"
+  close-quote: "»"
+  open-inner-quote: "“"
+  close-inner-quote: "”"
+  serial-comma: false
+  page-range-delimiter: "‑"
+  title-subtitle-delimiter: " : "
+  subtitle-delimiter: " ; "
+  strong-terminal-comma-policy: keep-terminal
+  delimiter-suppressing-terminal-marks: "?!…"
+  note-punctuation: adaptive
+  note-number: same
+  note-marker-order: before

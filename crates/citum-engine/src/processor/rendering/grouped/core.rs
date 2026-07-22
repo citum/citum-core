@@ -390,8 +390,15 @@ impl Renderer<'_> {
                 let (script, realization) = crate::values::punctuation_realization_context(
                     crate::values::effective_item_language(first_ref).as_deref(),
                     self.config.multilingual.as_ref(),
+                    self.locale.punctuation_realization.as_ref(),
                 );
-                Some(fmt.wrap_punctuation(wrap_punct, inner, &marks, script, realization))
+                Some(fmt.wrap_punctuation(
+                    wrap_punct,
+                    inner,
+                    &marks,
+                    script,
+                    realization.as_deref(),
+                ))
             } else {
                 None
             };
@@ -559,9 +566,15 @@ impl Renderer<'_> {
             let (script, realization) = crate::values::punctuation_realization_context(
                 crate::values::effective_item_language(state.reference).as_deref(),
                 self.config.multilingual.as_ref(),
+                self.locale.punctuation_realization.as_ref(),
             );
             let (mut filtered_template, leading_affix, strip_item_delimiter) =
-                filter_author_from_template::<F>(&state.template, script, realization, fmt);
+                filter_author_from_template::<F>(
+                    &state.template,
+                    script,
+                    realization.as_deref(),
+                    fmt,
+                );
             if collapse_group {
                 if index == 0 {
                     // Capture the full WrapConfig from the first remaining component
@@ -1158,9 +1171,7 @@ impl Renderer<'_> {
             config: Some(ctx.options.config.clone()),
             bibliography_config: ctx.options.bibliography_config.clone(),
             item_language,
-            quote_marks: crate::render::format::QuoteMarks::from(
-                &ctx.options.locale.grammar_options,
-            ),
+            quote_marks: crate::render::format::QuoteMarks::from(ctx.options.locale),
             sentence_initial: false,
             pre_formatted: values.pre_formatted,
         })
@@ -1194,11 +1205,12 @@ impl Renderer<'_> {
         let (script, realization) = crate::values::punctuation_realization_context(
             crate::values::effective_item_language(ctx.reference).as_deref(),
             ctx.options.config.multilingual.as_ref(),
+            ctx.options.locale.punctuation_realization.as_ref(),
         );
         let delimiter = crate::render::format::realize_punctuation(
             punctuation,
             script,
-            realization,
+            realization.as_deref(),
             crate::render::format::PunctuationPosition::Separator,
         );
         let delimiter = if punctuation.is_semantic() {
@@ -1222,9 +1234,7 @@ impl Renderer<'_> {
                 ctx.reference,
                 &group_component,
             ),
-            quote_marks: crate::render::format::QuoteMarks::from(
-                &ctx.options.locale.grammar_options,
-            ),
+            quote_marks: crate::render::format::QuoteMarks::from(ctx.options.locale),
             sentence_initial: false,
             pre_formatted: true,
         })

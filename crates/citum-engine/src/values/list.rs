@@ -50,9 +50,7 @@ impl ComponentValues for TemplateGroup {
                 config: Some(options.config.clone()),
                 bibliography_config: options.bibliography_config.clone(),
                 item_language: crate::values::effective_component_language(reference, item),
-                quote_marks: crate::render::format::QuoteMarks::from(
-                    &options.locale.grammar_options,
-                ),
+                quote_marks: crate::render::format::QuoteMarks::from(options.locale),
                 sentence_initial: false,
                 pre_formatted: v.pre_formatted,
             };
@@ -77,11 +75,12 @@ impl ComponentValues for TemplateGroup {
         let (script, realization) = crate::values::punctuation_realization_context(
             crate::values::effective_item_language(reference).as_deref(),
             options.config.multilingual.as_ref(),
+            options.locale.punctuation_realization.as_ref(),
         );
         let delimiter = crate::render::format::realize_punctuation(
             punctuation,
             script,
-            realization,
+            realization.as_deref(),
             crate::render::format::PunctuationPosition::Separator,
         );
 

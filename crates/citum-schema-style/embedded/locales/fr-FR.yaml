@@ -911,6 +911,10 @@ date-formats:
   year-only: "yyyy"
   iso: "yyyy-MM-dd"
 
+punctuation-realization:
+  colon: " : "
+  semicolon: " ; "
+
 grammar-options:
   punctuation-in-quote: false
   nbsp-before-colon: true

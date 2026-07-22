@@ -95,6 +95,9 @@ pub struct Locale {
     /// Grammar options.
     #[serde(default)]
     pub grammar_options: GrammarOptions,
+    /// Partial semantic punctuation realization table owned by this locale.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub punctuation_realization: Option<crate::options::PunctuationRealization>,
     /// Backwards-compatibility aliases: old term key → new message ID.
     #[serde(default, skip_serializing_if = "HashMap::is_empty")]
     pub legacy_term_aliases: HashMap<String, String>,
@@ -136,6 +139,7 @@ impl Default for Locale {
             date_formats: HashMap::default(),
             number_formats: NumberFormats::default(),
             grammar_options: GrammarOptions::default(),
+            punctuation_realization: None,
             legacy_term_aliases: HashMap::default(),
             vocab: VocabMap::default(),
             type_terms: HashMap::default(),
@@ -161,6 +165,7 @@ impl fmt::Debug for Locale {
             .field("date_formats", &self.date_formats)
             .field("number_formats", &self.number_formats)
             .field("grammar_options", &self.grammar_options)
+            .field("punctuation_realization", &self.punctuation_realization)
             .field("legacy_term_aliases", &self.legacy_term_aliases)
             .field("vocab", &self.vocab)
             .field("type_terms", &self.type_terms)
@@ -211,6 +216,35 @@ impl Locale {
             .clone()
     }
 
+    /// Create the Québec French locale by applying its regional typography to
+    /// the bundled French lexical locale.
+    ///
+    /// # Panics
+    ///
+    /// Panics if either embedded French locale asset fails to parse, which
+    /// indicates a broken build rather than invalid runtime input.
+    #[allow(
+        clippy::expect_used,
+        reason = "Embedded French locale assets must parse; failure indicates a broken build"
+    )]
+    #[must_use]
+    pub fn fr_ca() -> Self {
+        let mut french = Self::from_yaml_str(include_str!("../../embedded/locales/fr-FR.yaml"))
+            .expect("embedded fr-FR.yaml parses");
+        let raw: RawLocale =
+            serde_yaml::from_str(include_str!("../../embedded/locales/fr-CA.yaml"))
+                .expect("embedded fr-CA.yaml parses");
+        french.locale = raw.locale;
+        french.locale_schema_version = raw.locale_schema_version;
+        french.date_formats.extend(raw.date_formats);
+        if let Some(grammar_options) = raw.grammar_options {
+            french.punctuation_in_quote = grammar_options.punctuation_in_quote;
+            french.grammar_options = grammar_options;
+        }
+        french.punctuation_realization = raw.punctuation_realization;
+        french
+    }
+
     /// Build a rendering locale that speaks `item`'s terms, roles, locators,
     /// messages, and date names/patterns inside `self`'s (the style's)
     /// typography and identity.
@@ -235,6 +269,7 @@ impl Locale {
             locale_schema_version: self.locale_schema_version.clone(),
             number_formats: self.number_formats.clone(),
             grammar_options: self.grammar_options.clone(),
+            punctuation_realization: item.punctuation_realization.clone(),
             // Word and date surfaces: switch to the item locale.
             dates: item.dates.clone(),
             roles: item.roles.clone(),
@@ -301,6 +336,42 @@ mod tests {
         assert_eq!(locale.locale, "en-US");
         assert_eq!(locale.dates.months.long[0], "January");
         assert_eq!(locale.terms.and.as_ref().unwrap(), "and");
+    }
+
+    #[test]
+    fn locale_punctuation_realization_deserializes_as_a_partial_table() {
+        let locale = Locale::from_yaml_str(
+            r#"
+locale: test
+punctuation-realization:
+  colon: "\u00A0: "
+"#,
+        )
+        .expect("locale punctuation realization should parse");
+
+        let realization = locale
+            .punctuation_realization
+            .expect("locale punctuation realization should be present");
+        assert_eq!(realization.colon.as_deref(), Some("\u{a0}: "));
+        assert_eq!(realization.semicolon, None);
+    }
+
+    #[test]
+    fn fr_ca_inherits_french_lexical_data_and_overrides_punctuation_realization() {
+        let locale = Locale::fr_ca();
+
+        assert_eq!(locale.locale, "fr-CA");
+        assert_eq!(
+            locale.dates.months.long.first().map(String::as_str),
+            Some("janvier")
+        );
+        assert_eq!(
+            locale
+                .punctuation_realization
+                .as_ref()
+                .and_then(|table| table.semicolon.as_deref()),
+            Some("; ")
+        );
     }
 
     #[test]

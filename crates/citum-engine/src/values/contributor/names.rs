@@ -356,11 +356,12 @@ fn resolve_contributor_delimiter(
     let (script, realization) = crate::values::punctuation_realization_context(
         item_language,
         options.config.multilingual.as_ref(),
+        options.locale.punctuation_realization.as_ref(),
     );
     crate::render::format::realize_punctuation(
         punctuation,
         script,
-        realization,
+        realization.as_deref(),
         crate::render::format::PunctuationPosition::Separator,
     )
     .into_owned()

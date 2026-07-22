@@ -157,11 +157,14 @@ impl Processor {
             .delimiter
             .as_ref()
             .map(|punctuation| {
-                crate::render::format::realize_punctuation(
-                    punctuation,
-                    script,
-                    realization,
-                    crate::render::format::PunctuationPosition::Separator,
+                Cow::Owned(
+                    crate::render::format::realize_punctuation(
+                        punctuation,
+                        script,
+                        realization.as_deref(),
+                        crate::render::format::PunctuationPosition::Separator,
+                    )
+                    .into_owned(),
                 )
             })
             .unwrap_or(Cow::Borrowed(", "));
@@ -169,11 +172,14 @@ impl Processor {
             .multi_cite_delimiter
             .as_ref()
             .map(|punctuation| {
-                crate::render::format::realize_punctuation(
-                    punctuation,
-                    script,
-                    realization,
-                    crate::render::format::PunctuationPosition::Separator,
+                Cow::Owned(
+                    crate::render::format::realize_punctuation(
+                        punctuation,
+                        script,
+                        realization.as_deref(),
+                        crate::render::format::PunctuationPosition::Separator,
+                    )
+                    .into_owned(),
                 )
             })
             .unwrap_or(Cow::Borrowed("; "));
@@ -566,7 +572,7 @@ impl Processor {
                 crate::render::format::realize_punctuation(
                     punctuation,
                     script,
-                    realization,
+                    realization.as_deref(),
                     crate::render::format::PunctuationPosition::Prefix,
                 )
             })
@@ -578,7 +584,7 @@ impl Processor {
                 crate::render::format::realize_punctuation(
                     punctuation,
                     script,
-                    realization,
+                    realization.as_deref(),
                     crate::render::format::PunctuationPosition::Suffix,
                 )
             })
@@ -618,7 +624,7 @@ impl Processor {
                 inner_wrapped,
                 &marks,
                 script,
-                realization,
+                realization.as_deref(),
             )
         } else if !spec_prefix.is_empty() || !spec_suffix.is_empty() {
             crate::render::format::apply_punctuation_affixes(
@@ -673,7 +679,7 @@ impl Processor {
         citation: &Citation,
     ) -> (
         crate::values::ScriptClass,
-        Option<&citum_schema::options::PunctuationRealization>,
+        Option<Cow<'_, citum_schema::options::PunctuationRealization>>,
     ) {
         let lang = citation.items.first().and_then(|item| {
             self.bibliography
@@ -683,6 +689,7 @@ impl Processor {
         crate::values::punctuation_realization_context(
             lang.as_deref(),
             self.get_config().multilingual.as_ref(),
+            self.locale.punctuation_realization.as_ref(),
         )
     }
 

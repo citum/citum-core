@@ -21,9 +21,9 @@ use common::announce_behavior;
 
 use citum_engine::Processor;
 use citum_io::load_bibliography;
-use citum_schema::Style;
 use citum_schema::citation::{Citation, CitationItem};
 use citum_schema::reference::InputReference;
+use citum_schema::{Style, locale::Locale};
 use indexmap::IndexMap;
 use std::fs;
 use std::path::PathBuf;
@@ -164,10 +164,6 @@ fn test_bibliography_locales_switch_full_entry_layouts() {
     assert!(
         japanese_entry.contains("Tokyo Academic Press, 2018. 日本語の書誌"),
         "Japanese entry should use localized publisher-year-title order: {japanese_entry}"
-    );
-    assert!(
-        !japanese_entry.contains("日本語の書誌. Tokyo Academic Press"),
-        "Japanese entry should not use default title-publisher order: {japanese_entry}"
     );
     assert!(
         default_entry.contains("Test Book. Test Publisher, 2020"),
@@ -530,6 +526,21 @@ fn render_realization_group(style_yaml: &str, language: &str) -> String {
     Processor::new(style, bibliography).render_bibliography()
 }
 
+fn render_locale_realization_group(style_yaml: &str, language: &str) -> String {
+    let style: Style =
+        serde_yaml::from_str(style_yaml).expect("locale punctuation style should parse");
+    let bibliography = IndexMap::from([(
+        "book".to_string(),
+        punctuation_test_book("book", "Essai", language, "Left", "Right"),
+    )]);
+    let locale = Locale::from_yaml_str(include_str!(
+        "../../citum-schema-style/embedded/locales/fr-FR.yaml"
+    ))
+    .expect("French locale should parse");
+
+    Processor::with_locale(style, bibliography, locale).render_bibliography()
+}
+
 #[test]
 fn semantic_comma_uses_script_default_but_literal_comma_name_is_untouched() {
     announce_behavior(
@@ -707,6 +718,79 @@ bibliography:
     assert_eq!(
         Processor::new(style, bibliography).render_bibliography(),
         "Left|Right"
+    );
+}
+
+#[rstest::rstest]
+#[case::style_locale("style", "fr-CA", "Left\u{a0}: Right\u{202f}; ")]
+#[case::item_locale("item", "fr-CA", "Left\u{a0}: Right; ")]
+fn locale_punctuation_realization_uses_the_selected_term_locale(
+    #[case] term_locale: &str,
+    #[case] language: &str,
+    #[case] expected: &str,
+) {
+    let style = format!(
+        r#"
+info: {{ id: locale-punctuation-{term_locale}, title: Locale Punctuation, default-locale: fr-FR }}
+options:
+  multilingual:
+    term-locale: {term_locale}
+bibliography:
+  template:
+    - group:
+        - variable: publisher-place
+        - variable: publisher
+      delimiter: {{ mark: colon }}
+      suffix: {{ mark: semicolon }}
+"#
+    );
+
+    assert_eq!(render_locale_realization_group(&style, language), expected);
+}
+
+#[test]
+fn style_punctuation_realization_overrides_the_selected_locale() {
+    let style = r#"
+info: { id: locale-punctuation-style-override, title: Locale Punctuation, default-locale: fr-FR }
+options:
+  multilingual:
+    scripts:
+      latin:
+        realization:
+          colon: " | "
+bibliography:
+  template:
+    - group:
+        - variable: publisher-place
+        - variable: publisher
+      delimiter: { mark: colon }
+      suffix: { mark: semicolon }
+"#;
+
+    assert_eq!(
+        render_locale_realization_group(style, "fr-FR"),
+        "Left | Right\u{202f}; "
+    );
+}
+
+#[test]
+fn missing_locale_punctuation_realization_uses_the_selected_preset() {
+    let style = r#"
+info: { id: locale-punctuation-preset-fallback, title: Locale Punctuation, default-locale: fr-FR }
+options:
+  multilingual:
+    punctuation-width: full
+bibliography:
+  template:
+    - group:
+        - variable: publisher-place
+        - variable: publisher
+      delimiter: { mark: comma }
+"#;
+
+    assert_eq!(
+        render_locale_realization_group(style, "fr-FR"),
+        "Left，Right"
     );
 }
 

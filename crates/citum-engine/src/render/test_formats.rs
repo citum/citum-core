@@ -162,6 +162,7 @@ mod tests {
             close: "»".to_string(),
             open_inner: "‹".to_string(),
             close_inner: "›".to_string(),
+            punctuation_realization: None,
         };
 
         assert_eq!(

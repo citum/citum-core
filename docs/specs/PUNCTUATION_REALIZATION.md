@@ -1,7 +1,7 @@
 # Punctuation Realization Layer Specification
 
-**Status:** Active (increments 1–3 implemented)
-**Version:** 1.7
+**Status:** Active (increments 1–4 implemented)
+**Version:** 1.8
 **Date:** 2026-07-22
 **Related:** [`MULTILINGUAL.md`](./MULTILINGUAL.md) §3.2a,
 [`PUNCTUATION_NORMALIZATION.md`](./PUNCTUATION_NORMALIZATION.md),
@@ -9,7 +9,8 @@
 [2026-07-18 multilingual architecture audit](../architecture/audits/2026-07-18_MULTILINGUAL_ARCHITECTURE_AUDIT.md)
 §5; beans `csl26-k2kp` (this feature, whose first increment absorbs the
 retired draft bean `csl26-kneq`), `csl26-30ga` (script resolution
-prerequisite), `csl26-fn9x` (the original remap), `csl26-p05x`
+prerequisite), `csl26-fn9x` (the original remap), `csl26-w1op`
+(locale realization), `csl26-p05x`
 (mixed-script cluster follow-up)
 
 ## Purpose
@@ -192,23 +193,31 @@ class `S`:
              brackets: [ "〔", "〕" ]   # style prefers hollow brackets
    ```
 
-2. **Engine default table** — the table in §2, keyed by script class.
+2. **Effective locale realization** — an optional partial
+   `punctuation-realization` table on the locale selected for this reference.
+   Under `term-locale: style` this is the style locale; under
+   `term-locale: item` it is the item locale. Locale tables fill only their
+   named marks.
+
+3. **Engine default table** — the selected punctuation-width preset or the
+   table in §2, keyed by script class.
 
 The order embodies authority: the published style guide is sovereign. The
 engine default table is *informed by* CLDR and general typographic
 convention but is not bound to either, and a style override always wins —
 codifying, for example, GB/T 7714's own delimiter rules over any general
-CJK convention. When locale participation is added later (below), locale
-realizations slot between the two: style over locale over engine default.
+CJK convention. Locale realization owns regional spacing conventions without
+overriding the published style guide: style over locale over preset/engine
+default.
 
 Script classes for v1 are `latin` and `cjk`, matching the existing
 `scripts.<script>` key set; the design extends to `cyrillic`, `arabic`,
 etc. by adding table rows, not mechanism.
 
-Locale files do **not** participate in v1: realization is selected by the
-item's script. Per-item term-locale loading is available
-([`PER_ITEM_TERM_LOCALE.md`](./PER_ITEM_TERM_LOCALE.md)); `csl26-w1op` tracks
-the remaining locale-supplied realization layer between steps 1 and 2.
+Locale tables participate in increment 4. The bundled `fr-FR` locale realizes
+colon with NBSP and semicolon with narrow-NBSP; the `fr-CA` locale retains the
+colon NBSP but uses ordinary semicolon spacing. Quote-glyph selection and
+punctuation normalization remain separate concerns.
 
 ### 5. Effective script and the realization default
 
@@ -386,6 +395,11 @@ Non-normative pointers:
   per-script `realization`; all new public Rust items are documented.
 
 ## Changelog
+
+- v1.8 (2026-07-22): Implemented locale-supplied partial realization tables
+  (`csl26-w1op`) between style overrides and preset/engine defaults. Added
+  bundled France and Québec French spacing variants, with the selected
+  term-locale determining the effective table.
 
 - v1.7 (2026-07-22): Implemented `punctuation-width` presets and the
   document/style-overlay configuration path. Settled GB/T on oracle-faithful

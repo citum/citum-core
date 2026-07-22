@@ -28,13 +28,7 @@ fn embedded_render_locales() -> &'static HashMap<String, Locale> {
     LOCALES.get_or_init(|| {
         let mut locales = HashMap::new();
         for id in citum_schema::embedded::EMBEDDED_LOCALE_IDS {
-            let Some(bytes) = citum_schema::embedded::get_locale_bytes(id) else {
-                continue;
-            };
-            let Ok(yaml) = std::str::from_utf8(bytes) else {
-                continue;
-            };
-            let Ok(locale) = Locale::from_yaml_str(yaml) else {
+            let Some(locale) = citum_schema::embedded::get_locale(id) else {
                 continue;
             };
             locales.insert(id.to_ascii_lowercase(), locale);

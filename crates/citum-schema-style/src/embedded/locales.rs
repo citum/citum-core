@@ -9,6 +9,8 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 //! providing locale data when the CLI is invoked with `--builtin` and there
 //! is no `locales/` directory on disk.
 
+use crate::locale::Locale;
+
 /// Raw YAML bytes for an embedded locale by BCP 47 ID.
 ///
 /// Returns `None` for locales not bundled with the binary.
@@ -20,6 +22,7 @@ pub fn get_locale_bytes(id: &str) -> Option<&'static [u8]> {
         "es-ES" => Some(include_bytes!("../../embedded/locales/es-ES.yaml")),
         "eu-ES" => Some(include_bytes!("../../embedded/locales/eu-ES.yaml")),
         "fr-FR" => Some(include_bytes!("../../embedded/locales/fr-FR.yaml")),
+        "fr-CA" => Some(include_bytes!("../../embedded/locales/fr-CA.yaml")),
         "tr-TR" => Some(include_bytes!("../../embedded/locales/tr-TR.yaml")),
         "zh-CN" => Some(include_bytes!("../../embedded/locales/zh-CN.yaml")),
         "ja-JP" => Some(include_bytes!("../../embedded/locales/ja-JP.yaml")),
@@ -29,10 +32,25 @@ pub fn get_locale_bytes(id: &str) -> Option<&'static [u8]> {
     }
 }
 
+/// Load a fully constructed embedded locale by BCP 47 ID.
+///
+/// This accessor applies regional inheritance for bundled locale overlays,
+/// such as Québec French, before returning the locale to callers.
+#[must_use]
+pub fn get_locale(id: &str) -> Option<Locale> {
+    if id == "fr-CA" {
+        return Some(Locale::fr_ca());
+    }
+
+    let bytes = get_locale_bytes(id)?;
+    let yaml = std::str::from_utf8(bytes).ok()?;
+    Locale::from_yaml_str(yaml).ok()
+}
+
 /// All available embedded locale IDs.
 pub const EMBEDDED_LOCALE_IDS: &[&str] = &[
-    "en-US", "ar-AR", "de-DE", "es-ES", "eu-ES", "fr-FR", "tr-TR", "zh-CN", "ja-JP", "ko-KR",
-    "ru-RU",
+    "en-US", "ar-AR", "de-DE", "es-ES", "eu-ES", "fr-FR", "fr-CA", "tr-TR", "zh-CN", "ja-JP",
+    "ko-KR", "ru-RU",
 ];
 
 /// Raw YAML bytes for an embedded locale override by ID.
@@ -52,3 +70,32 @@ pub fn get_locale_override_bytes(id: &str) -> Option<&'static [u8]> {
 
 /// All available embedded locale override IDs.
 pub const EMBEDDED_LOCALE_OVERRIDE_IDS: &[&str] = &["en-US-chicago", "de-DE-chicago"];
+
+#[cfg(test)]
+mod tests {
+    use super::get_locale;
+    use crate::locale::types::TermForm;
+    use crate::template::ContributorRole;
+
+    #[test]
+    #[allow(
+        clippy::expect_used,
+        reason = "The test must fail when the compile-time embedded locale is absent."
+    )]
+    fn fr_ca_embedded_locale_inherits_french_term_surfaces() {
+        let locale = get_locale("fr-CA").expect("fr-CA should be embedded");
+
+        assert_eq!(locale.locale, "fr-CA");
+        assert_eq!(
+            locale.resolved_role_term(&ContributorRole::Editor, false, &TermForm::Short, None),
+            Some("éd.".to_string())
+        );
+        assert_eq!(
+            locale
+                .punctuation_realization
+                .as_ref()
+                .and_then(|realization| realization.semicolon.as_deref()),
+            Some("; ")
+        );
+    }
+}

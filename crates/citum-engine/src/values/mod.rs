@@ -483,15 +483,16 @@ pub fn realization_default_script_class(
     }
 }
 
-/// Resolve the effective script class and style-owned realization overrides for
+/// Resolve the effective script class and punctuation realization overrides for
 /// one item.
 #[must_use]
 pub fn punctuation_realization_context<'a>(
     lang: Option<&str>,
     multilingual: Option<&'a citum_schema::options::MultilingualConfig>,
+    locale_realization: Option<&'a citum_schema::options::PunctuationRealization>,
 ) -> (
     ScriptClass,
-    Option<&'a citum_schema::options::PunctuationRealization>,
+    Option<std::borrow::Cow<'a, citum_schema::options::PunctuationRealization>>,
 ) {
     let legacy_script = wrap_script_class(lang, realization_default_script_class(multilingual));
     let script = match multilingual.and_then(|config| config.punctuation_width) {
@@ -514,10 +515,39 @@ pub fn punctuation_realization_context<'a>(
         ScriptClass::Cjk => "cjk",
         ScriptClass::Mixed => "cjk",
     };
-    let realization = multilingual
+    let style_realization = multilingual
         .and_then(|config| config.scripts.get(key))
         .and_then(|script| script.realization.as_ref());
-    (script, realization)
+    (
+        script,
+        merge_punctuation_realizations(style_realization, locale_realization),
+    )
+}
+
+/// Merge a style-owned table over a locale-owned table, preserving missing
+/// marks for the engine's selected default realization.
+fn merge_punctuation_realizations<'a>(
+    style: Option<&'a citum_schema::options::PunctuationRealization>,
+    locale: Option<&'a citum_schema::options::PunctuationRealization>,
+) -> Option<std::borrow::Cow<'a, citum_schema::options::PunctuationRealization>> {
+    match (style, locale) {
+        (None, None) => None,
+        (Some(style), None) => Some(std::borrow::Cow::Borrowed(style)),
+        (None, Some(locale)) => Some(std::borrow::Cow::Borrowed(locale)),
+        (Some(style), Some(locale)) => Some(std::borrow::Cow::Owned(
+            citum_schema::options::PunctuationRealization {
+                comma: style.comma.clone().or_else(|| locale.comma.clone()),
+                colon: style.colon.clone().or_else(|| locale.colon.clone()),
+                semicolon: style.semicolon.clone().or_else(|| locale.semicolon.clone()),
+                period: style.period.clone().or_else(|| locale.period.clone()),
+                parentheses: style
+                    .parentheses
+                    .clone()
+                    .or_else(|| locale.parentheses.clone()),
+                brackets: style.brackets.clone().or_else(|| locale.brackets.clone()),
+            },
+        )),
+    }
 }
 
 /// Select a structured name from transliteration maps using priority-list then script-match rules.

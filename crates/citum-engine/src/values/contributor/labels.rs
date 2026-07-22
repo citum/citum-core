@@ -269,8 +269,10 @@ pub(super) fn realize_label_affix(
     let (script, realization) = crate::values::punctuation_realization_context(
         item_language,
         options.config.multilingual.as_ref(),
+        options.locale.punctuation_realization.as_ref(),
     );
-    crate::render::format::realize_punctuation(affix, script, realization, position).into_owned()
+    crate::render::format::realize_punctuation(affix, script, realization.as_deref(), position)
+        .into_owned()
 }
 
 /// Place an already-resolved term using an explicit role-label configuration.

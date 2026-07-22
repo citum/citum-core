@@ -169,6 +169,8 @@ pub struct QuoteMarks {
     pub open_inner: String,
     /// Closing inner (nested) quotation mark.
     pub close_inner: String,
+    /// Semantic punctuation realization table from the active locale.
+    pub punctuation_realization: Option<citum_schema::options::PunctuationRealization>,
 }
 
 impl QuoteMarks {
@@ -195,6 +197,7 @@ impl Default for QuoteMarks {
             close: close.to_string(),
             open_inner: open_inner.to_string(),
             close_inner: close_inner.to_string(),
+            punctuation_realization: None,
         }
     }
 }
@@ -206,6 +209,19 @@ impl From<&GrammarOptions> for QuoteMarks {
             close: options.close_quote.clone(),
             open_inner: options.open_inner_quote.clone(),
             close_inner: options.close_inner_quote.clone(),
+            punctuation_realization: None,
+        }
+    }
+}
+
+impl From<&citum_schema::locale::Locale> for QuoteMarks {
+    fn from(locale: &citum_schema::locale::Locale) -> Self {
+        Self {
+            open: locale.grammar_options.open_quote.clone(),
+            close: locale.grammar_options.close_quote.clone(),
+            open_inner: locale.grammar_options.open_inner_quote.clone(),
+            close_inner: locale.grammar_options.close_inner_quote.clone(),
+            punctuation_realization: locale.punctuation_realization.clone(),
         }
     }
 }

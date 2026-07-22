@@ -119,7 +119,7 @@ fn render_message_arg<F: crate::render::format::OutputFormat<Output = String>>(
         config: Some(options.config.clone()),
         bibliography_config: options.bibliography_config.clone(),
         item_language: crate::values::effective_component_language(reference, &component),
-        quote_marks: crate::render::format::QuoteMarks::from(&options.locale.grammar_options),
+        quote_marks: crate::render::format::QuoteMarks::from(options.locale),
         sentence_initial: false,
         pre_formatted: values.pre_formatted,
     };

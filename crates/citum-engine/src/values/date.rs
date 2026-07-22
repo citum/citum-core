@@ -424,8 +424,15 @@ fn append_note<F: crate::render::format::OutputFormat<Output = String>>(
     let (script, realization) = crate::values::punctuation_realization_context(
         item_language.as_deref(),
         options.config.multilingual.as_ref(),
+        options.locale.punctuation_realization.as_ref(),
     );
-    let wrapped = fmt.wrap_punctuation(&wrap.punctuation, content, &marks, script, realization);
+    let wrapped = fmt.wrap_punctuation(
+        &wrap.punctuation,
+        content,
+        &marks,
+        script,
+        realization.as_deref(),
+    );
     format!("{formatted}{wrapped}")
 }
 
@@ -791,18 +798,20 @@ fn apply_fallback_component_rendering<F: crate::render::format::OutputFormat<Out
         let (script, realization) = crate::values::punctuation_realization_context(
             crate::values::effective_item_language(reference).as_deref(),
             options.config.multilingual.as_ref(),
+            options.locale.punctuation_realization.as_ref(),
         );
         output = fmt.wrap_punctuation(
             &wrap_config.punctuation,
             output,
             &crate::render::format::QuoteMarks::default(),
             script,
-            realization,
+            realization.as_deref(),
         );
     }
     let (script, realization) = crate::values::punctuation_realization_context(
         crate::values::effective_item_language(reference).as_deref(),
         options.config.multilingual.as_ref(),
+        options.locale.punctuation_realization.as_ref(),
     );
     let prefix = rendering
         .prefix
@@ -811,7 +820,7 @@ fn apply_fallback_component_rendering<F: crate::render::format::OutputFormat<Out
             crate::render::format::realize_punctuation(
                 punctuation,
                 script,
-                realization,
+                realization.as_deref(),
                 crate::render::format::PunctuationPosition::Prefix,
             )
         })
@@ -823,7 +832,7 @@ fn apply_fallback_component_rendering<F: crate::render::format::OutputFormat<Out
             crate::render::format::realize_punctuation(
                 punctuation,
                 script,
-                realization,
+                realization.as_deref(),
                 crate::render::format::PunctuationPosition::Suffix,
             )
         })
