@@ -210,8 +210,9 @@ pub fn render_component_with_format_and_renderer<F: OutputFormat<Output = String
     let (script, realization) = crate::values::punctuation_realization_context(
         component.item_language.as_deref(),
         multilingual,
+        component.quote_marks.punctuation_realization.as_ref(),
     );
-    let (prefix, suffix) = realized_component_affixes(&rendering, script, realization);
+    let (prefix, suffix) = realized_component_affixes(&rendering, script, realization.as_deref());
     let inner_prefix = rendering
         .wrap
         .as_ref()
@@ -280,7 +281,7 @@ pub fn render_component_with_format_and_renderer<F: OutputFormat<Output = String
             output,
             &component.quote_marks,
             script,
-            realization,
+            realization.as_deref(),
         );
     }
 

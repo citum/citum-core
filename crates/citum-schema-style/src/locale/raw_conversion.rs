@@ -173,6 +173,7 @@ impl Locale {
             locale.grammar_options.punctuation_in_quote = locale.punctuation_in_quote;
         }
         locale.punctuation_in_quote = locale.grammar_options.punctuation_in_quote;
+        locale.punctuation_realization = raw.punctuation_realization;
 
         if let Some(nf) = raw.number_formats {
             locale.number_formats = nf;

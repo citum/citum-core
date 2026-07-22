@@ -144,13 +144,8 @@ impl StyleResolver for EmbeddedResolver {
     }
 
     fn resolve_locale(&self, id: &str) -> Result<Locale, ResolverError> {
-        if let Some(bytes) = citum_schema::embedded::get_locale_bytes(id) {
-            let content = String::from_utf8_lossy(bytes);
-            Locale::from_yaml_str(&content)
-                .map_err(|e| ResolverError::YamlError(ToString::to_string(&e)))
-        } else {
-            Err(ResolverError::LocaleNotFound(Cow::Owned(id.to_string())))
-        }
+        citum_schema::embedded::get_locale(id)
+            .ok_or_else(|| ResolverError::LocaleNotFound(Cow::Owned(id.to_string())))
     }
 }
 

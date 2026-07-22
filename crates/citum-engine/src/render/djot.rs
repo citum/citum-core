@@ -246,6 +246,7 @@ mod tests {
             close: "\u{bb}".to_string(),
             open_inner: "\u{2039}".to_string(),
             close_inner: "\u{203a}".to_string(),
+            punctuation_realization: None,
         };
 
         assert_eq!(fmt.quote("text".to_string(), &marks), "\u{ab}text\u{bb}");

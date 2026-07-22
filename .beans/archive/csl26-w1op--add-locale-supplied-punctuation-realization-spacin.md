@@ -1,7 +1,7 @@
 ---
 # csl26-w1op
 title: Add locale-supplied punctuation realization spacing
-status: todo
+status: completed
 type: feature
 priority: normal
 tags:
@@ -9,7 +9,7 @@ tags:
     - punctuation
     - locale
 created_at: 2026-07-22T15:03:35Z
-updated_at: 2026-07-22T15:03:35Z
+updated_at: 2026-07-22T17:54:26Z
 parent: csl26-0ugp
 ---
 
@@ -21,7 +21,11 @@ Quote-glyph selection and punctuation normalization/collision policy are out of 
 
 ## Acceptance Criteria
 
-- [ ] Locale realization strings select from the effective locale.
-- [ ] Style realization overrides take precedence over locale entries.
-- [ ] Missing locale entries fall back to the selected preset or engine default.
-- [ ] French/Québec spacing variants render correctly under both term-locale modes.
+- [x] Locale realization strings select from the effective locale.
+- [x] Style realization overrides take precedence over locale entries.
+- [x] Missing locale entries fall back to the selected preset or engine default.
+- [x] French/Québec spacing variants render correctly under both term-locale modes.
+
+## Summary of Changes
+
+Implemented locale-owned semantic punctuation realization with style override precedence, preset/engine fallback, and fr-FR/fr-CA spacing variants under both term-locale modes.

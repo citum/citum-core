@@ -51,6 +51,9 @@ pub struct RawLocale {
     /// Grammar toggles that vary by language.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub grammar_options: Option<crate::locale::types::GrammarOptions>,
+    /// Partial semantic punctuation realization table owned by this locale.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub punctuation_realization: Option<crate::options::PunctuationRealization>,
     /// Backwards-compatibility aliases: old CSL term key → new message ID.
     #[serde(default, skip_serializing_if = "HashMap::is_empty")]
     pub legacy_term_aliases: HashMap<String, String>,

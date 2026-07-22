@@ -186,8 +186,15 @@ pub(super) fn format_wrapped_role_term<F: crate::render::format::OutputFormat<Ou
     let (script, realization) = crate::values::punctuation_realization_context(
         item_language,
         options.config.multilingual.as_ref(),
+        options.locale.punctuation_realization.as_ref(),
     );
-    let content = fmt.wrap_punctuation(&wrap.punctuation, content, &marks, script, realization);
+    let content = fmt.wrap_punctuation(
+        &wrap.punctuation,
+        content,
+        &marks,
+        script,
+        realization.as_deref(),
+    );
     format!("{}{content}{}", fmt.text(prefix), fmt.text(suffix))
 }
 

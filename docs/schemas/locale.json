@@ -107,6 +107,17 @@
         }
       ]
     },
+    "punctuation-realization": {
+      "description": "Partial semantic punctuation realization table owned by this locale.",
+      "anyOf": [
+        {
+          "$ref": "#/$defs/PunctuationRealization"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
     "legacy-term-aliases": {
       "description": "Backwards-compatibility aliases: old CSL term key → new message ID.",
       "type": "object",
@@ -723,6 +734,65 @@
           "const": "after"
         }
       ]
+    },
+    "PunctuationRealization": {
+      "description": "Per-script glyph overrides for semantic punctuation marks.\n\nScalar marks use complete separator strings, including spacing. Paired\nmarks use `[open, close]`.",
+      "type": "object",
+      "properties": {
+        "comma": {
+          "description": "Override for the semantic comma mark.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "colon": {
+          "description": "Override for the semantic colon mark.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "semicolon": {
+          "description": "Override for the semantic semicolon mark.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "period": {
+          "description": "Override for the semantic period mark.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "parentheses": {
+          "description": "Override for the semantic parentheses pair.",
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string"
+          },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "brackets": {
+          "description": "Override for the semantic brackets pair.",
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string"
+          },
+          "minItems": 2,
+          "maxItems": 2
+        }
+      },
+      "additionalProperties": false
     },
     "RawVocab": {
       "description": "Raw vocab maps for genre and medium display text.",
