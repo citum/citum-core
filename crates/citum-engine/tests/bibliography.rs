@@ -5204,3 +5204,32 @@ fn explicit_label_wrap_preserves_prefix_placement_spacing() {
 
     assert_eq!(result, "(Eds.) John Smith, Jane Doe");
 }
+
+/// Regression test for the `Date`-key engine fix (`get_variable_key` in
+/// `citum-engine/src/processor/rendering/mod.rs`): `date: issued` must
+/// render independently each time it appears in a template regardless of
+/// form, since dates are exempt from `TemplateComponentTracker` dedup — CSL
+/// restricts variable-consumption tracking to cs:substitute (names only).
+/// Found while implementing GB/T 7714 author-date, which needs a bare
+/// citation year up front and a full precise date later in the same entry.
+#[test]
+fn duplicate_issued_date_with_different_forms_both_render() {
+    announce_behavior(
+        "The same date variable renders independently every time it appears in a template, regardless of form.",
+    );
+    let yaml = "info:\n  title: Dual Date Form Test\nbibliography:\n  template:\n    - date: issued\n      form: year\n    - date: issued\n      form: year-month-day\n      prefix: ' ('\n      suffix: ')'\n";
+    let style = citum_schema::Style::from_yaml_str(yaml).expect("style should parse");
+    let reference = InputReference::Monograph(Box::new(Monograph {
+        id: Some("dual-date-ref".into()),
+        r#type: MonographType::Book,
+        title: Some(Title::Single("Dual Date Test".to_string())),
+        issued: DateValue::new("2020-03-15".to_string()),
+        ..Default::default()
+    }));
+    let bib = citum_schema::bib_map!["dual-date-ref" => reference];
+    let processor = Processor::new(style, bib);
+
+    let result = processor.render_bibliography();
+
+    assert_eq!(result, "2020 (2020, March 15)");
+}

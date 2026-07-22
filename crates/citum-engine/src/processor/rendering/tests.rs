@@ -255,9 +255,15 @@ fn legal_case_style() -> Style {
     }
 }
 
+/// Dates are exempt from `TemplateComponentTracker` dedup entirely — CSL
+/// restricts variable-consumption tracking to cs:substitute (names only), so
+/// a style writing `date: issued` twice (a short citation year up front, a
+/// full precise date later) must have both render, regardless of form or
+/// rendering context. Covers the case that motivated the fix (same form,
+/// same context — the strongest case for "these might be an accidental
+/// duplicate"), which still must not be suppressed.
 #[test]
-fn test_variable_key_includes_context() {
-    // Date with no prefix/suffix
+fn test_date_key_is_always_none() {
     let date1 = TemplateComponent::Date(TemplateDate {
         date: citum_schema::template::DateVariable::Issued,
         form: DateForm::Year,
@@ -267,45 +273,32 @@ fn test_variable_key_includes_context() {
         custom: None,
     });
 
-    // Same date with prefix
+    // Same variable, same form, same (empty) context — the case most likely
+    // to look like an accidental duplicate, yet still must not be treated
+    // as one.
     let date2 = TemplateComponent::Date(TemplateDate {
         date: citum_schema::template::DateVariable::Issued,
         form: DateForm::Year,
-        rendering: Rendering {
-            prefix: Some(", ".into()),
-            ..Default::default()
-        },
+        rendering: Rendering::default(),
         fallback: None,
         links: None,
         custom: None,
     });
 
-    // Same date with suffix
+    // Same variable, different form (the GB/T author-date case: bare year up
+    // front, full precise date later).
     let date3 = TemplateComponent::Date(TemplateDate {
         date: citum_schema::template::DateVariable::Issued,
-        form: DateForm::Year,
-        rendering: Rendering {
-            suffix: Some(".".into()),
-            ..Default::default()
-        },
+        form: DateForm::YearMonthDay,
+        rendering: Rendering::default(),
         fallback: None,
         links: None,
         custom: None,
     });
 
-    let key1 = get_variable_key(&date1);
-    let key2 = get_variable_key(&date2);
-    let key3 = get_variable_key(&date3);
-
-    // All three should have different keys due to different contexts
-    assert_ne!(key1, key2);
-    assert_ne!(key1, key3);
-    assert_ne!(key2, key3);
-
-    // Verify the keys include context markers
-    assert_eq!(key1, Some("date:Issued".to_string()));
-    assert_eq!(key2, Some("date:Issued:, ".to_string()));
-    assert_eq!(key3, Some("date:Issued:.".to_string()));
+    assert_eq!(get_variable_key(&date1), None);
+    assert_eq!(get_variable_key(&date2), None);
+    assert_eq!(get_variable_key(&date3), None);
 }
 
 #[test]
