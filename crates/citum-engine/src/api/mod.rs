@@ -35,5 +35,6 @@ pub use types::{
     Warning, WarningLevel,
 };
 pub use warnings::{
-    unknown_enum_warnings, unknown_reference_class_warnings, unknown_reference_field_warnings,
+    term_locale_fallback_warnings, unknown_enum_warnings, unknown_reference_class_warnings,
+    unknown_reference_field_warnings,
 };
