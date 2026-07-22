@@ -44,6 +44,7 @@ pub use locators::{
 pub use multilingual::{
     MultilingualConfig, MultilingualMode, MultilingualSegment, MultilingualView,
     PunctuationRealization, PunctuationStyle, RealizationDefault, ScriptConfig, SegmentWrap,
+    TermLocale,
 };
 pub use processing::{
     CitationSortPolicy, Disambiguation, GivennameRule, Group, LabelConfig, LabelParams,

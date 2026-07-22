@@ -39,6 +39,41 @@ pub struct MultilingualConfig {
         skip_serializing_if = "RealizationDefault::is_latin"
     )]
     pub realization_default: RealizationDefault,
+    /// Whether locale-sensitive term/message/date-pattern lookups (roles,
+    /// locators, terms, date names and patterns) resolve against the style
+    /// locale or each item's own effective language. Unset defaults to
+    /// `style`, matching today's behavior byte for byte. Typography
+    /// (`grammar-options`) always stays with the style locale regardless of
+    /// this setting. See `docs/specs/PER_ITEM_TERM_LOCALE.md`.
+    #[serde(
+        default,
+        rename = "term-locale",
+        skip_serializing_if = "TermLocale::is_style"
+    )]
+    pub term_locale: TermLocale,
+}
+
+/// Which locale a style's engine-supplied terms/messages/date patterns
+/// resolve against: the style's own locale, or each rendered item's
+/// effective language (the biblatex `autolang` analogue). See
+/// `docs/specs/PER_ITEM_TERM_LOCALE.md`.
+#[derive(Debug, Default, PartialEq, Eq, Clone, Copy, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[serde(rename_all = "kebab-case")]
+pub enum TermLocale {
+    /// Terms always resolve against the style locale (today's behavior).
+    #[default]
+    Style,
+    /// Terms resolve against each item's effective language, falling back
+    /// to the style locale when no matching locale is loaded.
+    Item,
+}
+
+impl TermLocale {
+    /// Returns `true` for the default variant (`Style`), used for skip-serializing.
+    pub fn is_style(&self) -> bool {
+        matches!(self, TermLocale::Style)
+    }
 }
 
 /// Rendering modes for multilingual content.
@@ -300,5 +335,49 @@ impl<'de> de::Deserialize<'de> for MultilingualMode {
         }
 
         deserializer.deserialize_any(ModeVisitor)
+    }
+}
+
+#[cfg(test)]
+#[allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::indexing_slicing,
+    clippy::todo,
+    clippy::unimplemented,
+    clippy::unreachable,
+    clippy::get_unwrap,
+    reason = "Panicking is acceptable and often desired in tests."
+)]
+mod term_locale_tests {
+    use super::*;
+
+    #[test]
+    fn term_locale_item_round_trips_through_yaml() {
+        let config: MultilingualConfig = serde_yaml::from_str("term-locale: item").unwrap();
+        assert_eq!(config.term_locale, TermLocale::Item);
+
+        let yaml = serde_yaml::to_string(&config).unwrap();
+        assert!(yaml.contains("term-locale: item"));
+
+        let round_tripped: MultilingualConfig = serde_yaml::from_str(&yaml).unwrap();
+        assert_eq!(round_tripped, config);
+    }
+
+    #[test]
+    fn absent_term_locale_field_defaults_to_style() {
+        let config: MultilingualConfig = serde_yaml::from_str("{}").unwrap();
+        assert_eq!(config.term_locale, TermLocale::Style);
+    }
+
+    #[test]
+    fn default_term_locale_is_omitted_on_serialize() {
+        let config = MultilingualConfig::default();
+        let yaml = serde_yaml::to_string(&config).unwrap();
+        assert!(
+            !yaml.contains("term-locale"),
+            "term-locale: style is today's byte-identical default and must be omitted: {yaml}"
+        );
     }
 }

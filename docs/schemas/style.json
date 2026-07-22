@@ -4278,6 +4278,10 @@
         "realization-default": {
           "description": "Script class to realize semantic wrap punctuation (`wrap: parentheses`/`brackets`)\nas, for items with no usable script evidence. Unset defaults to `latin`,\nmatching today's unconditional half-width output. See\n`docs/specs/PUNCTUATION_REALIZATION.md` §5.",
           "$ref": "#/$defs/RealizationDefault"
+        },
+        "term-locale": {
+          "description": "Whether locale-sensitive term/message/date-pattern lookups (roles,\nlocators, terms, date names and patterns) resolve against the style\nlocale or each item's own effective language. Unset defaults to\n`style`, matching today's behavior byte for byte. Typography\n(`grammar-options`) always stays with the style locale regardless of\nthis setting. See `docs/specs/PER_ITEM_TERM_LOCALE.md`.",
+          "$ref": "#/$defs/TermLocale"
         }
       }
     },
@@ -4512,6 +4516,21 @@
           "description": "Untagged items realize full-width CJK delimiters (e.g. GB/T 7714).",
           "type": "string",
           "const": "cjk"
+        }
+      ]
+    },
+    "TermLocale": {
+      "description": "Which locale a style's engine-supplied terms/messages/date patterns\nresolve against: the style's own locale, or each rendered item's\neffective language (the biblatex `autolang` analogue). See\n`docs/specs/PER_ITEM_TERM_LOCALE.md`.",
+      "oneOf": [
+        {
+          "description": "Terms always resolve against the style locale (today's behavior).",
+          "type": "string",
+          "const": "style"
+        },
+        {
+          "description": "Terms resolve against each item's effective language, falling back\nto the style locale when no matching locale is loaded.",
+          "type": "string",
+          "const": "item"
         }
       ]
     },
