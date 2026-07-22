@@ -11,11 +11,7 @@ info:
 options:
   processing: numeric
   multilingual:
-    realization-default: cjk
-    scripts:
-      cjk:
-        realization:
-          brackets: [ '[', ']' ]
+    punctuation-width: mixed
   messages:
     gb-t-7714-type-code: |-
       .match {$type :select} {$carrier :select}

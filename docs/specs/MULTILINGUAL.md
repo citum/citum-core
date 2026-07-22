@@ -318,7 +318,7 @@ the standard:
 ```yaml
 options:
   multilingual:
-    realization-default: cjk
+    punctuation-width: mixed
     scripts:
       cjk:
         realization:

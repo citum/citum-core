@@ -89,11 +89,11 @@ impl Processor {
             base.processor_with_document_org_abbreviation_override(effective_org_override)
         };
 
-        // Apply bibliography overrides from the options block.
+        // Apply presentation overrides from the options block.
         let owned_bib = parsed
             .frontmatter_options
             .as_ref()
-            .filter(|o| o.bibliography.is_some())
+            .filter(|o| o.bibliography.is_some() || o.multilingual.is_some())
             .map(|options| {
                 let base = owned_org
                     .as_ref()

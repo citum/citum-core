@@ -65,24 +65,34 @@ pub(crate) fn realize_punctuation<'a>(
     let default = match (punctuation, script, position) {
         (Punctuation::Comma, ScriptClass::Latin, _) => ", ",
         (Punctuation::Comma, ScriptClass::Cjk, _) => "，",
+        (Punctuation::Comma, ScriptClass::Mixed, _) => "，",
         (Punctuation::Colon, ScriptClass::Latin, _) => ": ",
         (Punctuation::Colon, ScriptClass::Cjk, _) => "：",
+        (Punctuation::Colon, ScriptClass::Mixed, _) => "：",
         (Punctuation::Semicolon, ScriptClass::Latin, _) => "; ",
         (Punctuation::Semicolon, ScriptClass::Cjk, _) => "；",
+        (Punctuation::Semicolon, ScriptClass::Mixed, _) => "；",
         (Punctuation::Period, ScriptClass::Latin, _) => ". ",
         (Punctuation::Period, ScriptClass::Cjk, _) => "。",
+        (Punctuation::Period, ScriptClass::Mixed, _) => ". ",
         (Punctuation::Parentheses, ScriptClass::Latin, PunctuationPosition::Prefix) => "(",
         (Punctuation::Parentheses, ScriptClass::Latin, PunctuationPosition::Suffix) => ")",
         (Punctuation::Parentheses, ScriptClass::Cjk, PunctuationPosition::Prefix) => "（",
+        (Punctuation::Parentheses, ScriptClass::Mixed, PunctuationPosition::Prefix) => "（",
         (Punctuation::Parentheses, ScriptClass::Cjk, PunctuationPosition::Suffix) => "）",
+        (Punctuation::Parentheses, ScriptClass::Mixed, PunctuationPosition::Suffix) => "）",
         (Punctuation::Brackets, ScriptClass::Latin, PunctuationPosition::Prefix) => "[",
         (Punctuation::Brackets, ScriptClass::Latin, PunctuationPosition::Suffix) => "]",
         (Punctuation::Brackets, ScriptClass::Cjk, PunctuationPosition::Prefix) => "【",
+        (Punctuation::Brackets, ScriptClass::Mixed, PunctuationPosition::Prefix) => "[",
         (Punctuation::Brackets, ScriptClass::Cjk, PunctuationPosition::Suffix) => "】",
+        (Punctuation::Brackets, ScriptClass::Mixed, PunctuationPosition::Suffix) => "]",
         (Punctuation::Parentheses, ScriptClass::Latin, PunctuationPosition::Separator) => "()",
         (Punctuation::Parentheses, ScriptClass::Cjk, PunctuationPosition::Separator) => "（）",
+        (Punctuation::Parentheses, ScriptClass::Mixed, PunctuationPosition::Separator) => "（）",
         (Punctuation::Brackets, ScriptClass::Latin, PunctuationPosition::Separator) => "[]",
         (Punctuation::Brackets, ScriptClass::Cjk, PunctuationPosition::Separator) => "【】",
+        (Punctuation::Brackets, ScriptClass::Mixed, PunctuationPosition::Separator) => "[]",
         (
             Punctuation::Ampersand
             | Punctuation::VerticalLine
@@ -240,11 +250,17 @@ pub(crate) fn realize_wrap<'a>(
         (WrapPunctuation::Parentheses, ScriptClass::Cjk) => {
             Some((Cow::Borrowed("（"), Cow::Borrowed("）")))
         }
+        (WrapPunctuation::Parentheses, ScriptClass::Mixed) => {
+            Some((Cow::Borrowed("（"), Cow::Borrowed("）")))
+        }
         (WrapPunctuation::Brackets, ScriptClass::Latin) => {
             Some((Cow::Borrowed("["), Cow::Borrowed("]")))
         }
         (WrapPunctuation::Brackets, ScriptClass::Cjk) => {
             Some((Cow::Borrowed("【"), Cow::Borrowed("】")))
+        }
+        (WrapPunctuation::Brackets, ScriptClass::Mixed) => {
+            Some((Cow::Borrowed("["), Cow::Borrowed("]")))
         }
         (WrapPunctuation::Quotes, _) => None,
     }
