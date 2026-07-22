@@ -72,6 +72,28 @@ divergences:
       Adjusted verification masks mismatches that are punctuation-only after
       applying the GB/T semantic Latin realization, for Latin-script items
       only. See docs/specs/MULTILINGUAL.md §3.2a and csl26-5y6k.
+  div-011:
+    scopes:
+      - bibliography
+    tags:
+      - gbt-date-annotation-fidelity
+      - citeproc-legacy-date-gap
+    note: >-
+      For historical/uncertain publication dates, Citum renders the
+      author-supplied CSL cheater-syntax date annotation (the note field's
+      issued override) verbatim — era-year parentheticals (§7.5.4.1),
+      copyright/printing-year and approximate-year brackets (§7.5.4.3), and
+      unbracketed open-year ranges (§8.4.2). citeproc-js either drops the
+      annotation or, for open-ended ranges, adds a spurious uncertainty
+      bracket the standard's own worked examples do not use. Verified against
+      GB/T 7714—2025's own text, extracted from the official standard PDF via
+      github.com/typst-doc-cn/bib-csl-dev-data
+      data/GB-T_7714—2025.original.toml, sections gbt7714.7.5.4.1,
+      gbt7714.7.5.4.3, gbt7714.8.2.2, gbt7714.8.4.2, gbt7714.8.12.3 — Citum's
+      rendering matches the standard's examples exactly in every case;
+      citeproc-js (the CSL-M byte-parity oracle) is the one that diverges from
+      the standard. Adjusted verification masks mismatches that resolve after
+      stripping the recognized GB/T date-annotation forms from both sides.
 
 styles:
   numeric-comp:
@@ -215,8 +237,6 @@ styles:
   gb-t-7714-2025-note:
     authority: citeproc-js
     csl_source: tests/fixtures/csl-m/gb-t-7714-2025-note.csl
-    note: Diagnostic only until the note tuning wave (follow-up bean);
-      the numeric style carries the GB/T 7714 fidelity gate.
     benchmark_runs:
       - id: gbt-7714-2025-upstream
         label: GB/T 7714—2025 upstream corpus
@@ -224,7 +244,8 @@ styles:
         refs_fixture: tests/fixtures/test-items-library/gb-t-7714-2025.json
         citations_fixture: tests/fixtures/test-items-library/gb-t-7714-2025-note-citations.json
         scope: both
-        count_toward_fidelity: false
+        count_toward_fidelity: true
+        min_pass_rate: 1.0
   chicago-author-date-18th:
     secondary:
       - biblatex

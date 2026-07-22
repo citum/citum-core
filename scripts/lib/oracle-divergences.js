@@ -16,6 +16,33 @@ const DIV_005_ID = 'div-005';
 const DIV_008_ID = 'div-008';
 const DIV_009_ID = 'div-009';
 const DIV_010_ID = 'div-010';
+const DIV_011_ID = 'div-011';
+
+// Recognized GB/T 7714—2025 date-annotation forms (§7.5.4.1 era-year
+// parentheticals, §7.5.4.3 copyright/printing-year and approximate-year
+// brackets) for div-011 masking. Stripping these from both citeproc's and
+// Citum's text isolates whether an annotation citeproc-js drops (or, for
+// open-ended ranges, spuriously adds — §8.4.2) is the sole delta.
+const GBT_DATE_ANNOTATION_PATTERNS = [
+  // Parenthetical annotation directly after a Gregorian year, e.g.
+  // 1947（民国三十六年）, 1865 (清同治四年), 1949(中华民国三十八年八月).
+  /(\d{4})\s*[（(][^）)]*[）)]/g,
+  // Approximate-year brackets, e.g. [1936].
+  /[[［](\d{4})[\]］]/g,
+];
+
+/**
+ * Strip GB/T §7.5.4.1/§7.5.4.3 date-annotation forms for div-011 comparison.
+ */
+function stripGbtDateAnnotations(text) {
+  let stripped = String(text || '');
+  for (const pattern of GBT_DATE_ANNOTATION_PATTERNS) {
+    stripped = stripped.replace(pattern, '$1');
+  }
+  // Bare "printed" suffix directly after a year, e.g. 1995印刷.
+  stripped = stripped.replace(/(\d{4})印刷/g, '$1');
+  return stripped;
+}
 
 // Models the GB/T punctuation-only citeproc divergence after semantic
 // realization; see docs/specs/MULTILINGUAL.md §3.2a.
@@ -424,6 +451,29 @@ function explainBibliographyMismatchFromDiv010(entry, testItems, divergenceRule)
   };
 }
 
+/**
+ * div-011: Citum echoes an author-supplied CSL cheater-syntax `issued:`
+ * date-note override verbatim, including GB/T 7714—2025 date annotations
+ * (§7.5.4.1 era-year parentheticals, §7.5.4.3 copyright/printing-year and
+ * approximate-year brackets); citeproc-js either drops the annotation or, for
+ * open-ended ranges, adds a spurious bracket. See verification-policy.yaml
+ * div-011 for the standard-text citations that confirm Citum's rendering.
+ * Gated on the item carrying a `note`-field `issued:` override, so this
+ * cannot mask an unrelated date mismatch on an item without one.
+ */
+function explainBibliographyMismatchFromDiv011(entry, testItems, divergenceRule) {
+  if (!entry || entry.match || !divergenceRule) return null;
+  const ref = testItems[entry.id];
+  if (!ref?.note || !/(?:^|\n)issued:/i.test(ref.note)) return null;
+
+  const strippedOracle = stripGbtDateAnnotations(entry.oracle);
+  const strippedCitum = stripGbtDateAnnotations(entry.citum);
+  const comparison = compareText(strippedOracle, strippedCitum);
+  if (!comparison.match || comparison.caseMismatch) return null;
+
+  return { divergenceId: DIV_011_ID, tag: 'gbt-date-annotation-fidelity', itemIds: [entry.id] };
+}
+
 function explainBibliographyMismatchFromDiv009(entry, testItems, divergenceRule) {
   if (!entry || entry.match || !divergenceRule) return null;
   const ref = testItems[entry.id];
@@ -436,7 +486,7 @@ function explainBibliographyMismatchFromDiv009(entry, testItems, divergenceRule)
   return { divergenceId: DIV_009_ID, tag: 'duplicate-url-identifier-tail', itemIds: [entry.id] };
 }
 
-function buildAdjustedOracleResult(rawResults, testCitations, testItems, divergenceInfo, div005Rule, div008Info, div009Rule, div010Rule) {
+function buildAdjustedOracleResult(rawResults, testCitations, testItems, divergenceInfo, div005Rule, div008Info, div009Rule, div010Rule, div011Rule) {
   const adjustedCitationEntries = (rawResults.citations?.entries || []).map((entry, index) => {
     const div004Adjustment = explainCitationMismatchFromDiv004(
       entry,
@@ -474,7 +524,8 @@ function buildAdjustedOracleResult(rawResults, testCitations, testItems, diverge
   const adjustedBibliographyEntries = (rawResults.bibliography?.entries || []).map((entry) => {
     const div009Adjustment = explainBibliographyMismatchFromDiv009(entry, testItems, div009Rule);
     const div010Adjustment = explainBibliographyMismatchFromDiv010(entry, testItems, div010Rule);
-    const appliedDivergence = div009Adjustment || div010Adjustment;
+    const div011Adjustment = explainBibliographyMismatchFromDiv011(entry, testItems, div011Rule);
+    const appliedDivergence = div009Adjustment || div010Adjustment || div011Adjustment;
     return { ...entry, rawMatch: entry.match, match: entry.match || Boolean(appliedDivergence), appliedDivergence };
   });
   const adjustedBibliographyPassed = adjustedBibliographyEntries.filter((entry) => entry.match).length;
@@ -529,6 +580,13 @@ function buildAdjustedOracleResult(rawResults, testCitations, testItems, diverge
     divergenceSummary[DIV_009_ID] = { scopes: div009Rule.scopes || [], tags: div009Rule.tags || [], note: div009Rule.note || null, adjustedBibliography: div009Adjustments.length, itemIds: [...new Set(div009Adjustments.flatMap((entry) => entry.itemIds || []))] };
   }
 
+  const div011Adjustments = adjustedBibliographyEntries
+    .map((entry) => entry.appliedDivergence)
+    .filter((entry) => entry?.divergenceId === DIV_011_ID);
+  if (div011Rule && div011Adjustments.length > 0) {
+    divergenceSummary[DIV_011_ID] = { scopes: div011Rule.scopes || [], tags: div011Rule.tags || [], note: div011Rule.note || null, adjustedBibliography: div011Adjustments.length, itemIds: [...new Set(div011Adjustments.flatMap((entry) => entry.itemIds || []))] };
+  }
+
   const div010CitationAdjustments = adjustedCitationEntries
     .map((entry) => entry.appliedDivergence)
     .filter((entry) => entry?.divergenceId === DIV_010_ID);
@@ -580,13 +638,14 @@ function attachRegisteredDivergenceAdjustments(rawResults, oracleBibliography, c
   const div005Rule = resolveRegisteredDivergence(policy, DIV_005_ID);
   const div009Rule = resolveRegisteredDivergence(policy, DIV_009_ID);
   const div010Rule = resolveRegisteredDivergence(policy, DIV_010_ID);
+  const div011Rule = resolveRegisteredDivergence(policy, DIV_011_ID);
 
   if (!shouldInspectOrderDifference) {
     return {
       ...rawResults,
       bibliographyOrder: null,
       adjusted: buildAdjustedOracleResult(
-        rawResults, testCitations, testItems, null, div005Rule, null, div009Rule, div010Rule
+        rawResults, testCitations, testItems, null, div005Rule, null, div009Rule, div010Rule, div011Rule
       ),
     };
   }
@@ -624,7 +683,7 @@ function attachRegisteredDivergenceAdjustments(rawResults, oracleBibliography, c
         }
       : null,
     adjusted: buildAdjustedOracleResult(
-      rawResults, testCitations, testItems, divergenceInfo, div005Rule, div008Info, div009Rule, div010Rule
+      rawResults, testCitations, testItems, divergenceInfo, div005Rule, div008Info, div009Rule, div010Rule, div011Rule
     ),
   };
 }
@@ -635,6 +694,7 @@ module.exports = {
   DIV_008_ID,
   DIV_009_ID,
   DIV_010_ID,
+  DIV_011_ID,
   attachRegisteredDivergenceAdjustments,
   buildAdjustedOracleResult,
   buildNumericLabelMap,
@@ -647,6 +707,8 @@ module.exports = {
   explainCitationMismatchFromDiv010,
   explainBibliographyMismatchFromDiv009,
   explainBibliographyMismatchFromDiv010,
+  explainBibliographyMismatchFromDiv011,
   isLatinScriptLanguage,
   mapFullWidthToLatinPunctuation,
+  stripGbtDateAnnotations,
 };

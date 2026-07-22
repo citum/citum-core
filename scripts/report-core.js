@@ -263,6 +263,17 @@ function hashFile(filePath) {
   return hashContent(fs.readFileSync(filePath));
 }
 
+// oracle.js's actual output also depends on these two files (registered
+// divergence detectors and the policy that enables them), but neither is
+// `oracle.js` itself, so a cache key hashing only `liveScript` silently
+// serves stale pre-fix results after editing either — see the div-011
+// investigation in docs/architecture/audits/2026-07-22_GBT_DATE_ANNOTATION_FIDELITY.md.
+function oracleDivergenceDepsHash() {
+  const oracleDivergencesPath = path.join(__dirname, 'lib', 'oracle-divergences.js');
+  const verificationPolicyPath = path.join(__dirname, 'report-data', 'verification-policy.yaml');
+  return hashContent(hashFile(oracleDivergencesPath) + hashFile(verificationPolicyPath));
+}
+
 function equivalentText(expected, actual, options = {}) {
   return compareText(expected, actual, options).match;
 }
@@ -838,6 +849,7 @@ async function runCiteprocSnapshotOracle(runtime, stylePath, styleName, styleFor
     snapshotHash: snapshotStatus.ok ? hashFile(snapshotStatus.snapshotPath) : null,
     fastScriptHash: hashFile(fastScript),
     liveScriptHash: hashFile(liveScript),
+    oracleDivergenceDepsHash: oracleDivergenceDepsHash(),
     citumBin: runtime.citumBin,
     citumBinHash: hashFile(runtime.citumBin),
     allowLiveFallback: runtime.allowLiveFallback,
@@ -985,6 +997,7 @@ async function runCiteprocBenchmarkOracle(runtime, stylePath, styleName, benchma
       refsHash: hashFile(resolvedRun.refsFixture),
       citationsHash: resolvedRun.citationsFixture ? hashFile(resolvedRun.citationsFixture) : null,
       liveScriptHash: hashFile(liveScript),
+      oracleDivergenceDepsHash: oracleDivergenceDepsHash(),
       citumBin: runtime.citumBin,
       citumBinHash: hashFile(runtime.citumBin),
       caseSensitive: runtime.caseSensitive,
@@ -1233,6 +1246,7 @@ async function runFamilyFixtureOracle(runtime, stylePath, styleName, fixtureSetN
       refsHash: hashFile(refsFixture),
       citationsHash: hashFile(citationsFixture),
       liveScriptHash: hashFile(liveScript),
+      oracleDivergenceDepsHash: oracleDivergenceDepsHash(),
       citumBin: runtime.citumBin,
       citumBinHash: hashFile(runtime.citumBin),
       caseSensitive: runtime.caseSensitive,
