@@ -10,7 +10,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 
 use crate::reference::Reference;
 use crate::values::{ComponentValues, ProcHints, ProcValues, RenderOptions};
-use citum_schema::locale::{GeneralTerm, GrammaticalGender, MessageArgs, TermForm};
+use citum_schema::locale::{DigitSystem, GeneralTerm, GrammaticalGender, MessageArgs, TermForm};
 use citum_schema::reference::ClassExtension;
 use citum_schema::template::{LabelForm, NumberForm, NumberVariable, TemplateNumber};
 
@@ -214,6 +214,30 @@ fn render_ordinal(value: String, options: &RenderOptions<'_>) -> String {
         .unwrap_or(value)
 }
 
+/// Replace ASCII digits in a rendered numeric value with the locale's configured glyphs.
+///
+/// Non-digit characters remain unchanged, so ranges and mixed identifiers preserve their
+/// punctuation and letters while their numeric portions follow locale conventions.
+fn localize_digits(value: String, digit_system: &DigitSystem) -> String {
+    let digits = match digit_system {
+        DigitSystem::Western => return value,
+        DigitSystem::ArabicIndic => ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'],
+        DigitSystem::ExtendedArabicIndic => ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'],
+        DigitSystem::Devanagari => ['०', '१', '२', '३', '४', '५', '६', '७', '८', '९'],
+        _ => return value,
+    };
+
+    value
+        .chars()
+        .map(|ch| {
+            ch.to_digit(10)
+                .filter(|_| ch.is_ascii_digit())
+                .and_then(|digit| digits.get(digit as usize).copied())
+                .unwrap_or(ch)
+        })
+        .collect()
+}
+
 impl ComponentValues for TemplateNumber {
     fn values<F: crate::render::format::OutputFormat<Output = String>>(
         &self,
@@ -296,6 +320,7 @@ impl ComponentValues for TemplateNumber {
                 (None, None) => None,
             };
             let suffix = numeric_suffix;
+            let value = localize_digits(value, &options.locale.number_formats.digit_system);
 
             ProcValues {
                 value,
@@ -374,6 +399,38 @@ mod is_numeric_tests {
     fn given_empty_value_when_checked_then_not_numeric() {
         assert!(!is_numeric(""));
         assert!(!is_numeric("   "));
+    }
+}
+
+#[cfg(test)]
+mod digit_system_tests {
+    use super::localize_digits;
+    use citum_schema::locale::DigitSystem;
+
+    #[test]
+    fn localizes_ascii_digits_for_supported_digit_systems() {
+        for (digit_system, expected) in [
+            (DigitSystem::Western, "AB-12, 34"),
+            (DigitSystem::ArabicIndic, "AB-١٢, ٣٤"),
+            (DigitSystem::ExtendedArabicIndic, "AB-۱۲, ۳۴"),
+            (DigitSystem::Devanagari, "AB-१२, ३४"),
+        ] {
+            assert_eq!(
+                localize_digits("AB-12, 34".to_string(), &digit_system),
+                expected
+            );
+        }
+    }
+
+    #[test]
+    fn preserves_western_digits_for_unknown_digit_system() {
+        assert_eq!(
+            localize_digits(
+                "12".to_string(),
+                &DigitSystem::Unknown("future".to_string())
+            ),
+            "12"
+        );
     }
 }
 

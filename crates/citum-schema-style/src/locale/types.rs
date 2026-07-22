@@ -420,6 +420,9 @@ pub struct MonthNames {
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[serde(rename_all = "kebab-case")]
 pub struct NumberFormats {
+    /// Digit glyph system used when rendering number template components.
+    #[serde(default)]
+    pub digit_system: DigitSystem,
     /// Decimal separator (e.g., "." for en-US, "," for de-DE).
     #[serde(default = "default_decimal_separator")]
     pub decimal_separator: String,
@@ -429,6 +432,22 @@ pub struct NumberFormats {
     /// Minimum digits to display.
     #[serde(default = "default_minimum_digits")]
     pub minimum_digits: u8,
+}
+
+crate::str_enum! {
+    /// Digit glyph system used by a locale when rendering numeric values.
+    #[derive(Debug, Clone, Default, PartialEq, Eq, Hash)]
+    pub enum DigitSystem {
+        /// ASCII Western digits (`0` through `9`).
+        #[default]
+        Western = "western",
+        /// Arabic-Indic digits (`٠` through `٩`).
+        ArabicIndic = "arabic-indic",
+        /// Extended Arabic-Indic digits (`۰` through `۹`).
+        ExtendedArabicIndic = "extended-arabic-indic",
+        /// Devanagari digits (`०` through `९`).
+        Devanagari = "devanagari"
+    }
 }
 
 fn default_decimal_separator() -> String {

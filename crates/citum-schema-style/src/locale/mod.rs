@@ -630,8 +630,26 @@ legacy-term-aliases:
         assert_eq!(locale.number_formats.decimal_separator, ".");
         assert_eq!(locale.number_formats.thousands_separator, ",");
         assert_eq!(locale.number_formats.minimum_digits, 1);
+        assert_eq!(locale.number_formats.digit_system, DigitSystem::Western);
 
         // Sort articles.
         assert_eq!(locale.sort_articles, ["the", "a", "an"]);
+    }
+
+    #[test]
+    fn locale_number_formats_accept_each_supported_digit_system() {
+        for (digit_system, expected) in [
+            ("western", DigitSystem::Western),
+            ("arabic-indic", DigitSystem::ArabicIndic),
+            ("extended-arabic-indic", DigitSystem::ExtendedArabicIndic),
+            ("devanagari", DigitSystem::Devanagari),
+        ] {
+            let locale = Locale::from_yaml_str(&format!(
+                "locale: test\nnumber-formats:\n  digit-system: {digit_system}\n"
+            ))
+            .expect("locale should parse");
+
+            assert_eq!(locale.number_formats.digit_system, expected);
+        }
     }
 }

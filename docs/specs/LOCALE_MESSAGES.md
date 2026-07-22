@@ -442,9 +442,16 @@ flat term file but carries the same terms in the `messages` block, plus
 | `evaluation` | `object` | no | Runtime evaluation options. See §3.4. |
 | `messages` | `map<string, string>` | yes | Message ID → message body (static or MF2 syntax). |
 | `date-formats` | `map<string, string>` | yes | Symbolic name → CLDR date pattern. |
-| `number-formats` | `object` | yes | `decimal-separator`, `thousands-separator`, `minimum-digits`. |
+| `number-formats` | `object` | yes | `digit-system`, `decimal-separator`, `thousands-separator`, `minimum-digits`. |
 | `grammar-options` | `object` | yes | See §3.3. |
 | `legacy-term-aliases` | `map<string, string>` | yes | Old key → new message ID. |
+
+`number-formats.digit-system` controls digit glyphs for every rendered
+`number` template component. Its values are `western` (the default),
+`arabic-indic`, `extended-arabic-indic`, and `devanagari`. Rendering replaces
+only ASCII digits after ordinal and label resolution; letters, punctuation,
+ranges, and other text are preserved. Decimal and thousands separators remain
+separate locale conventions and are not changed by this field.
 
 #### 3.4 `evaluation` Block
 
@@ -558,6 +565,7 @@ date-formats:
   iso:            "yyyy-MM-dd"
 
 number-formats:
+  digit-system:        western
   decimal-separator:   "."
   thousands-separator: ","
   minimum-digits:      1
@@ -639,6 +647,7 @@ date-formats:
   iso:            "yyyy-MM-dd"
 
 number-formats:
+  digit-system:        western
   decimal-separator:   ","
   thousands-separator: "."
   minimum-digits:      1
