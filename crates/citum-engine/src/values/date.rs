@@ -15,7 +15,9 @@ use citum_schema::locale::{GeneralTerm, TermForm};
 use citum_schema::options::dates::TimeFormat;
 use citum_schema::reference::types::RefDate;
 use citum_schema::reference::{ClassExtension, WorkRelation};
-use citum_schema::template::{DateForm, DateVariable as TemplateDateVar, TemplateDate};
+use citum_schema::template::{
+    DateForm, DateVariable as TemplateDateVar, TemplateComponent, TemplateDate,
+};
 
 fn month_to_string(month: u32, months: &[String]) -> String {
     if month > 0 {
@@ -883,7 +885,7 @@ impl ComponentValues for TemplateDate {
             if let Some(fallbacks) = &self.fallback {
                 for component in fallbacks {
                     if let Some(values) = component.values::<F>(reference, hints, options) {
-                        let output = apply_fallback_component_rendering(
+                        let mut output = apply_fallback_component_rendering(
                             &fmt,
                             &values.value,
                             values.pre_formatted,
@@ -891,6 +893,25 @@ impl ComponentValues for TemplateDate {
                             reference,
                             options,
                         );
+                        // A `message:` fallback candidate is, by construction,
+                        // the terminal "no data available" case in a date's
+                        // fallback chain (e.g. GB/T 7714's `无日期`/`n.d.`
+                        // term via `message: term.no-date`) — apply the same
+                        // year-suffix-append convention the implicit (no
+                        // explicit `fallback:`) no-date path below already
+                        // uses, so explicit and implicit no-date fallbacks
+                        // disambiguate identically. Without this, a style
+                        // whose date components always carry an explicit
+                        // `fallback:` chain (as GB/T author-date's do) never
+                        // reaches the implicit branch and never gets a
+                        // suffix at all. See csl26-6eak.
+                        if matches!(self.date, TemplateDateVar::Issued)
+                            && self.suppress_disamb_suffix != Some(true)
+                            && matches!(component, TemplateComponent::Message(_))
+                            && let Some(suffix) = compute_disamb_suffix_label(hints, options, &fmt)
+                        {
+                            append_no_date_disamb_suffix(&mut output, &suffix, options);
+                        }
                         return Some(ProcValues {
                             value: output,
                             prefix: None,
