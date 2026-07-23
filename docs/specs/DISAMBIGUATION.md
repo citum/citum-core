@@ -71,6 +71,42 @@ assumption and has no evidence of user dependence. See `div-009` in the
 **Verification:** `apa_reprint_year_suffix_attaches_to_issued_year_only` in
 `crates/citum-engine/tests/citations.rs` locks this behavior against regression.
 
+#### Suppressing the rendered suffix on a redundant date occurrence
+
+A style that legitimately renders `issued` more than once per item (a short
+front year plus a full-precision date later in the body — GB/T author-date,
+`csl26-6eak`) must not inline the same year-suffix into both occurrences.
+`TemplateDate.suppress_disamb_suffix: Option<bool>`
+(`crates/citum-schema-style/src/template.rs`, kebab
+`suppress-disamb-suffix`) opts a component out of `inline_disamb_suffix`
+regardless of `hints.disamb_condition`. This is purely a rendering-level
+mirror of `csl26-gl0n`'s `TemplateDate.suppress_note` (see
+[`CALENDAR_DATE_ANNOTATIONS.md`](./CALENDAR_DATE_ANNOTATIONS.md)) — it does
+not affect collision-key construction above, only which occurrence's
+formatted text the suffix is spliced into.
+
+#### Anonymous-fallback author key
+
+`build_author_slot_key` (`processor/disambiguation.rs`) previously gave
+every reference with no contributor and no matched `substitute` field a
+*unique* singleton key — correct when the substitute promotes a per-reference
+*title* (already distinguishing), wrong when a component-level
+`TemplateContributor.fallback` renders a *constant* term (e.g. GB/T's `佚名`
+anonymous-author placeholder). Such references now share a stable sentinel
+key (`Disambiguator::ANONYMOUS_FALLBACK_KEY`) so they collide by year like a
+real shared author, instead of each silently forming its own group.
+
+**Known gap:** the `Disambiguator` that computes *bibliography* hints is
+currently constructed with the **citation**-scoped `Substitute` config
+(`processor/setup.rs::calculate_hints`), not the bibliography-scoped one —
+a pre-existing scoping inconsistency, invisible until a style's bibliography
+and citation `substitute.template` chains actually differ (as
+`gb-t-7714-2025-author-date`'s now do). The sentinel key above is inert in
+practice until that scoping bug is fixed; tracked in `csl26-6eak`'s residual
+findings, not resolved here — the fix touches a shared code path used by
+every style's disambiguation and needs cross-corpus verification before it
+lands.
+
 ### 2. Strategy cascade
 
 Strategies are attempted in increasing order of disruptiveness and stop at the
@@ -297,6 +333,13 @@ added to the citation context.
 
 ## Changelog
 
+- 2026-07-23: Added `TemplateDate.suppress_disamb_suffix` (rendering-level
+  opt-out for a redundant `issued` occurrence) and a stable sentinel author
+  key for references falling through to a component-level
+  `TemplateContributor.fallback` term, surfaced by `csl26-6eak`'s GB/T
+  author-date work. Documented the known citation-vs-bibliography
+  `Substitute`-config scoping gap that currently makes the sentinel key
+  inert in the real style; not fixed in this change.
 - 2026-06-21: Promoted the major author-date guide disambiguation profile to the
   `author-date-full` preset (csl26-2zy6 follow-on). `Processing::AuthorDateFull` now
   carries the global `primary-name` rule (names + add-givenname + primary-name +

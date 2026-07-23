@@ -9,7 +9,9 @@ tags:
     - fidelity
     - multilingual
 created_at: 2026-07-16T10:56:59Z
-updated_at: 2026-07-22T21:59:30Z
+updated_at: 2026-07-23T15:05:20Z
+blocking:
+    - csl26-dxuo
 blocked_by:
     - csl26-8uxa
 ---
@@ -133,14 +135,15 @@ order, positioning) is the best available reference for this part, since it's
 purely a reordering/punctuation question, not a content-correctness one like
 the era-annotation case.
 
-- [ ] Fix key-string mismatches (Bug 1): article,dataset,preprint /
+- [x] Fix key-string mismatches (Bug 1): article,dataset,preprint /
       book,thesis,map + software / manuscript,personal_communication,pamphlet
       / add periodical, graphic keys
-- [ ] Add delimiters/punctuation to all ~13 type-variant entries (Bug 2),
+- [x] Add delimiters/punctuation to all ~13 type-variant entries (Bug 2),
       porting base's punctuation pattern with author-date's field ordering
-- [ ] Remove duplicate `number: edition` entry in book,thesis,map,software
-- [ ] Re-verify against tests/fixtures/test-items-library/gb-t-7714-2025.json
-      (target: adjusted 203/203, matching numeric/note)
+- [x] Remove duplicate `number: edition` entry in book,thesis,map,software
+- [x] Re-verify against tests/fixtures/test-items-library/gb-t-7714-2025.json
+      (target: adjusted 203/203, matching numeric/note) — reached 125/203 raw,
+      152/203 adjusted; target not met, residual findings characterized below
 - [ ] Flip verification-policy.yaml count_toward_fidelity: true, min_pass_rate: 1.0
 
 ## Progress (2026-07-22, later session): recipe validated to 68%, then reverted — new blockers found
@@ -255,3 +258,138 @@ entirely; may deserve its own bean if confirmed.
   more no-author items in the wider corpus), then finding 2 (org-as-author,
   narrower blast radius — `standard` type only), then assess finding 3
   separately.
+
+## Session progress (2026-07-23): recipe + finding 1 landed, 0/203 → 125/203 raw (61.6%), 152/203 adjusted (74.9%)
+
+Rebuilt `gb-t-7714-2025-author-date.yaml`'s entire `bibliography.type-variants`
+block from `gb-t-7714-2025-base.yaml`'s verified-correct structure (Bug 1 key
+mismatches + Bug 2 missing punctuation, both fixed together as the bean
+already anticipated), converting each of the 14 variants to author-date's
+front-loaded shape: `contributor: author` (now carrying a `fallback:
+[{message: term.anonymous, form: short}]`) followed by a front `date: issued,
+form: year` (carrying either the book/thesis/map copyright→printing→accessed
+chain from base, or a plain `fallback: [{message: term.no-date, form:
+short}]` terminal). Full-precision body dates (GB/T §7.5.4.2's
+online/report/patent/webpage/newspaper/archival types) are kept verbatim from
+base and marked `suppress-note: true` on the new front occurrence so the
+calendar-note annotation lands on the full-precision date only (csl26-gl0n's
+mechanism, now with a real consumer). Duplicate `number: edition` (noted in
+the original triage) is gone as a side effect of rebuilding from base.
+
+**Finding 1 (佚名 anonymous-author term) is implemented, not just designed:**
+- `TemplateContributor.fallback: Option<Vec<TemplateComponent>>` — new
+  engine-level mechanism (`crates/citum-schema-style/src/template.rs`,
+  `crates/citum-engine/src/values/contributor/mod.rs`'s
+  `resolve_author_fallback`), mirroring `TemplateDate.fallback` exactly:
+  consulted only when the entire `substitute.template` chain (editor/title/
+  translator) is exhausted.
+- `bibliography.options.substitute: {template: [editor, translator]}` —
+  GB/T author-date has no title-as-author convention; the inherited global
+  `substitute: standard` preset's `title` entry was winning before every
+  no-author item reached the new fallback (nearly every reference has *some*
+  title). An empty `template: []` override is a no-op per
+  `Substitute::merge` (`if !other.template.is_empty()`), not a clear — this
+  cost real debugging time before landing on the non-empty override.
+- `options.messages: {term.anonymous: 佚名}` — style-owned MF2 message, not
+  a locale term. `Processor::new` seeds a plain `Locale::en_us()` base
+  locale; only a matched `locales:[]` branch or per-item `language` (with
+  `multilingual.term-locale: item`) ever swaps in the real zh-CN locale. A
+  locale-owned `term.anonymous` would have silently resolved through CSL's
+  own pre-existing (legacy, English) generic-term catalog entry ("anon.")
+  for any item lacking an explicit `language` tag — which is exactly what
+  happened before this fix (traced via targeted `eprintln!` instrumentation,
+  since three independent code-read hypotheses were each wrong in turn).
+- New disambiguation-grouping key: `Disambiguator::build_author_slot_key`
+  (`crates/citum-engine/src/processor/disambiguation.rs`) previously gave
+  every no-author reference a *unique* singleton key when the substitute
+  chain resolved to `None` — correct when a substituted *title* already
+  distinguishes entries, wrong when a *constant* fallback term (佚名) is
+  what actually renders, since every such reference then needs to collide
+  on year like a real shared author. Added a stable sentinel key
+  (`ANONYMOUS_FALLBACK_KEY`) for the `None` case.
+- New `TemplateDate.suppress_disamb_suffix: Option<bool>` — the mirror of
+  `suppress_note`: rendering `issued` twice meant the year-suffix
+  disambiguator (`1947a`) was inlining into *both* occurrences, corrupting
+  the full-precision body date (`2012c-05-03` instead of `2012-05-03`).
+  Marked `true` on all 8 body full-precision `date: issued` occurrences.
+
+`just pre-commit` green (2161/2161 tests, fmt, clippy). `just
+check-core-quality` clean (157 styles, fidelity=1.0, 0 warnings) — no
+regressions elsewhere in the corpus. `verification-policy.yaml` left
+untouched (`count_toward_fidelity: false`) — not remotely close to the 1.0
+bar it requires.
+
+### Residual findings, precisely characterized (not attempted — real design
+### calls or larger features, per 2026-07-23 session scoping decision)
+
+Of the 78 remaining raw failures (51 after `adjusted` divergence
+normalization), triaged by root cause:
+
+1. **Finding 2 — org-as-author for `standard` type** (3 entries,
+   `gbt7714.8.9.2:*`). Unchanged from the original triage: GB/T shows the
+   issuing committee as author (`全国信息与文献标准化技术委员会，2021`);
+   Citum's `standard` type-variant has no path to promote an org/publisher
+   field into the author position. Needs a `substitute.template` extension
+   (a new `SubstituteField` variant, or a `TemplateContributor`-shaped
+   publisher-as-contributor path) — out of scope, unattempted.
+2. **Finding 3 — disambiguation-suffix ordering swap** (5 entries,
+   `gbt7714.9.3.1.3:2/3`, `gbt7714.8.5.3:4/5`, confirmed present on both
+   real-author and 佚名-fallback items now). `2000b`/`2000c` (or
+   `2024a`/`2024b`) assigned in the opposite order from the oracle's — a
+   pre-existing disambiguation-ordering algorithm difference, unrelated to
+   this bean's YAML/mechanism work. Likely deserves its own bean if pursued.
+3. **NEW — disambiguation-suffix grouping doesn't fire for the anonymous
+   fallback in the real style** (29 entries, the largest residual bucket).
+   The `ANONYMOUS_FALLBACK_KEY` sentinel above only takes effect if the
+   `Disambiguator` that computes bibliography hints is constructed with the
+   *bibliography*-scoped `Substitute` config; it's actually constructed with
+   the *citation*-scoped one
+   (`crates/citum-engine/src/processor/setup.rs:635`'s `calculate_hints`,
+   `config = self.get_citation_config()` passed as `Disambiguator::new`'s
+   `config` field, not `bibliography_config`). This is a **pre-existing**
+   citation/bibliography config-scoping inconsistency, invisible until now
+   because no style previously needed the two `Substitute` chains to
+   differ. Fixing it means changing a shared code path used by every
+   style's disambiguation-hints calculation — too risky to land without
+   dedicated cross-corpus testing (`just check-core-quality` across all 157
+   styles) in this session. The `sort_config` field's doc comment
+   ("Year-suffix ordering must use this — not `config`") suggests this
+   distinction was already a known sharp edge.
+4. **NEW — the anonymous-author term needs to be item-language-aware**
+   (10 entries, `gbt7714.7.5.*`/`7.2.1:7`/`7.4:5-6`). GB/T's real
+   convention is bilingual: Chinese items render `佚名`, English-language
+   items render `Anon` (oracle: `Anon，1975. [M]. Macmillan`). The
+   style-owned `messages: {term.anonymous: 佚名}` fix above is a uniform
+   constant — correct for this corpus's Chinese majority (net *more*
+   correct than before, since Chinese items now genuinely say 佚名 instead
+   of accidentally-coincidentally-right-looking English "Anon." for
+   everything), but wrong for English-language items, which is a real,
+   measurable regression against the `adjusted` oracle count for exactly
+   those 10 items (162→152). No `MessageArgSource` variant currently
+   exposes an item's own language to an MF2 message pattern (the existing
+   `gb-t-7714-type-code` message's `.match {$type :select}` pattern proves
+   the *mechanism* works — reference-type and carrier are already
+   selectable args); a `MessageArgSource::ItemLanguage`-shaped addition
+   (or wiring through the existing `multilingual.term-locale: item`
+   per-item-locale mechanism instead) would let `term.anonymous` select
+   `佚名`/`Anon` by item language the same way the type-code message
+   already selects by type/carrier.
+5. **3 unclassified singles** — `gbt7714.8.5.1.1:7` (body date silently
+   dropped rather than rendering `2024-05-09`), `gbt7714.7.2.1:4` (oracle
+   shows a bare disambiguation letter `b` with no `无日期-` prefix — an
+   outlier in the no-date suffix sequence, not yet understood),
+   `gbt7714.8.11.3.2:5`/`gbt7714.8.11.2.2:1` (an approximate/bracketed year
+   `[2025]`/`[2024]` falls through to the no-date term instead of the
+   approximate-year value — the front `date: issued, form: year` component
+   may not be reading `DateValue`'s uncertainty/approximation markers the
+   same way the body's fuller date components do). Not triaged further.
+
+### Recommended order for a future pass
+
+Finding 4 (grouping-key config scoping) is the single highest-leverage
+remaining item — 29 of 51 adjusted failures — but requires the most care
+(shared code path, cross-corpus verification). Finding 5 (language-aware
+anonymous term) is smaller (10 entries) and more contained (one new
+`MessageArgSource` variant or a routing fix, no shared-path risk). Findings
+2 and 3 are narrower, independent, and can be picked up in either order or
+split into their own beans.

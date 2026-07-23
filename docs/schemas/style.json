@@ -425,6 +425,16 @@
           "description": "How to display the contributor (long names, short, with label, etc.).",
           "$ref": "#/$defs/ContributorForm"
         },
+        "fallback": {
+          "description": "Components rendered when the author slot has no contributor, no\ntitle/editor/translator substitute matched, and `substitute.template`\nis exhausted — e.g. `message: term.anonymous` for GB/T 7714's `佚名`\nplaceholder. Only consulted for `contributor: author`; other roles\n(editor, translator, ...) are unaffected. Mirrors\n`TemplateDate.fallback` in shape and in the \"tried in order, first\nnon-empty wins\" semantics. See `csl26-6eak`.",
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "#/$defs/TemplateComponent"
+          }
+        },
         "label": {
           "description": "Optional role label configuration (e.g., \"eds.\" for editors).",
           "anyOf": [
@@ -1308,6 +1318,13 @@
         },
         "suppress-note": {
           "description": "When true, never wrap this component's opaque calendar-date `note`\n(e.g. a Minguo/era annotation), regardless of the section's\n`note-wrap` setting. Use on the redundant occurrence when a style\nlegitimately renders the same date variable more than once per item\n(e.g. a short front-matter year plus a full-precision date later in\nthe body) so the annotation appears exactly once rather than on every\noccurrence. See `docs/specs/CALENDAR_DATE_ANNOTATIONS.md` and\n`csl26-gl0n`.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "suppress-disamb-suffix": {
+          "description": "When true, never inline a year-suffix disambiguator (e.g. \"1947a\")\ninto this component's rendering, regardless of `hints.disamb_condition`.\nUse on the redundant occurrence when a style legitimately renders\n`issued` more than once per item — the mirror of `suppress_note`: a\ndual-date shape typically wants the suffix on the short front year\nand the calendar-note annotation on the full body date, so each flag\nsuppresses the opposite occurrence's copy. See `csl26-6eak`.",
           "type": [
             "boolean",
             "null"

@@ -198,7 +198,7 @@ fn given_gb_t_author_date_style_when_rendering_bibliography_then_calendar_note_i
     let processor = Processor::new(style, bibliography);
     let rendered = processor.render_bibliography();
 
-    assert_eq!(rendered, "[1]戰後臺灣史. [M]. 1947（民国三十六年）");
+    assert_eq!(rendered, "佚名，1947（民国三十六年）. 戰後臺灣史[M]. ");
 }
 
 #[test]
@@ -254,8 +254,8 @@ fn given_two_refs_same_author_year_different_note_when_disambiguating_then_still
 
     assert_eq!(
         rendered,
-        "[1]Kang. First Work[M]. 1947a（民国三十六年）\n\n\
-         [2]Kang. Second Work[M]. 1947b（不同的注释）"
+        "Kang，1947a（民国三十六年）. First Work[M]. \n\n\
+         Kang，1947b（不同的注释）. Second Work[M]. "
     );
 }
 
@@ -271,12 +271,12 @@ fn given_two_refs_same_author_year_different_note_when_disambiguating_then_still
 #[case::gb_t_7714_2025_author_date_minguo(
     "gb-t-7714-2025-author-date",
     "gbt7714.7.5.4.1:1",
-    "[1][M]. 1947（民国三十六年）"
+    "佚名，1947（民国三十六年）. [M]. "
 )]
 #[case::gb_t_7714_2025_author_date_kangxi(
     "gb-t-7714-2025-author-date",
     "gbt7714.7.5.4.1:2",
-    "[1][M]. 1705（康熙四十四年）"
+    "佚名，1705（康熙四十四年）. [M]. "
 )]
 #[case::gb_t_7714_2025_numeric_minguo(
     "gb-t-7714-2025-numeric",
@@ -301,17 +301,17 @@ fn given_two_refs_same_author_year_different_note_when_disambiguating_then_still
 #[case::gb_t_7714_2025_author_date_qing_dynasty(
     "gb-t-7714-2025-author-date",
     "gbt7714.8.2.2:2",
-    "[1]王夫之. 宋论[M]. 刻本. 金陵：湘乡曾国荃，1865（清同治四年）"
+    "王夫之，1865（清同治四年）. 宋论[M]. 刻本. 金陵：湘乡曾国荃"
 )]
 #[case::gb_t_7714_2025_author_date_guangxu_era(
     "gb-t-7714-2025-author-date",
     "gbt7714.8.12.3:1",
-    "[1]李鸿章. 奏请上海道库洋务外销要款无款可筹仍拨药厘接济事：04-01-35-0399-039[A]. 北京：中国第一历史档案馆，1887（光绪十三年三月十三日）"
+    "李鸿章，1887. 奏请上海道库洋务外销要款无款可筹仍拨药厘接济事：04-01-35-0399-039[A]. 北京：中国第一历史档案馆，1887（光绪十三年三月十三日）"
 )]
 #[case::gb_t_7714_2025_author_date_republic_era(
     "gb-t-7714-2025-author-date",
     "gbt7714.8.12.3:3",
-    "[1]中国人民解放军武汉市军事管制委员会接管国立武汉大学的文告. [A/OL]. 武汉：武汉大学档案馆，1949（中华民国三十八年八月）. https://archive.whu.edu.cn/index/forwardView/20/51"
+    "佚名，1949. 中国人民解放军武汉市军事管制委员会接管国立武汉大学的文告[A/OL]. 武汉：武汉大学档案馆，1949（中华民国三十八年八月）. https://archive.whu.edu.cn/index/forwardView/20/51"
 )]
 fn given_pinned_gbt_record_when_rendering_bibliography_then_note_is_wrapped(
     #[case] style_name: &str,
