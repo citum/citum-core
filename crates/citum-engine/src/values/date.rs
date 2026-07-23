@@ -396,7 +396,9 @@ fn format_same_year_range(
 /// per `DateConfig.note_wrap`, directly after the complete formatted date —
 /// after any inlined year-suffix, before the component's own outer
 /// prefix/suffix/wrap. A no-op when the style has no `note-wrap` configured
-/// for this scope, or the date carries no note. See
+/// for this scope, or the date carries no note. The caller additionally
+/// skips this function entirely when the component sets
+/// `TemplateDate::suppress_note`. See
 /// `docs/specs/CALENDAR_DATE_ANNOTATIONS.md`.
 fn append_note<F: crate::render::format::OutputFormat<Output = String>>(
     fmt: &F,
@@ -947,7 +949,11 @@ impl ComponentValues for TemplateDate {
                 (value, None)
             };
 
-            let value = append_note(&fmt, value, &date, date_config, reference, options);
+            let value = if self.suppress_note == Some(true) {
+                value
+            } else {
+                append_note(&fmt, value, &date, date_config, reference, options)
+            };
 
             ProcValues {
                 value,

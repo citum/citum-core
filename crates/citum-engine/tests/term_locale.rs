@@ -73,6 +73,7 @@ fn term_locale_probe_template() -> Vec<TemplateComponent> {
             date: DateVariable::Issued,
             form: DateForm::Full,
             fallback: None,
+            suppress_note: None,
             rendering: Rendering {
                 prefix: Some(" ".into()),
                 ..Default::default()

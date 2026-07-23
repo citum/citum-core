@@ -994,6 +994,16 @@ pub struct TemplateDate {
     /// When every component is empty, including for an empty list, the date is omitted.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub fallback: Option<Vec<TemplateComponent>>,
+    /// When true, never wrap this component's opaque calendar-date `note`
+    /// (e.g. a Minguo/era annotation), regardless of the section's
+    /// `note-wrap` setting. Use on the redundant occurrence when a style
+    /// legitimately renders the same date variable more than once per item
+    /// (e.g. a short front-matter year plus a full-precision date later in
+    /// the body) so the annotation appears exactly once rather than on every
+    /// occurrence. See `docs/specs/CALENDAR_DATE_ANNOTATIONS.md` and
+    /// `csl26-gl0n`.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub suppress_note: Option<bool>,
     #[serde(flatten, default)]
     pub rendering: Rendering,
     /// Structured link options (DOI, URL).

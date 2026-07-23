@@ -1,7 +1,7 @@
 ---
 # csl26-gl0n
 title: Reconsider date.note rendering config in style
-status: todo
+status: completed
 type: task
 priority: normal
 tags:
@@ -10,7 +10,7 @@ tags:
     - dates
     - multilingual
 created_at: 2026-07-23T00:11:03Z
-updated_at: 2026-07-23T11:12:13Z
+updated_at: 2026-07-23T13:48:16Z
 ---
 
 Reconsider how `note-wrap` (`docs/specs/CALENDAR_DATE_ANNOTATIONS.md`) is
@@ -100,31 +100,31 @@ blocks *using* it in the `gb-t-7714-2025-author-date` style YAML.
 
 ## Implementation checklist
 
-- [ ] Add `suppress_note: Option<bool>` to `TemplateDate`
+- [x] Add `suppress_note: Option<bool>` to `TemplateDate`
       (`crates/citum-schema-style/src/template.rs`),
       `#[serde(skip_serializing_if = "Option::is_none")]`, with a `///` doc
       comment referencing this bean and the motivating double-annotation case.
-- [ ] Gate `append_note` (`crates/citum-engine/src/values/date.rs:401`) on
+- [x] Gate `append_note` (`crates/citum-engine/src/values/date.rs:401`) on
       it — early-return the unmodified `formatted` string when the
       component's `suppress-note` is `Some(true)`. The owning `TemplateDate`
       is already in scope at the call site (`date.rs:950`).
-- [ ] Amend `docs/specs/CALENDAR_DATE_ANNOTATIONS.md` (bump version, add a
+- [x] Amend `docs/specs/CALENDAR_DATE_ANNOTATIONS.md` (bump version, add a
       Changelog entry) documenting the per-component opt-out. The spec's
       §Style opt-in currently states note-wrap is "a single style-level
       setting, not a per-`TemplateDate` field, so it never has to be repeated
       across date components" — update that claim to describe the new
       escape hatch precisely (still section-scoped by default; components
       may now opt out individually).
-- [ ] Unit test: `get_variable_key`-adjacent coverage or a focused
+- [x] Unit test: `get_variable_key`-adjacent coverage or a focused
       `values::date` test asserting `append_note` is a no-op when
       `suppress-note: true` regardless of `note_wrap` being configured.
-- [ ] Integration test (`crates/citum-engine/tests/bibliography.rs` or
+- [x] Integration test (`crates/citum-engine/tests/bibliography.rs` or
       `date_annotations.rs`): a template rendering `issued` twice with
       `suppress-note: true` on the second component emits the note exactly
       once, attached to the first.
-- [ ] Regenerate schemas (`just schema-gen`) — `citum-schema-style`'s public
+- [x] Regenerate schemas (`just schema-gen`) — `citum-schema-style`'s public
       shape changed.
-- [ ] Once landed, this unblocks finishing the reverted
+- [x] Once landed, this unblocks finishing the reverted
       `gb-t-7714-2025-author-date` type-variant recipe in `csl26-6eak`.
 
 ## References
@@ -136,3 +136,23 @@ blocks *using* it in the `gb-t-7714-2025-author-date` style YAML.
   observed double-annotation output.
 - `csl26-u3zy` (scrapped) — the prior per-component override removal; this
   bean is unrelated to it (see "Not a revival" above).
+
+## Summary of Changes
+
+Implemented the decided design: added `suppress_note: Option<bool>` to
+`TemplateDate` (`crates/citum-schema-style/src/template.rs`), following the
+`TemplateTitle.disambiguate_only`/`strip_periods_all` precedent exactly
+(kebab `suppress-note`, `skip_serializing_if = "Option::is_none"`). Gated
+the `append_note` call site in `TemplateDate::values`
+(`crates/citum-engine/src/values/date.rs:950`) behind it. Amended
+`CALENDAR_DATE_ANNOTATIONS.md` to v1.7 with a new §Style opt-in subsection
+and changelog entry. Added a unit test
+(`test_date_note_hidden_when_component_suppresses_it`,
+`crates/citum-engine/src/values/tests.rs`) and an integration test
+(`given_component_with_suppress_note_when_date_renders_twice_then_note_appears_once`,
+`crates/citum-engine/tests/date_annotations.rs`) rendering `issued` twice
+and confirming the note wraps exactly once, on the un-suppressed occurrence.
+Regenerated schemas (`docs/schemas/style.json`, `server.json`). No embedded
+style opts in yet — that lands in `csl26-6eak`, which now uses this
+mechanism for its `article-journal,article-magazine`-style dual-date
+variants. `just pre-commit` green (2160/2160 tests).

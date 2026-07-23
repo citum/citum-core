@@ -1306,6 +1306,13 @@
             "$ref": "#/$defs/TemplateComponent"
           }
         },
+        "suppress-note": {
+          "description": "When true, never wrap this component's opaque calendar-date `note`\n(e.g. a Minguo/era annotation), regardless of the section's\n`note-wrap` setting. Use on the redundant occurrence when a style\nlegitimately renders the same date variable more than once per item\n(e.g. a short front-matter year plus a full-precision date later in\nthe body) so the annotation appears exactly once rather than on every\noccurrence. See `docs/specs/CALENDAR_DATE_ANNOTATIONS.md` and\n`csl26-gl0n`.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
         "text-case": {
           "description": "Text-case transform to apply to the rendered value.",
           "anyOf": [
