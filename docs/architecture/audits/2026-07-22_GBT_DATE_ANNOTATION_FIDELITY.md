@@ -2,7 +2,7 @@
 
 - **Date:** 2026-07-22
 - **Bean:** `csl26-d3hs`
-- **Spec:** [docs/specs/MULTILINGUAL.md](../../specs/MULTILINGUAL.md), [CALENDAR_DATE_ANNOTATIONS.md](../../guides/AUTHORING_LOCALES.md)
+- **Spec:** [docs/specs/MULTILINGUAL.md](../../specs/MULTILINGUAL.md), [CALENDAR_DATE_ANNOTATIONS.md](../../specs/CALENDAR_DATE_ANNOTATIONS.md)
 
 ## Problem
 
