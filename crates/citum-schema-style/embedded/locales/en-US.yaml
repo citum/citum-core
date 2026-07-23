@@ -933,6 +933,10 @@ messages:
   term.retrieved: "retrieved"
   term.no-date: "n.d."
   term.no-date-long: "no date"
+  # GB/T 7714's own anonymous-author convention (not the CSL legacy
+  # `terms.anonymous` "anon." catalog entry) — see csl26-6eak.
+  term.anonymous: "Anon"
+  term.anonymous-long: "Anonymous"
   term.forthcoming: "forthcoming"
   # CSL reference locale (scripts/locales-en-US.xml): CMOS 10.48 allows
   # "ca." but CSL has historically used "c." — match the CSL reference.
