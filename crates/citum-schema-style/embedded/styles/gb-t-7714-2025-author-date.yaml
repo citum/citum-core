@@ -20,14 +20,13 @@ info:
     - href: https://std.samr.gov.cn/gb/search/gbDetailed?id=4507EFE13D37CB6AE06397BE0A0A601F
       rel: documentation
 options:
-  # Style-owned so it resolves independent of which Locale object backs a
-  # given render (`Processor::new` seeds a plain en-US base locale; only a
-  # scoped `locales:` branch or a per-item `language` swaps in the real
-  # zh-CN locale — csl26-6eak). GB/T 7714's `佚名` (anonymous-author)
-  # placeholder, used by `contributor: author`'s `fallback:` on every
-  # bibliography type-variant below.
-  messages:
-    term.anonymous: 佚名
+  # GB/T 7714's anonymous-author placeholder (`佚名`/`Anon`), used by
+  # `contributor: author`'s `fallback:` on every bibliography type-variant
+  # below, is sourced from each locale file's `messages.term.anonymous`
+  # (zh-CN.yaml/en-US.yaml) — not a style-owned override — so the same
+  # `bibliography: locales:` per-item branch selection that already picks
+  # `term.no-date`'s locale (`n.d.` vs `无日期`) also picks the correct
+  # anonymous term. csl26-6eak.
   substitute: standard
   processing: author-date-givenname
   contributors:

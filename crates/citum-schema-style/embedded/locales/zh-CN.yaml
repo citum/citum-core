@@ -145,6 +145,8 @@ messages:
   term.et-al: "等"
   term.no-date: "无日期"
   term.no-date-long: "无日期"
+  term.anonymous: "佚名"
+  term.anonymous-long: "佚名"
   term.page-label: "页"
   term.page-label-long: "页"
   term.chapter-label: "章"
