@@ -149,6 +149,8 @@ impl Locale {
             (GeneralTerm::Retrieved, _) => Some("term.retrieved"),
             (GeneralTerm::NoDate, TermForm::Long) => Some("term.no-date-long"),
             (GeneralTerm::NoDate, _) => Some("term.no-date"),
+            (GeneralTerm::Anonymous, TermForm::Long) => Some("term.anonymous-long"),
+            (GeneralTerm::Anonymous, _) => Some("term.anonymous"),
             (GeneralTerm::Forthcoming, _) => Some("term.forthcoming"),
             (GeneralTerm::Circa, TermForm::Long) => Some("term.circa-long"),
             (GeneralTerm::Circa, _) => Some("term.circa"),
