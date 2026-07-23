@@ -290,8 +290,18 @@ impl<'a> Disambiguator<'a> {
         refs: &[&'b Reference],
         needs_title_key: bool,
     ) -> ReferenceCache<'b> {
+        // Grouping must resolve the substitute chain from `sort_config` (the
+        // effective bibliography config, per its doc comment), not `config`
+        // (which may be citation-scoped). A style can override the
+        // bibliography-scope substitute independently of the citation-scope
+        // one (e.g. GB/T 7714 author-date's constant `佚名` anonymous-author
+        // fallback, csl26-6eak) — if grouping used the citation substitute
+        // instead, it would see a per-reference substituted title where the
+        // bibliography renders the same constant text for every such
+        // reference, so those references would each form a singleton group
+        // instead of colliding on year like a real shared author.
         let substitute = citum_schema::options::SubstituteConfig::resolve_or_default(
-            self.config.substitute.as_ref(),
+            self.sort_config.substitute.as_ref(),
         );
         refs.iter()
             .enumerate()
@@ -381,12 +391,22 @@ impl<'a> Disambiguator<'a> {
             // to promote. Unlike a substituted title (which already varies
             // per reference and so needs no further disambiguation), a
             // component-level `TemplateContributor.fallback` (e.g. GB/T
-            // 7714's `佚名` anonymous-author term, csl26-6eak) renders the
-            // *same* constant text for every such reference — so, like a
-            // real shared author name, these entries must collide on year
-            // for suffix assignment rather than each forming its own
-            // singleton group.
-            None => Self::ANONYMOUS_FALLBACK_KEY.to_string(),
+            // 7714's `佚名`/`Anon` anonymous-author term, csl26-6eak) renders
+            // the *same* constant text for every such reference sharing a
+            // language — so, like a real shared author name, these entries
+            // must collide on year for suffix assignment rather than each
+            // forming its own singleton group. Scoped by the reference's own
+            // effective language (the same driver the bibliography renderer
+            // uses to pick a `locales:` branch, `core.rs`'s
+            // `effective_item_language`) because the rendered term itself
+            // varies by language (`佚名` vs `Anon`) — a Chinese and an
+            // English anonymous item must not share one year-suffix letter
+            // sequence when their rendered author text actually differs.
+            None => format!(
+                "{}{}",
+                Self::ANONYMOUS_FALLBACK_KEY,
+                crate::values::effective_item_language(reference).unwrap_or_default()
+            ),
             Some(_) => String::new(),
         }
     }
