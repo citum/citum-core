@@ -35,6 +35,21 @@ use indexmap::IndexMap;
 use rstest::rstest;
 use std::path::PathBuf;
 
+/// Load the embedded zh-CN locale for GB/T fixtures.
+///
+/// `Processor::new` seeds a plain `Locale::en_us()` base locale; the real
+/// `citum render` CLI resolves a style's `info.default-locale` (zh-CN for
+/// the GB/T family) into an explicit locale via `create_processor`
+/// (`citum-cli/src/style_resolver.rs`). Tests that construct a `Processor`
+/// directly must do the same or a language-sensitive term (e.g. GB/T's
+/// `佚名`/`Anon` anonymous-author term, csl26-6eak) resolves against the
+/// wrong locale's default.
+fn zh_cn_locale() -> citum_schema::Locale {
+    let bytes = citum_schema::embedded::get_locale_bytes("zh-CN").expect("zh-CN must be embedded");
+    citum_schema::Locale::from_yaml_str(std::str::from_utf8(bytes).expect("valid UTF-8"))
+        .expect("zh-CN locale should parse")
+}
+
 /// Project root path resolver.
 fn project_root() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../..")
@@ -60,7 +75,7 @@ fn render_pinned_gbt_entry(style_name: &str, ref_id: &str) -> String {
         .unwrap_or_else(|_| panic!("{style_name} should parse"))
         .into_resolved();
 
-    Processor::new(style, bibliography).render_bibliography()
+    Processor::with_locale(style, bibliography, zh_cn_locale()).render_bibliography()
 }
 
 /// Build a minimal book reference with an annotated `issued` date.
@@ -195,7 +210,7 @@ fn given_gb_t_author_date_style_when_rendering_bibliography_then_calendar_note_i
         annotated_book("minguo-1947", "戰後臺灣史", "1947", "民国三十六年"),
     )]);
 
-    let processor = Processor::new(style, bibliography);
+    let processor = Processor::with_locale(style, bibliography, zh_cn_locale());
     let rendered = processor.render_bibliography();
 
     assert_eq!(rendered, "佚名，1947（民国三十六年）. 戰後臺灣史[M]. ");
