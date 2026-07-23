@@ -269,6 +269,7 @@ fn test_date_key_is_always_none() {
         form: DateForm::Year,
         rendering: Rendering::default(),
         fallback: None,
+        suppress_note: None,
         links: None,
         custom: None,
     });
@@ -281,6 +282,7 @@ fn test_date_key_is_always_none() {
         form: DateForm::Year,
         rendering: Rendering::default(),
         fallback: None,
+        suppress_note: None,
         links: None,
         custom: None,
     });
@@ -292,6 +294,7 @@ fn test_date_key_is_always_none() {
         form: DateForm::YearMonthDay,
         rendering: Rendering::default(),
         fallback: None,
+        suppress_note: None,
         links: None,
         custom: None,
     });
@@ -372,6 +375,7 @@ fn test_strip_author_component_nested_list() {
                 form: DateForm::Year,
                 rendering: Rendering::default(),
                 fallback: None,
+                suppress_note: None,
                 links: None,
                 custom: None,
             }),

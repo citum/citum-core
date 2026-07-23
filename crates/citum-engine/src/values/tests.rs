@@ -1011,6 +1011,7 @@ fn test_date_values() {
         date: TemplateDateVar::Issued,
         form: DateForm::Year,
         fallback: None,
+        suppress_note: None,
         rendering: Default::default(),
         links: None,
         custom: None,
@@ -1058,6 +1059,7 @@ fn test_message_component_renders_accessed_date_argument() {
                 date: TemplateDateVar::Issued,
                 form: DateForm::Year,
                 fallback: None,
+                suppress_note: None,
                 rendering: Default::default(),
                 links: None,
                 custom: None,
@@ -1298,6 +1300,7 @@ fn test_message_component_reorders_locale_phrase_arguments() {
         date: TemplateDateVar::Issued,
         form: DateForm::Year,
         fallback: None,
+        suppress_note: None,
         rendering: Default::default(),
         links: None,
         custom: None,
@@ -1623,6 +1626,7 @@ fn test_year_month_day_dates_inline_disambiguation_suffix_on_year() {
         date: TemplateDateVar::Issued,
         form: DateForm::YearMonthDay,
         fallback: None,
+        suppress_note: None,
         rendering: Default::default(),
         links: None,
         custom: None,
@@ -5537,6 +5541,7 @@ fn make_issued_year_component() -> TemplateDate {
         date: TemplateDateVar::Issued,
         form: DateForm::Year,
         fallback: None,
+        suppress_note: None,
         rendering: Default::default(),
         links: None,
         custom: None,
@@ -5650,6 +5655,52 @@ fn test_date_note_hidden_when_style_has_no_note_wrap() {
     let hints = ProcHints::default();
 
     let values = make_issued_year_component()
+        .values::<PlainText>(&reference, &hints, &options)
+        .unwrap();
+
+    assert_eq!(values.value, "1947");
+}
+
+#[test]
+fn test_date_note_hidden_when_component_suppresses_it() {
+    // csl26-gl0n: a component with `suppress-note: true` never wraps its
+    // note, even when the section's `note-wrap` is configured and the input
+    // carries one — the escape hatch for a style that legitimately renders
+    // the same date variable twice per item (e.g. GB/T author-date's short
+    // front-matter year plus a full-precision date later in the body).
+    let reference = make_annotated_date_reference(Some("民国三十六年"), Some("zh"));
+    let config = Config {
+        dates: Some(DateConfig {
+            note_wrap: Some(WrapConfig {
+                punctuation: WrapPunctuation::Parentheses,
+                inner_prefix: None,
+                inner_suffix: None,
+            }),
+            ..Default::default()
+        }),
+        ..Default::default()
+    };
+    let locale = make_locale();
+    let options = RenderOptions {
+        config: Arc::new(config),
+        bibliography_config: None,
+        locale: &locale,
+        context: RenderContext::Bibliography,
+        mode: citum_schema::citation::CitationMode::NonIntegral,
+        suppress_author: false,
+        locator_raw: None,
+        ref_type: None,
+        show_semantics: false,
+        current_template_index: None,
+        abbreviation_map: None,
+    };
+    let hints = ProcHints::default();
+    let component = TemplateDate {
+        suppress_note: Some(true),
+        ..make_issued_year_component()
+    };
+
+    let values = component
         .values::<PlainText>(&reference, &hints, &options)
         .unwrap();
 
@@ -5782,6 +5833,7 @@ fn test_date_note_wraps_after_a_closed_interval() {
         date: TemplateDateVar::Issued,
         form: DateForm::Year,
         fallback: None,
+        suppress_note: None,
         rendering: Default::default(),
         links: None,
         custom: None,

@@ -1,8 +1,8 @@
 # Calendar Date Annotations Specification
 
 **Status:** Active
-**Version:** 1.6
-**Date:** 2026-07-20
+**Version:** 1.7
+**Date:** 2026-07-23
 **Related:** [Date Model](./DATE_MODEL.md), [GB/T 7714—2025 Citation Conventions](../reference/GBT_7714_CITATION_CONVENTIONS.md), bean `csl26-0kqf` (the separate, still-unimplemented computed regnal-year feature this data model unblocks), bean `csl26-k2kp` (script-aware wrap renderer, completed; spec `docs/specs/PUNCTUATION_REALIZATION.md`), [PR #1067 discussion](https://github.com/citum/citum-core/pull/1067#issuecomment-5011594655)
 
 ## Purpose
@@ -135,8 +135,32 @@ date-rendering knobs (`era-labels`, `range-delimiter`,
 `approximation-marker`). When absent, notes are hidden. When present, every
 date the style renders in that scope wraps its `note` (when the input has
 one) in the configured punctuation, appended after the complete formatted
-date. This is a single style-level setting, not a per-`TemplateDate` field,
-so it never has to be repeated across date components.
+date. This is a section-scoped setting, not a per-`TemplateDate` field, so
+it never has to be repeated across date components — with one escape hatch:
+
+**Per-component opt-out: `suppress-note`.** A style can legitimately render
+the same date variable more than once per item — e.g. GB/T author-date's
+short front-matter year plus a full-precision date later in the body (GB/T
+7714 §7.5.4.2, archival/patent/report/webpage/newspaper types). Applying
+`note-wrap` uniformly would wrap the identical annotation on every
+occurrence. `TemplateDate.suppress_note: Option<bool>`
+(`crates/citum-schema-style/src/template.rs`, kebab `suppress-note` in YAML)
+opts a single occurrence out: when `true`, that component's rendering never
+wraps its note, regardless of the section's `note-wrap` setting. Absent (the
+default) is unaffected — every style that doesn't render a date twice needs
+no changes.
+
+```yaml
+- date: issued
+  form: year            # front block — carries the note
+- date: issued
+  form: year-month-day  # body — redundant occurrence
+  suppress-note: true
+```
+
+This mirrors the existing per-component boolean opt-ins on `TemplateTitle`
+(`disambiguate-only`, `strip-periods-all`) rather than inventing a new
+mechanism. See `csl26-gl0n`.
 
 **Extension point: a bare (unwrapped) note.** `WrapPunctuation` currently
 has three variants — `parentheses`, `brackets`, `quotes` — so `note-wrap`
@@ -313,6 +337,12 @@ remains tracked by `csl26-6eak`.
 
 ## Changelog
 
+- v1.7 (2026-07-23): Add the per-component `suppress-note` opt-out
+  (`TemplateDate.suppress_note`) so a style that legitimately renders the
+  same date variable twice per item (e.g. GB/T author-date's short
+  front-matter year plus a full-precision body date) can mark the redundant
+  occurrence and avoid double-wrapping the annotation. Mechanism only — no
+  embedded style opts in yet; see `csl26-gl0n` and `csl26-6eak`.
 - v1.6 (2026-07-20): Per review feedback (PR #1068), enable `note-wrap`
   in `gb-t-7714-2025-numeric` and `gb-t-7714-2025-note`, not just
   `-author-date`. Verified against the real pinned corpus

@@ -22,10 +22,15 @@ use common::announce_behavior;
 use citum_engine::Processor;
 use citum_io::load_bibliography;
 use citum_schema::citation::{Citation, CitationItem};
+use citum_schema::options::{BibliographyOptions, DateConfig};
 use citum_schema::reference::{
     Contributor, ContributorEntry, ContributorRole, DateValue, InputReference, Monograph,
     MonographType, StructuredName, Title,
 };
+use citum_schema::template::{
+    DateForm, DateVariable, TemplateComponent, TemplateDate, WrapConfig, WrapPunctuation,
+};
+use citum_schema::{BibliographySpec, Style, StyleInfo};
 use indexmap::IndexMap;
 use rstest::rstest;
 use std::path::PathBuf;
@@ -98,6 +103,70 @@ fn annotated_book_by(
         },
         ..Default::default()
     }))
+}
+
+/// A bibliography-only style rendering `issued` twice per item — the front
+/// occurrence bare, the second with `suppress-note: true` — with
+/// `note-wrap: parentheses` configured. Mirrors the GB/T author-date shape
+/// that motivated `csl26-gl0n` (a short front-matter year plus a redundant
+/// later occurrence).
+fn style_with_duplicated_issued_date() -> Style {
+    Style {
+        info: StyleInfo {
+            title: Some("Duplicated Issued Date".to_string()),
+            ..Default::default()
+        },
+        bibliography: Some(BibliographySpec {
+            options: Some(BibliographyOptions {
+                dates: Some(DateConfig {
+                    note_wrap: Some(WrapConfig {
+                        punctuation: WrapPunctuation::Parentheses,
+                        inner_prefix: None,
+                        inner_suffix: None,
+                    }),
+                    ..Default::default()
+                }),
+                ..Default::default()
+            }),
+            template: Some(vec![
+                TemplateComponent::Date(TemplateDate {
+                    date: DateVariable::Issued,
+                    form: DateForm::Year,
+                    ..Default::default()
+                }),
+                TemplateComponent::Date(TemplateDate {
+                    date: DateVariable::Issued,
+                    form: DateForm::Year,
+                    suppress_note: Some(true),
+                    ..Default::default()
+                }),
+            ]),
+            ..Default::default()
+        }),
+        ..Default::default()
+    }
+    .into_resolved()
+}
+
+#[test]
+fn given_component_with_suppress_note_when_date_renders_twice_then_note_appears_once() {
+    announce_behavior(
+        "A template rendering the same date variable twice per item wraps the \
+         calendar note on the occurrence without `suppress-note: true` only — \
+         the second, redundant occurrence renders bare, even though the \
+         section's `note-wrap` is configured and the date carries a note on \
+         both renders (it's the same underlying date value) — csl26-gl0n.",
+    );
+    let style = style_with_duplicated_issued_date();
+    let bibliography = IndexMap::from([(
+        "minguo-1947".to_string(),
+        annotated_book("minguo-1947", "戰後臺灣史", "1947", "民国三十六年"),
+    )]);
+
+    let processor = Processor::new(style, bibliography);
+    let rendered = processor.render_bibliography();
+
+    assert_eq!(rendered, "1947(民国三十六年). 1947");
 }
 
 fn single_item_citation(id: &str) -> Citation {
