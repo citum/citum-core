@@ -22,7 +22,10 @@ use common::announce_behavior;
 use citum_engine::Processor;
 use citum_io::load_bibliography;
 use citum_schema::citation::{Citation, CitationItem};
-use citum_schema::reference::InputReference;
+use citum_schema::reference::{
+    Contributor, DateValue, InputReference, LangID, Monograph, MonographType, MultilingualString,
+    Place, Publisher, StructuredName, Title,
+};
 use citum_schema::{Style, locale::Locale};
 use indexmap::IndexMap;
 use std::fs;
@@ -302,7 +305,7 @@ fn given_gb_t_numeric_style_when_rendering_latin_script_book_then_delimiters_fol
 
     assert_eq!(
         rendered,
-        "[1]AI and the future of banking[M]. New York：Wiley，1988"
+        "[1]AI and the future of banking[M]. New York：Wiley，1988."
     );
 }
 
@@ -332,7 +335,7 @@ fn given_gb_t_numeric_style_when_rendering_cjk_script_book_then_delimiters_stay_
 
     assert_eq!(
         rendered,
-        "[1]银行业的未来与人工智能[M]. 北京：清华大学出版社，1988"
+        "[1]银行业的未来与人工智能[M]. 北京：清华大学出版社，1988."
     );
 }
 
@@ -369,7 +372,86 @@ fn english_article_journal_falls_back_to_section_type_variant() {
 
     assert_eq!(
         rendered,
-        "[1]Coffee drinking and cancer of the pancreas[J]. Br Med J，1981，283（6292）：628"
+        "[1]Coffee drinking and cancer of the pancreas[J]. Br Med J，1981，283（6292）：628."
+    );
+}
+
+#[test]
+fn given_gb_t_numeric_style_when_bare_entry_has_no_trailing_field_then_terminal_period_is_appended()
+{
+    announce_behavior(
+        "GB/T 7714—2025's own worked examples (data/GB-T_7714-2025.original.toml) and \
+         real Zotero output always end a bibliography entry in a period, even after a \
+         bare page-locator with no dimensions/url/cstr/doi field to otherwise trigger \
+         one. `bibliography.options.entry-suffix: '.'` (unset before this fix) closes \
+         that gap — csl26-iqxu.",
+    );
+    let style = citum_schema::embedded::get_embedded_style("gb-t-7714-2025-numeric")
+        .expect("gb-t-7714-2025-numeric should be embedded")
+        .expect("gb-t-7714-2025-numeric should parse")
+        .into_resolved();
+    let bare_book = InputReference::Monograph(Box::new(Monograph {
+        id: Some("hawking".into()),
+        r#type: MonographType::Book,
+        title: Some(Title::Single("A Brief History of Time".to_string())),
+        author: Some(Contributor::StructuredName(StructuredName {
+            family: MultilingualString::Simple("Hawking".to_string()),
+            given: MultilingualString::Simple("Stephen".to_string()),
+            suffix: None,
+            dropping_particle: None,
+            non_dropping_particle: None,
+        })),
+        publisher: Some(Publisher {
+            name: MultilingualString::Simple("Bantam Dell Publishing Group".to_string()),
+            place: Some(Place("New York".to_string())),
+        }),
+        language: Some(LangID("en".to_string())),
+        issued: DateValue::new("1988".to_string()),
+        ..Default::default()
+    }));
+    let bibliography = IndexMap::from([("hawking".to_string(), bare_book)]);
+
+    let processor = Processor::new(style, bibliography);
+    let rendered = processor.render_bibliography();
+
+    assert_eq!(
+        rendered,
+        "[1]Hawking S. A Brief History of Time[M]. New York：Bantam Dell Publishing Group，1988."
+    );
+}
+
+#[test]
+fn given_gb_t_numeric_style_when_entry_already_ends_in_url_then_period_is_not_doubled() {
+    announce_behavior(
+        "`entry-suffix-after-url: true` forces the terminal period after a URL-ending \
+         entry (per GB/T convention — real Zotero output always has it), but the \
+         engine's `TerminalLink` guard must not double-punctuate an entry the URL \
+         field already terminated correctly — csl26-iqxu.",
+    );
+    let style = citum_schema::embedded::get_embedded_style("gb-t-7714-2025-numeric")
+        .expect("gb-t-7714-2025-numeric should be embedded")
+        .expect("gb-t-7714-2025-numeric should parse")
+        .into_resolved();
+    let corpus_path = project_root().join("tests/fixtures/test-items-library/gb-t-7714-2025.json");
+    let corpus = load_bibliography(&corpus_path).expect("pinned GB/T corpus should load");
+    let ref_id = "gbt7714.7.5.2.3:3";
+    let reference = corpus
+        .get(ref_id)
+        .unwrap_or_else(|| panic!("pinned GB/T corpus should contain {ref_id}"))
+        .clone();
+    let bibliography = IndexMap::from([(ref_id.to_string(), reference)]);
+
+    let processor = Processor::new(style, bibliography);
+    let rendered = processor.render_bibliography();
+
+    assert_eq!(
+        rendered,
+        "[1][M/OL]. Open University Press，2025. \
+         https://www.mheducation.co.uk/economics-13e-9781526850232-emea-group."
+    );
+    assert!(
+        !rendered.ends_with(".."),
+        "URL-terminated entry must not be double-punctuated: {rendered}"
     );
 }
 

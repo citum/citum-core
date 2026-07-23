@@ -111,6 +111,9 @@ bibliography:
         delimiter-precedes-last: contextual
       delimiter: { mark: comma }
     separator: ''
+    entry-suffix: '.'
+    entry-suffix-after-url: true
+    entry-suffix-after-doi: true
   template:
   - number: citation-number
     wrap:
