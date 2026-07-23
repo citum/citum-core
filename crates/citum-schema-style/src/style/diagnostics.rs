@@ -307,7 +307,7 @@ fn validate_nested_component_templates(
     kind: &str,
 ) -> Result<(), String> {
     match kind {
-        "date" => {
+        "date" | "contributor" => {
             if let Some(fallback) = child(map, "fallback") {
                 validate_template(fallback, &format!("{path}.fallback"))?;
             }
@@ -344,6 +344,7 @@ fn component_allowed_fields(kind: &str) -> &'static [&'static str] {
         "contributor" => &[
             "contributor",
             "form",
+            "fallback",
             "label",
             "merge",
             "name-order",
@@ -356,7 +357,15 @@ fn component_allowed_fields(kind: &str) -> &'static [&'static str] {
             "gender",
             "custom",
         ],
-        "date" => &["date", "form", "fallback", "links", "custom"],
+        "date" => &[
+            "date",
+            "form",
+            "fallback",
+            "suppress-note",
+            "suppress-disamb-suffix",
+            "links",
+            "custom",
+        ],
         "title" => &[
             "title",
             "form",

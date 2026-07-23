@@ -270,6 +270,7 @@ fn test_date_key_is_always_none() {
         rendering: Rendering::default(),
         fallback: None,
         suppress_note: None,
+        suppress_disamb_suffix: None,
         links: None,
         custom: None,
     });
@@ -283,6 +284,7 @@ fn test_date_key_is_always_none() {
         rendering: Rendering::default(),
         fallback: None,
         suppress_note: None,
+        suppress_disamb_suffix: None,
         links: None,
         custom: None,
     });
@@ -295,6 +297,7 @@ fn test_date_key_is_always_none() {
         rendering: Rendering::default(),
         fallback: None,
         suppress_note: None,
+        suppress_disamb_suffix: None,
         links: None,
         custom: None,
     });
@@ -355,6 +358,7 @@ fn test_strip_author_component_nested_list() {
     let nested = TemplateComponent::Group(TemplateGroup {
         group: vec![
             TemplateComponent::Contributor(TemplateContributor {
+                fallback: None,
                 contributor: ContributorRole::Author.into(),
                 form: ContributorForm::Short,
                 and: None,
@@ -376,6 +380,7 @@ fn test_strip_author_component_nested_list() {
                 rendering: Rendering::default(),
                 fallback: None,
                 suppress_note: None,
+                suppress_disamb_suffix: None,
                 links: None,
                 custom: None,
             }),

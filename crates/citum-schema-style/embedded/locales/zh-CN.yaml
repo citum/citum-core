@@ -112,6 +112,9 @@ terms:
   and:
     long: 和
     symbol: 和
+  anonymous:
+    long: 佚名
+    short: 佚名
   et_al:
     long: 等
   no_date:

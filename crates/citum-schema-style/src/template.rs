@@ -880,6 +880,15 @@ pub struct TemplateContributor {
     pub contributor: ContributorRoles,
     /// How to display the contributor (long names, short, with label, etc.).
     pub form: ContributorForm,
+    /// Components rendered when the author slot has no contributor, no
+    /// title/editor/translator substitute matched, and `substitute.template`
+    /// is exhausted — e.g. `message: term.anonymous` for GB/T 7714's `佚名`
+    /// placeholder. Only consulted for `contributor: author`; other roles
+    /// (editor, translator, ...) are unaffected. Mirrors
+    /// `TemplateDate.fallback` in shape and in the "tried in order, first
+    /// non-empty wins" semantics. See `csl26-6eak`.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub fallback: Option<Vec<TemplateComponent>>,
     /// Optional role label configuration (e.g., "eds." for editors).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub label: Option<RoleLabel>,
@@ -1004,6 +1013,15 @@ pub struct TemplateDate {
     /// `csl26-gl0n`.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub suppress_note: Option<bool>,
+    /// When true, never inline a year-suffix disambiguator (e.g. "1947a")
+    /// into this component's rendering, regardless of `hints.disamb_condition`.
+    /// Use on the redundant occurrence when a style legitimately renders
+    /// `issued` more than once per item — the mirror of `suppress_note`: a
+    /// dual-date shape typically wants the suffix on the short front year
+    /// and the calendar-note annotation on the full body date, so each flag
+    /// suppresses the opposite occurrence's copy. See `csl26-6eak`.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub suppress_disamb_suffix: Option<bool>,
     #[serde(flatten, default)]
     pub rendering: Rendering,
     /// Structured link options (DOI, URL).

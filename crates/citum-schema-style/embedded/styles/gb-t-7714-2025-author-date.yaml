@@ -20,6 +20,14 @@ info:
     - href: https://std.samr.gov.cn/gb/search/gbDetailed?id=4507EFE13D37CB6AE06397BE0A0A601F
       rel: documentation
 options:
+  # Style-owned so it resolves independent of which Locale object backs a
+  # given render (`Processor::new` seeds a plain en-US base locale; only a
+  # scoped `locales:` branch or a per-item `language` swaps in the real
+  # zh-CN locale — csl26-6eak). GB/T 7714's `佚名` (anonymous-author)
+  # placeholder, used by `contributor: author`'s `fallback:` on every
+  # bibliography type-variant below.
+  messages:
+    term.anonymous: 佚名
   substitute: standard
   processing: author-date-givenname
   contributors:
@@ -90,6 +98,22 @@ citation:
   multi-cite-delimiter: { mark: semicolon }
 bibliography:
   options:
+    # GB/T 7714 author-date has no title-as-author substitution convention:
+    # an item with no author (and no editor/translator to promote) renders
+    # the locale's 佚名 (anonymous-author) term via `contributor: author`'s
+    # `fallback:` on each type-variant (csl26-6eak), not a promoted title.
+    # The inherited global `options.substitute: standard` preset (editor →
+    # title → translator) would otherwise win via `title` first — nearly
+    # every reference has *some* title, so the per-component fallback would
+    # never be reached. Drops `title` from the chain, keeping `editor`/
+    # `translator` promotion available (a non-empty override — an empty
+    # `template: []` is a merge no-op per `Substitute::merge`, not a clear).
+    # Scoped to bibliography only; citations keep the inherited preset
+    # unchanged (not re-verified against this bean's corpus work).
+    substitute:
+      template:
+      - editor
+      - translator
     contributors:
       shorten:
         min: 4
@@ -328,213 +352,662 @@ bibliography:
       prefix: 'DOI:'
       suppress: false
   type-variants:
-    article,dataset:
+    article,dataset,preprint:
     - contributor: author
       form: long
+      name-order: family-first
+      delimiter: { mark: comma }
+      sort-separator: ' '
+      suffix: { mark: comma }
+      fallback:
+      - message: term.anonymous
+        form: short
+    - date: issued
+      form: year
+      suppress-note: true
+      suffix: '. '
+      fallback:
+      - message: term.no-date
+        form: short
     - title: primary
-    - number: volume
-      label-form: short
-    - variable: medium
+    - message: gb-t-7714-type-code
+      args:
+        type: { reference-type: key }
+        carrier: { carrier: { online: OL, absent: '-' } }
+      wrap:
+        punctuation: brackets
+      suffix: '. '
     - variable: version
+      prefix: V
+      suffix: '. '
       strip-periods: true
-    - variable: version
     - variable: publisher
     - date: issued
-      form: full
+      form: year-month-day
+      suppress-disamb-suffix: true
+      fallback: []
       wrap: parentheses
+    - date: accessed
+      form: year-month-day
+      wrap:
+        punctuation: brackets
+      suffix: '. '
+    - variable: url
     - identifier: cstr
-      prefix: 'CSTR:'
+      prefix: '. CSTR:'
     - variable: doi
-      prefix: 'DOI:'
+      prefix: '. DOI:'
     article-journal,article-magazine:
     - contributor: author
       form: long
+      name-order: family-first
+      delimiter: { mark: comma }
+      sort-separator: ' '
+      suffix: { mark: comma }
+      fallback:
+      - message: term.anonymous
+        form: short
     - date: issued
       form: year
+      suffix: '. '
+      fallback:
+      - message: term.no-date
+        form: short
     - title: primary
-    - number: volume
-      label-form: short
-    - variable: medium
+    - message: gb-t-7714-type-code
+      args:
+        type: { reference-type: key }
+        carrier: { carrier: { online: OL, absent: '-' } }
+      wrap:
+        punctuation: brackets
+      suffix: '. '
     - contributor: translator
       form: long
-    - title: container-title
-      strip-periods: true
-    - date: issued
-      form: full
-    - number: volume
-    - number: issue
-      wrap: parentheses
+      name-order: family-first
+      delimiter: { mark: comma }
+      sort-separator: ' '
+      label:
+        term: translator
+        form: short
+        placement: suffix
+        prefix: { mark: comma }
+      suffix: '. '
+    - group:
+      - group:
+        - title: container-title
+          strip-periods-all: true
+        - number: volume
+        delimiter: { mark: comma }
+      - number: issue
+        wrap: parentheses
+      delimiter: ''
     - number: pages
+      prefix: { mark: colon }
     - number: number
+      prefix: { mark: colon }
+    - variable: url
+      prefix: '. '
     - identifier: cstr
-      prefix: 'CSTR:'
+      prefix: '. CSTR:'
     - variable: doi
-      prefix: 'DOI:'
+      prefix: '. DOI:'
     article-newspaper:
     - contributor: author
       form: long
+      name-order: family-first
+      delimiter: { mark: comma }
+      sort-separator: ' '
+      suffix: { mark: comma }
+      fallback:
+      - message: term.anonymous
+        form: short
+    - date: issued
+      form: year
+      suppress-note: true
+      suffix: '. '
+      fallback:
+      - message: term.no-date
+        form: short
     - title: primary
-    - number: volume
-      label-form: short
-    - variable: medium
+    - message: gb-t-7714-type-code
+      args:
+        type: { reference-type: key }
+        carrier: { carrier: { online: OL, absent: '-' } }
+      wrap:
+        punctuation: brackets
+      suffix: '. '
     - contributor: translator
       form: long
+      name-order: family-first
+      delimiter: { mark: comma }
+      sort-separator: ' '
+      label:
+        term: translator
+        form: short
+        placement: suffix
+        prefix: { mark: comma }
+      suffix: '. '
     - title: container-title
-      strip-periods: true
+      strip-periods-all: true
+      suffix: { mark: comma }
     - date: issued
-      form: full
+      form: year-month-day
+      suppress-disamb-suffix: true
+      fallback: []
     - number: pages
       wrap: parentheses
+    - variable: url
+      prefix: '. '
     - identifier: cstr
-      prefix: 'CSTR:'
+      prefix: '. CSTR:'
     - variable: doi
-      prefix: 'DOI:'
-    book,thesis,map,software:
-    - contributor: author
-      form: long
-    - message: term.no-date
-      form: short
-    - title: primary
-    - number: volume
-      label-form: short
-    - variable: medium
-    - contributor: translator
-      form: long
-    - number: edition
-    - number: edition
-      label-form: short
-    - variable: publisher-place
-    - variable: publisher
-    - number: pages
-    - identifier: cstr
-      prefix: 'CSTR:'
-    - variable: doi
-      prefix: 'DOI:'
+      prefix: '. DOI:'
     chapter,entry-dictionary,entry-encyclopedia:
     - contributor: author
       form: long
-    - message: term.no-date
-      form: short
-    - title: primary
-    - number: volume
-      label-form: short
-    - variable: medium
-    - contributor: translator
-      form: long
+      name-order: family-first
+      delimiter: { mark: comma }
+      sort-separator: ' '
+      suffix: { mark: comma }
+      fallback:
+      - message: term.anonymous
+        form: short
+    - date: issued
+      form: year
+      suffix: '. '
+      fallback:
+      - message: term.no-date
+        form: short
+    - group:
+      - group:
+        - title: primary
+        - message: gb-t-7714-type-code
+          args:
+            type: { reference-type: key }
+            carrier: { carrier: { online: OL, absent: '-' } }
+          wrap:
+            punctuation: brackets
+        delimiter: ''
+      - contributor: translator
+        form: long
+        name-order: family-first
+        delimiter: { mark: comma }
+        sort-separator: ' '
+        label:
+          term: translator
+          form: short
+          placement: suffix
+          prefix: { mark: comma }
+      delimiter: '. '
+      suffix: //
     - contributor: container-author
       form: long
-    - title: container-title
-    - number: volume
-      label-form: short
-    - number: edition
-    - number: edition
-      label-form: short
-    - variable: publisher-place
-    - variable: publisher
-    - number: pages
+      name-order: family-first
+      delimiter: { mark: comma }
+      sort-separator: ' '
+      strip-periods: true
+      suffix: '. '
+    - group:
+      - title: container-title
+      - number: volume
+        when-numeric: short
+      delimiter: { mark: colon }
+      suffix: '. '
+    - group:
+      - number: edition
+        when-numeric: short
+      - group:
+        - group:
+          - variable: publisher-place
+          - variable: publisher
+          delimiter: { mark: colon }
+        - number: pages
+        delimiter: { mark: colon }
+      delimiter: '. '
+    - variable: url
+      prefix: '. '
     - identifier: cstr
-      prefix: 'CSTR:'
+      prefix: '. CSTR:'
     - variable: doi
-      prefix: 'DOI:'
-    manuscript,personal_communication:
+      prefix: '. DOI:'
+    periodical:
     - contributor: author
       form: long
-    - title: primary
-    - number: volume
-      label-form: short
-    - variable: archive-location
-    - variable: medium
-    - variable: archive
+      name-order: family-first
+      delimiter: { mark: comma }
+      sort-separator: ' '
+      suffix: { mark: comma }
+      fallback:
+      - message: term.anonymous
+        form: short
     - date: issued
-      form: full
+      form: year
+      suffix: '. '
+      fallback:
+      - message: term.no-date
+        form: short
+    - title: primary
+    - message: gb-t-7714-type-code
+      args:
+        type: { reference-type: key }
+        carrier: { carrier: { online: OL, absent: '-' } }
+      wrap:
+        punctuation: brackets
+      suffix: '. '
+    - variable: volume
+      suffix: '. '
+    - group:
+      - variable: publisher-place
+      - variable: publisher
+      delimiter: { mark: colon }
+    - variable: url
+      prefix: '. '
     - identifier: cstr
-      prefix: 'CSTR:'
+      prefix: '. CSTR:'
     - variable: doi
-      prefix: 'DOI:'
+      prefix: '. DOI:'
+    manuscript,personal_communication,pamphlet:
+    - contributor: author
+      form: long
+      name-order: family-first
+      delimiter: { mark: comma }
+      sort-separator: ' '
+      suffix: { mark: comma }
+      fallback:
+      - message: term.anonymous
+        form: short
+    - date: issued
+      form: year
+      suppress-note: true
+      suffix: '. '
+      fallback:
+      - message: term.no-date
+        form: short
+    - group:
+      - title: primary
+      - variable: archive-location
+      delimiter: { mark: colon }
+    - message: gb-t-7714-type-code
+      args:
+        type: { reference-type: key }
+        carrier: { carrier: { online: OL, absent: '-' } }
+      wrap:
+        punctuation: brackets
+      suffix: '. '
+    - group:
+      - group:
+        - variable: archive-place
+        - variable: archive
+        delimiter: { mark: colon }
+      - date: issued
+        form: year-month-day
+        suppress-disamb-suffix: true
+        fallback:
+        - date: accessed
+          form: year-month-day
+          wrap:
+            punctuation: brackets
+      delimiter: { mark: comma }
+    - variable: url
+      prefix: '. '
+    - identifier: cstr
+      prefix: '. CSTR:'
+    - variable: doi
+      prefix: '. DOI:'
+    book,thesis,map:
+    - contributor: author
+      form: long
+      name-order: family-first
+      delimiter: { mark: comma }
+      sort-separator: ' '
+      suffix: { mark: comma }
+      fallback:
+      - message: term.anonymous
+        form: short
+    - date: issued
+      form: year
+      suffix: '. '
+      fallback:
+      - date: copyright
+        form: year
+        prefix: c
+      - date: printing
+        form: year
+        suffix: 印刷
+      - date: accessed
+        form: year
+        wrap:
+          punctuation: brackets
+      - message: term.no-date
+        form: short
+    - group:
+      - title: primary
+      - group:
+        - number: volume
+          when-numeric: short
+        - variable: volume-title
+        delimiter: ' '
+      delimiter: { mark: colon }
+    - variable: scale
+      prefix: '. '
+    - message: gb-t-7714-type-code
+      args:
+        type: { reference-type: key }
+        carrier: { carrier: { online: OL, absent: '-' } }
+      wrap:
+        punctuation: brackets
+      suffix: '. '
+    - contributor: translator
+      form: long
+      name-order: family-first
+      delimiter: { mark: comma }
+      sort-separator: ' '
+      label:
+        term: translator
+        form: short
+        placement: suffix
+        prefix: { mark: comma }
+      suffix: '. '
+    - group:
+      - number: edition
+        when-numeric: short
+      - group:
+        - group:
+          - variable: publisher-place
+          - variable: publisher
+          delimiter: { mark: colon }
+        - number: pages
+        delimiter: { mark: colon }
+      delimiter: '. '
+    - variable: dimensions
+      prefix: '. '
+    - variable: url
+      prefix: '. '
+    - identifier: cstr
+      prefix: '. CSTR:'
+    - variable: doi
+      prefix: '. DOI:'
+    software:
+    - contributor: author
+      form: long
+      name-order: family-first
+      delimiter: { mark: comma }
+      sort-separator: ' '
+      suffix: { mark: comma }
+      fallback:
+      - message: term.anonymous
+        form: short
+    - date: issued
+      form: year
+      suppress-note: true
+      suffix: '. '
+      fallback:
+      - message: term.no-date
+        form: short
+    - title: primary
+    - message: gb-t-7714-type-code
+      args:
+        type: { reference-type: key }
+        carrier: { carrier: { online: OL, absent: '-' } }
+      wrap:
+        punctuation: brackets
+      suffix: '. '
+    - date: issued
+      form: year-month-day
+      suppress-disamb-suffix: true
+      fallback: []
+      wrap: parentheses
+    - date: accessed
+      form: year-month-day
+      wrap:
+        punctuation: brackets
+      suffix: '. '
+    - variable: url
+    - identifier: cstr
+      prefix: '. CSTR:'
+    - variable: doi
+      prefix: '. DOI:'
     paper-conference:
     - contributor: author
       form: long
-    - message: term.no-date
-      form: short
+      name-order: family-first
+      delimiter: { mark: comma }
+      sort-separator: ' '
+      suffix: { mark: comma }
+      fallback:
+      - message: term.anonymous
+        form: short
+    - date: issued
+      form: year
+      suffix: '. '
+      fallback:
+      - message: term.no-date
+        form: short
     - title: primary
-    - number: volume
-      label-form: short
-    - variable: medium
-    - number: pages
+    - message: gb-t-7714-type-code
+      args:
+        type: { reference-type: key }
+        carrier: { carrier: { online: OL, absent: '-' } }
+      wrap:
+        punctuation: brackets
+      suffix: //
+    - contributor: container-author
+      form: long
+      name-order: family-first
+      delimiter: { mark: comma }
+      sort-separator: ' '
+      suffix: '. '
+    - title: container-title
+      suffix: '. '
+    - group:
+      - group:
+        - variable: event-title
+        - group:
+          - variable: publisher-place
+          - variable: publisher
+          delimiter: { mark: colon }
+        delimiter: ''
+      - number: pages
+      delimiter: { mark: colon }
+    - variable: url
+      prefix: '. '
     - identifier: cstr
-      prefix: 'CSTR:'
+      prefix: '. CSTR:'
     - variable: doi
-      prefix: 'DOI:'
+      prefix: '. DOI:'
     patent:
     - contributor: author
       form: long
-    - title: primary
-    - number: volume
-      label-form: short
-    - variable: medium
-    - contributor: translator
-      form: long
-    - number: edition
-    - number: edition
-      label-form: short
+      name-order: family-first
+      delimiter: { mark: comma }
+      sort-separator: ' '
+      suffix: { mark: comma }
+      fallback:
+      - message: term.anonymous
+        form: short
     - date: issued
-      form: full
+      form: year
+      suppress-note: true
+      suffix: '. '
+      fallback:
+      - message: term.no-date
+        form: short
+    - title: primary
+    - number: patent-number
+      prefix: { mark: colon }
+    - message: gb-t-7714-type-code
+      args:
+        type: { reference-type: key }
+        carrier: { carrier: { online: OL, absent: '-' } }
+      wrap:
+        punctuation: brackets
+      suffix: '. '
+    - date: issued
+      form: year-month-day
+      suppress-disamb-suffix: true
+      fallback: []
     - number: pages
+      prefix: { mark: colon }
+    - variable: url
+      prefix: '. '
     - identifier: cstr
-      prefix: 'CSTR:'
+      prefix: '. CSTR:'
     - variable: doi
-      prefix: 'DOI:'
+      prefix: '. DOI:'
+    graphic:
+    - contributor: author
+      form: long
+      name-order: family-first
+      delimiter: { mark: comma }
+      sort-separator: ' '
+      suffix: { mark: comma }
+      fallback:
+      - message: term.anonymous
+        form: short
+    - date: issued
+      form: year
+      suppress-note: true
+      suffix: '. '
+      fallback:
+      - message: term.no-date
+        form: short
+    - title: primary
+    - message: gb-t-7714-type-code
+      args:
+        type: { reference-type: key }
+        carrier: { carrier: { online: OL, absent: '-' } }
+      wrap:
+        punctuation: brackets
+      suffix: '. '
+    - date: issued
+      form: year-month-day
+      suppress-disamb-suffix: true
+      fallback: []
+      wrap: parentheses
+    - date: accessed
+      form: year-month-day
+      wrap:
+        punctuation: brackets
+      suffix: '. '
+    - variable: url
+    - identifier: cstr
+      prefix: '. CSTR:'
+    - variable: doi
+      prefix: '. DOI:'
     webpage,post,post-weblog:
     - contributor: author
       form: long
-    - title: primary
-    - number: volume
-      label-form: short
-    - variable: medium
+      name-order: family-first
+      delimiter: { mark: comma }
+      sort-separator: ' '
+      suffix: { mark: comma }
+      fallback:
+      - message: term.anonymous
+        form: short
     - date: issued
-      form: full
-      wrap: parentheses
-    - date: accessed
-      form: full
+      form: year
+      suppress-note: true
+      suffix: '. '
+      fallback:
+      - message: term.no-date
+        form: short
+    - title: primary
+    - message: gb-t-7714-type-code
+      args:
+        type: { reference-type: key }
+        carrier: { carrier: { online: OL, absent: '-' } }
       wrap:
         punctuation: brackets
+      suffix: '. '
+    - date: issued
+      form: year-month-day
+      suppress-disamb-suffix: true
+      fallback: []
+      wrap: parentheses
+    - date: accessed
+      form: year-month-day
+      wrap:
+        punctuation: brackets
+      suffix: '. '
     - variable: url
     - identifier: cstr
-      prefix: 'CSTR:'
+      prefix: '. CSTR:'
     - variable: doi
-      prefix: 'DOI:'
+      prefix: '. DOI:'
     report:
     - contributor: author
       form: long
-    - message: term.no-date
-      form: short
+      name-order: family-first
+      delimiter: { mark: comma }
+      sort-separator: ' '
+      suffix: { mark: comma }
+      fallback:
+      - message: term.anonymous
+        form: short
+    - date: issued
+      form: year
+      suppress-note: true
+      suffix: '. '
+      fallback:
+      - message: term.no-date
+        form: short
     - title: primary
-    - variable: publisher
-    - number: volume
-      label-form: short
-    - variable: medium
-    - contributor: translator
-      form: long
-    - number: edition
-    - number: edition
-      label-form: short
+    - number: report-number
+      prefix: { mark: colon }
+    - message: gb-t-7714-type-code
+      args:
+        type: { reference-type: key }
+        carrier: { carrier: { online: OL, absent: '-' } }
+      wrap:
+        punctuation: brackets
+      suffix: '. '
+    - group:
+      - group:
+        - variable: publisher-place
+        - variable: publisher
+        delimiter: { mark: colon }
+      - date: issued
+        form: year-month-day
+        suppress-disamb-suffix: true
+        fallback: []
+      delimiter: { mark: comma }
     - number: pages
+      prefix: { mark: colon }
+    - variable: url
+      prefix: '. '
     - identifier: cstr
-      prefix: 'CSTR:'
+      prefix: '. CSTR:'
     - variable: doi
-      prefix: 'DOI:'
+      prefix: '. DOI:'
     standard:
     - contributor: author
       form: long
-    - message: term.no-date
-      form: short
-    - number: number
+      name-order: family-first
+      delimiter: { mark: comma }
+      sort-separator: ' '
+      suffix: { mark: comma }
+      fallback:
+      - message: term.anonymous
+        form: short
+    - date: issued
+      form: year
+      suffix: '. '
+      fallback:
+      - message: term.no-date
+        form: short
+    - number: standard-number
+      suffix: ' '
     - title: primary
-    - number: volume
-      label-form: short
-    - variable: medium
+    - message: gb-t-7714-type-code
+      args:
+        type: { reference-type: key }
+        carrier: { carrier: { online: OL, absent: '-' } }
+      wrap:
+        punctuation: brackets
+    - variable: url
+      prefix: '. '
     - identifier: cstr
-      prefix: 'CSTR:'
+      prefix: '. CSTR:'
     - variable: doi
-      prefix: 'DOI:'
+      prefix: '. DOI:'
   groups-enabled: true

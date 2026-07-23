@@ -271,6 +271,43 @@ fn format_contributor_names(
     names::format_names(names_vec, &component.form, options, &name_overrides, hints)
 }
 
+/// Render `component.fallback` when the author slot has no contributor and
+/// the entire `substitute.template` chain (editor, title, translator, ...)
+/// is exhausted — e.g. a `message: term.anonymous` component for GB/T
+/// 7714's `佚名` placeholder. Tries each fallback component in order,
+/// returning the first that renders; `None` if `fallback` is unset or every
+/// entry is itself empty (mirrors `TemplateDate`'s fallback semantics).
+fn resolve_author_fallback<F: crate::render::format::OutputFormat<Output = String>>(
+    component: &TemplateContributor,
+    reference: &Reference,
+    hints: &ProcHints,
+    options: &RenderOptions<'_>,
+    fmt: &F,
+) -> Option<ProcValues<F::Output>> {
+    let fallbacks = component.fallback.as_ref()?;
+    for fallback in fallbacks {
+        if let Some(values) = fallback.values::<F>(reference, hints, options) {
+            let output = crate::values::date::apply_fallback_component_rendering(
+                fmt,
+                &values.value,
+                values.pre_formatted,
+                fallback.rendering(),
+                reference,
+                options,
+            );
+            return Some(ProcValues {
+                value: output,
+                prefix: None,
+                suffix: None,
+                url: values.url,
+                substituted_key: values.substituted_key,
+                pre_formatted: true,
+            });
+        }
+    }
+    None
+}
+
 impl ComponentValues for TemplateContributor {
     #[allow(
         clippy::too_many_lines,
@@ -322,7 +359,7 @@ impl ComponentValues for TemplateContributor {
             if options.suppress_author {
                 return None;
             }
-            return substitute::resolve_author_substitute::<F>(
+            if let Some(values) = substitute::resolve_author_substitute::<F>(
                 &component,
                 hints,
                 options,
@@ -330,7 +367,10 @@ impl ComponentValues for TemplateContributor {
                 &effective_rendering,
                 &fmt,
                 substitute.as_ref(),
-            );
+            ) {
+                return Some(values);
+            }
+            return resolve_author_fallback::<F>(&component, reference, hints, options, &fmt);
         }
 
         let contributor = contributor_for_role(reference, &role);

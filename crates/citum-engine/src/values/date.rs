@@ -775,15 +775,19 @@ fn format_single_date(
     }
 }
 
-/// Apply a fallback date component's own `wrap`/`prefix`/`suffix` rendering.
+/// Apply a fallback component's own `wrap`/`prefix`/`suffix` rendering.
 ///
-/// `component.values()` only resolves the raw date string — it does not go
-/// through the generic per-component dispatch that normally applies a
+/// `component.values()` only resolves the raw fallback string — it does not
+/// go through the generic per-component dispatch that normally applies a
 /// component's own rendering (that happens one layer up, outside the
-/// recursive fallback call in [`TemplateDate::values`]). This applies it
-/// directly so e.g. `wrap: brackets` on a fallback `accessed` date isn't
-/// silently dropped.
-fn apply_fallback_component_rendering<F: crate::render::format::OutputFormat<Output = String>>(
+/// recursive fallback call). This applies it directly so e.g. `wrap:
+/// brackets` on a fallback `accessed` date isn't silently dropped. Shared by
+/// [`TemplateDate::values`] and `TemplateContributor`'s author-slot
+/// fallback (`crate::values::contributor`) — both fallback shapes need the
+/// identical post-render treatment.
+pub(crate) fn apply_fallback_component_rendering<
+    F: crate::render::format::OutputFormat<Output = String>,
+>(
     fmt: &F,
     value: &str,
     pre_formatted: bool,
@@ -935,9 +939,10 @@ impl ComponentValues for TemplateDate {
         // Year-suffix is keyed off the issued year only; suppress it for other date
         // components (e.g. original-published) so a reprint template renders
         // `(1926/1967a)` rather than `(1926a/1967a)`.
-        let disamb_suffix = matches!(self.date, TemplateDateVar::Issued)
-            .then(|| compute_disamb_suffix(&date, &effective_form, hints, options, &fmt))
-            .flatten();
+        let disamb_suffix = (matches!(self.date, TemplateDateVar::Issued)
+            && self.suppress_disamb_suffix != Some(true))
+        .then(|| compute_disamb_suffix(&date, &effective_form, hints, options, &fmt))
+        .flatten();
 
         formatted.map(|value| {
             let (value, suffix) = if let Some(ref suffix) = disamb_suffix {

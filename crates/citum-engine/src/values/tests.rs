@@ -450,6 +450,7 @@ fn test_contributor_values() {
     let hints = ProcHints::default();
 
     let component = TemplateContributor {
+        fallback: None,
         contributor: ContributorRole::Author.into(),
         form: ContributorForm::Short,
         label: None,
@@ -1012,6 +1013,7 @@ fn test_date_values() {
         form: DateForm::Year,
         fallback: None,
         suppress_note: None,
+        suppress_disamb_suffix: None,
         rendering: Default::default(),
         links: None,
         custom: None,
@@ -1060,6 +1062,7 @@ fn test_message_component_renders_accessed_date_argument() {
                 form: DateForm::Year,
                 fallback: None,
                 suppress_note: None,
+                suppress_disamb_suffix: None,
                 rendering: Default::default(),
                 links: None,
                 custom: None,
@@ -1301,6 +1304,7 @@ fn test_message_component_reorders_locale_phrase_arguments() {
         form: DateForm::Year,
         fallback: None,
         suppress_note: None,
+        suppress_disamb_suffix: None,
         rendering: Default::default(),
         links: None,
         custom: None,
@@ -1627,6 +1631,7 @@ fn test_year_month_day_dates_inline_disambiguation_suffix_on_year() {
         form: DateForm::YearMonthDay,
         fallback: None,
         suppress_note: None,
+        suppress_disamb_suffix: None,
         rendering: Default::default(),
         links: None,
         custom: None,
@@ -1671,6 +1676,7 @@ fn test_et_al() {
     });
 
     let component = TemplateContributor {
+        fallback: None,
         contributor: ContributorRole::Author.into(),
         form: ContributorForm::Short,
         label: None,
@@ -1732,6 +1738,7 @@ fn test_et_al_delimiter_never() {
     });
 
     let component = TemplateContributor {
+        fallback: None,
         contributor: ContributorRole::Author.into(),
         form: ContributorForm::Short,
         label: None,
@@ -1843,6 +1850,7 @@ fn test_et_al_delimiter_always() {
     });
 
     let component = TemplateContributor {
+        fallback: None,
         contributor: ContributorRole::Author.into(),
         form: ContributorForm::Short,
         label: None,
@@ -4055,6 +4063,62 @@ fn given_exhausted_date_fallback_when_issued_missing_then_date_is_omitted() {
     assert!(values.is_none());
 }
 
+#[test]
+fn test_author_fallback_renders_anonymous_term_when_substitute_chain_is_empty() {
+    // csl26-6eak: GB/T 7714's `佚名` (anonymous-author) placeholder. The
+    // reference has no author, no editor/title/translator for the default
+    // substitute chain to promote, so `TemplateContributor.fallback`
+    // (mirroring `TemplateDate.fallback`) is consulted as the last resort.
+    let reference = InputReference::Monograph(Box::new(Monograph {
+        id: Some("no-author-1947".into()),
+        r#type: MonographType::Book,
+        issued: DateValue {
+            value: "1947".to_string(),
+            note: None,
+        },
+        ..Default::default()
+    }));
+    let component = TemplateContributor {
+        contributor: ContributorRole::Author.into(),
+        form: ContributorForm::Long,
+        fallback: Some(vec![TemplateComponent::Message(TemplateMessage {
+            message: "term.anonymous".to_string(),
+            form: Some(TermForm::Short),
+            ..Default::default()
+        })]),
+        ..Default::default()
+    };
+    let config = Config {
+        substitute: Some(citum_schema::options::SubstituteConfig::Explicit(
+            citum_schema::options::Substitute {
+                template: Vec::new(),
+                ..Default::default()
+            },
+        )),
+        ..Default::default()
+    };
+    let locale = make_embedded_chinese_locale();
+    let options = RenderOptions {
+        config: Arc::new(config),
+        bibliography_config: None,
+        locale: &locale,
+        context: RenderContext::Bibliography,
+        mode: citum_schema::citation::CitationMode::NonIntegral,
+        suppress_author: false,
+        locator_raw: None,
+        ref_type: None,
+        show_semantics: false,
+        current_template_index: None,
+        abbreviation_map: None,
+    };
+
+    let values = component
+        .values::<PlainText>(&reference, &ProcHints::default(), &options)
+        .expect("anonymous-term fallback should render when the substitute chain is empty");
+
+    assert_eq!(values.value, "佚名");
+}
+
 /// Tests the behavior of `test_strip_periods_global_config`.
 #[test]
 fn test_strip_periods_global_config() {
@@ -5542,6 +5606,7 @@ fn make_issued_year_component() -> TemplateDate {
         form: DateForm::Year,
         fallback: None,
         suppress_note: None,
+        suppress_disamb_suffix: None,
         rendering: Default::default(),
         links: None,
         custom: None,
@@ -5834,6 +5899,7 @@ fn test_date_note_wraps_after_a_closed_interval() {
         form: DateForm::Year,
         fallback: None,
         suppress_note: None,
+        suppress_disamb_suffix: None,
         rendering: Default::default(),
         links: None,
         custom: None,

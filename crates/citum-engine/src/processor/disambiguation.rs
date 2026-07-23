@@ -377,9 +377,27 @@ impl<'a> Disambiguator<'a> {
             Some(crate::values::contributor::substitute::EffectivePrimary::Title {
                 title, ..
             }) => Self::title_substitute_key(title),
-            _ => String::new(),
+            // The substitute chain is exhausted with no contributor or title
+            // to promote. Unlike a substituted title (which already varies
+            // per reference and so needs no further disambiguation), a
+            // component-level `TemplateContributor.fallback` (e.g. GB/T
+            // 7714's `佚名` anonymous-author term, csl26-6eak) renders the
+            // *same* constant text for every such reference — so, like a
+            // real shared author name, these entries must collide on year
+            // for suffix assignment rather than each forming its own
+            // singleton group.
+            None => Self::ANONYMOUS_FALLBACK_KEY.to_string(),
+            Some(_) => String::new(),
         }
     }
+
+    /// Sentinel author-slot key for references with no contributor, no
+    /// substitute title, and no substitute contributor — see
+    /// [`Self::build_author_slot_key`]. Not derived from any rendered text
+    /// (the caller doesn't know the active template's `fallback:` content),
+    /// just a stable, non-empty grouping key shared by every reference in
+    /// this state.
+    const ANONYMOUS_FALLBACK_KEY: &'static str = "\u{0}anonymous-fallback";
 
     /// Calculates how many references in `refs` share the same `author_key`.
     /// The returned map is keyed only by `author_key` and is later used when
