@@ -1,7 +1,7 @@
 ---
 # csl26-6eak
 title: Tune gb-t-7714-2025-author-date to full fidelity
-status: todo
+status: in-progress
 type: task
 priority: normal
 tags:
@@ -9,7 +9,7 @@ tags:
     - fidelity
     - multilingual
 created_at: 2026-07-16T10:56:59Z
-updated_at: 2026-07-23T15:05:20Z
+updated_at: 2026-07-23T17:05:29Z
 blocking:
     - csl26-dxuo
 blocked_by:
@@ -393,3 +393,129 @@ anonymous term) is smaller (10 entries) and more contained (one new
 `MessageArgSource` variant or a routing fix, no shared-path risk). Findings
 2 and 3 are narrower, independent, and can be picked up in either order or
 split into their own beans.
+
+## Session progress (2026-07-23, later session): three engine gaps found and fixed, 125/203 → 141/203 raw (69.5%), 152/203 → 162/203 adjusted (79.8%)
+
+Picked up from the prior 2026-07-23 session's 125/203 raw / 152/203 adjusted
+baseline. Fresh triage of the 51 adjusted failures showed the dominant
+pattern was missing year-suffix disambiguation on anonymous/no-date
+fallback entries (oracle: `无日期-a … 无日期-v`, `2011a`/`2011b`; citum: bare
+`无日期`/`2011`). Root-caused to **three independent, precisely-located
+engine gaps**, not one — each confirmed via direct instrumentation
+(`ProcHints` dumps, CLI render diffs) before fixing, per repeated
+empirical checkpoints rather than assumption:
+
+1. **Disambiguation grouping used the citation-scoped substitute, not the
+   bibliography-scoped one** — `build_reference_cache`
+   (`crates/citum-engine/src/processor/disambiguation.rs`) resolved the
+   anonymous-fallback collision key from `self.config.substitute`
+   (citation-scoped: includes `title`) instead of `self.sort_config`
+   (already documented as the effective bibliography config). A style
+   overriding only the bibliography-scope substitute (GB/T author-date's
+   `[editor, translator]`, no `title`) therefore saw every anonymous
+   reference resolve a *distinct* substituted-title key at the grouping
+   layer, even though the bibliography itself renders the same constant
+   `佚名` fallback for all of them — singleton groups, no suffix. Fixed by
+   reading `sort_config.substitute`; all current call sites already pass
+   the bibliography config as `sort_config`, so this is a no-op everywhere
+   else (confirmed: 157-style `check-core-quality` clean).
+
+2. **`TemplateDate`'s explicit `fallback:` branch never computed or
+   attached a disambiguation suffix at all** — regardless of which
+   fallback candidate resolved. The suffix mechanism
+   (`compute_disamb_suffix_label` / `append_no_date_disamb_suffix` /
+   `inline_disamb_suffix`, `crates/citum-engine/src/values/date.rs`) only
+   existed in the implicit (no explicit `fallback:`) no-date branch and
+   the real-date branch. GB/T author-date's date components always carry
+   an explicit `fallback:` chain (front-loaded `date: issued` with
+   `copyright → printing → accessed → message: term.no-date`), so even
+   after fix (1) correctly grouped references, *nothing* ever attached a
+   letter. Fixed by applying the same append-suffix convention when the
+   winning fallback candidate is a `message:` component — by construction
+   the terminal "no data available" case in a date's fallback chain —
+   respecting `suppress-disamb-suffix` like the other two branches. This
+   alone, with (1), still moved **zero** oracle numbers (verified) — see
+   (3).
+
+3. **The anonymous term was a locale-independent style constant, and
+   grouping didn't scope by language either** — `佚名` was pinned via a
+   style-owned `options.messages: term.anonymous: 佚名` override, which
+   `TemplateMessage::values` checks *before* consulting the active
+   locale, so it applied unconditionally regardless of item language.
+   Oracle actually keeps **two independent** year-suffix letter sequences
+   — `佚名，无日期-a…w` (Chinese) and `Anon，n.d.-a…j` (English) — because the
+   rendered term differs by language, so CSL treats them as different
+   "authors." Root cause for why `term.anonymous` couldn't just move to a
+   locale file directly: `general_message_id()`
+   (`crates/citum-schema-style/src/locale/message_ids.rs`), which decides
+   which `GeneralTerm`s get MF2-message-first treatment ahead of the
+   legacy structured `terms:` catalog, had `NoDate`/`Circa` but not
+   `Anonymous` — so a locale's `messages.term-anonymous` entry was never
+   even consulted; resolution always fell straight to the hardcoded
+   legacy default (en-US: `"anon."`). Fixed in three parts: (a) add
+   `Anonymous` to `general_message_id`'s allowlist, mirroring `NoDate`
+   exactly; (b) drop the style-owned override, add
+   `term.anonymous`/`term.anonymous-long` to `zh-CN.yaml` (`佚名`) and
+   `en-US.yaml` (`Anon`); (c) scope the `ANONYMOUS_FALLBACK_KEY` sentinel
+   in `build_author_slot_key` by `effective_item_language(reference)` —
+   the same driver `process_bibliography_entry_with_format` already uses
+   to pick a `bibliography: locales:` branch — so Chinese and English
+   anonymous items collide into separate sequences instead of one merged,
+   scrambled one.
+
+Three previously-passing pinned tests
+(`crates/citum-engine/tests/date_annotations.rs`) regressed once (3)
+landed: they construct a bare `Processor::new` (seeds `Locale::en_us()`)
+directly rather than resolving the style's `info.default-locale` the way
+the real `citum render` CLI does (`create_processor`,
+`citum-cli/src/style_resolver.rs`) — they only passed before because the
+old override was locale-independent. Fixed the harness (constructed with
+the embedded zh-CN locale, mirroring the existing
+`localized_author_date_grouping_uses_the_selected_term_locale` precedent
+in `crates/citum-engine/tests/i18n.rs`), not the assertions — the expected
+`佚名` strings are unchanged and correct.
+
+`just pre-commit` green (2161/2161, fmt, clippy). `just check-core-quality`
+clean (157 styles, fidelity=1.0, 0 warnings) — the shared `en-US.yaml`
+term.anonymous default change (`"anon." → "Anon"` for styles that
+reference `message: term.anonymous`/`GeneralTerm::Anonymous`) does not
+regress any other embedded style (verified no other embedded style uses
+`message: term.anonymous` or `term: anonymous` as a component).
+
+### Residual findings (41 adjusted failures), precisely characterized
+
+1. **NEW, dominant — suffix *order within* the anonymous collision group
+   doesn't match oracle's render order** (~28 of 41: the entire 无日期
+   bucket plus `2011a/b`, `2012a/b`, `2023a/b/c`, `2024a/b` swapped
+   pairs). Confirmed via direct evidence, not assumption: citum's own
+   *render* position for the 佚名+无日期 bucket (0, 1, 2, 3…) does not
+   correlate at all with its own assigned *letters* (k, w, x, a…) —
+   `sort_group_for_year_suffix`'s no-`group_sort` branch
+   (`disambiguation.rs`) hardcodes a title-alphabetical tiebreak
+   (`a_title.cmp(b_title)`) as the *default* ordering whenever no
+   explicit `bibliography.sort:`/`group_sort` is configured — which GB/T
+   author-date doesn't set. That assumption doesn't match this style's
+   actual (apparently insertion-order) bibliography arrangement. This is
+   an **internal inconsistency** (citum's own suffix order disagrees with
+   citum's own render order), not a deeper bibliography-sort divergence
+   from oracle — the fix is in the same shared no-`group_sort` fallback
+   used by *every* style without an explicit `group_sort`, so it needs
+   its own dedicated pass with full `check-core-quality` verification.
+   Single highest-leverage remaining item.
+2. **Finding 2 — org-as-author for `standard` type** (3 entries,
+   `gbt7714.8.9.2:1-3`, unchanged from prior triage): oracle promotes the
+   issuing committee into the author slot; Citum's `standard`
+   type-variant has no path to promote an org/publisher field into the
+   author position. Needs a `substitute.template` extension (new
+   `SubstituteField` variant or a publisher-as-contributor path).
+3. **Date-parsing singles** (`gbt7714.8.11.2.2:1`, `8.11.3.2:1/5`):
+   approximate/bracketed year (`[2025]`) falls through to the no-date term
+   instead of the approximate-year value — the front `date: issued`
+   component's `fallback:` chain doesn't reach `accessed` the way the
+   rendered oracle text implies it should for these types.
+4. **2 unclassified singles**: `gbt7714.8.5.1.1:7` (body date silently
+   dropped), `gbt7714.7.2.1:4` (oracle shows a bare disambiguation letter
+   `b` with no `无日期-`/`b` prefix pattern — an outlier, not understood).
+
+`verification-policy.yaml` left untouched (`count_toward_fidelity: false`)
+— 141/203 raw is nowhere near the 1.0 bar it requires. Not flipped.
