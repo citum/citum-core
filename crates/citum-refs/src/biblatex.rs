@@ -15,7 +15,8 @@ use citum_schema::reference::{
     date::DateValue,
     types::{
         Collection, CollectionComponent, CollectionType, Monograph, MonographComponentType,
-        MonographType, NumOrStr, Serial, SerialComponent, SerialComponentType, SerialType, Title,
+        MonographType, NumOrStr, Serial, SerialComponent, SerialComponentType, SerialType,
+        StructuredTitle, Subtitle, Title,
     },
 };
 use std::collections::HashMap;
@@ -27,6 +28,7 @@ struct BibRefContext<'a> {
     title: Option<Title>,
     author: Option<Contributor>,
     editor: Option<Contributor>,
+    translator: Option<Contributor>,
     issued: DateValue,
     publisher: Option<Publisher>,
     language: Option<LangID>,
@@ -62,11 +64,12 @@ fn build_inbook_reference(ctx: BibRefContext<'_>) -> InputReference {
                 short_title: None,
                 container: None,
                 editor: ctx.editor,
-                translator: None,
+                translator: ctx.translator,
                 created: DateValue::new(String::new()),
                 issued: DateValue::new(String::new()),
                 publisher: ctx.publisher,
                 numbering: parent_numbering,
+                isbn: field_str("isbn"),
                 ..Default::default()
             })),
         ))),
@@ -109,7 +112,7 @@ fn build_article_reference(ctx: BibRefContext<'_>) -> InputReference {
         r#type: SerialComponentType::Article,
         title: ctx.title,
         author: ctx.author,
-        translator: None,
+        translator: ctx.translator,
         created: DateValue::new(String::new()),
         issued: ctx.issued,
         container: Some(WorkRelation::Embedded(Box::new(InputReference::Serial(
@@ -165,12 +168,24 @@ pub fn input_reference_from_biblatex(entry: &biblatex_crate::Entry) -> InputRefe
         })
     };
 
-    let title = field_str("title").map(Title::Single);
+    let title = match (field_str("title"), field_str("subtitle")) {
+        (Some(main), Some(sub)) => Some(Title::Structured(StructuredTitle {
+            full: None,
+            main,
+            sub: Subtitle::String(sub),
+        })),
+        (Some(main), None) => Some(Title::Single(main)),
+        (None, _) => None,
+    };
     let issued = field_str("date").map_or(DateValue::new(String::new()), DateValue::new);
-    let publisher = field_str("publisher").map(|p| Publisher {
-        name: p.into(),
-        place: field_str("location").map(Into::into),
-    });
+    let publisher = field_str("publisher")
+        .or_else(|| field_str("institution"))
+        .or_else(|| field_str("organization"))
+        .or_else(|| field_str("school"))
+        .map(|p| Publisher {
+            name: p.into(),
+            place: field_str("location").map(Into::into),
+        });
 
     let author = entry
         .author()
@@ -181,6 +196,10 @@ pub fn input_reference_from_biblatex(entry: &biblatex_crate::Entry) -> InputRefe
             e.into_iter().flat_map(|(persons, _)| persons).collect();
         contributors_from_biblatex_persons(&all_persons)
     });
+    let translator = entry
+        .translator()
+        .ok()
+        .map(|p| contributors_from_biblatex_persons(&p));
 
     let language = field_str("langid")
         .or_else(|| field_str("language"))
@@ -193,6 +212,7 @@ pub fn input_reference_from_biblatex(entry: &biblatex_crate::Entry) -> InputRefe
         title,
         author,
         editor,
+        translator,
         issued,
         publisher,
         language,
@@ -201,7 +221,7 @@ pub fn input_reference_from_biblatex(entry: &biblatex_crate::Entry) -> InputRefe
 
     match entry_type.as_str() {
         "book" | "mvbook" | "collection" | "mvcollection" | "manual" | "report" | "thesis"
-        | "online" | "unpublished" => {
+        | "online" | "unpublished" | "proceedings" | "mvproceedings" => {
             let mono_type = match entry_type.as_str() {
                 "manual" => MonographType::Manual,
                 "report" => MonographType::Report,
@@ -262,7 +282,7 @@ fn biblatex_monograph(
         container: None,
         author: ctx.author,
         editor: ctx.editor,
-        translator: None,
+        translator: ctx.translator,
         created: DateValue::new(String::new()),
         issued: ctx.issued,
         publisher: ctx.publisher,
@@ -271,9 +291,17 @@ fn biblatex_monograph(
         language: ctx.language,
         field_languages: HashMap::new(),
         note: field_str("note").map(RichText::Plain),
+        abstract_text: field_str("abstract").map(RichText::Plain),
         isbn: field_str("isbn"),
         doi: field_str("doi"),
         ads_bibcode: field_str("bibcode"),
+        version: field_str("version"),
+        keywords: field_str("keywords").map(|k| {
+            k.split(',')
+                .map(|s| s.trim().to_string())
+                .filter(|s| !s.is_empty())
+                .collect()
+        }),
         numbering,
         genre: field_str("type"),
         ..Default::default()
@@ -380,6 +408,101 @@ mod tests {
         "manuscript"
     )]
     fn given_biblatex_entry_type_when_converted_then_maps_to_expected_monograph_type(
+        #[case] source: &str,
+        #[case] expected_ref_type: &str,
+    ) {
+        let entry = parse_single_entry(source);
+
+        let converted = input_reference_from_biblatex(&entry);
+
+        assert_eq!(converted.ref_type(), expected_ref_type);
+    }
+
+    #[test]
+    fn given_translator_field_when_converted_then_translator_is_mapped() {
+        let entry = parse_single_entry(
+            "@book{b2, title = {Book}, date = {2024}, translator = {Doe, Jane}}",
+        );
+
+        let converted = input_reference_from_biblatex(&entry);
+
+        let monograph = converted.as_monograph().expect("expected a Monograph");
+        assert_eq!(
+            monograph.translator,
+            Some(Contributor::ContributorList(ContributorList(vec![
+                Contributor::StructuredName(StructuredName {
+                    given: "Jane".into(),
+                    family: "Doe".into(),
+                    suffix: None,
+                    dropping_particle: None,
+                    non_dropping_particle: None,
+                })
+            ])))
+        );
+    }
+
+    #[test]
+    fn given_thesis_with_institution_and_no_publisher_when_converted_then_institution_becomes_publisher_with_location()
+     {
+        let entry = parse_single_entry(
+            "@phdthesis{t1, title = {T}, date = {2024}, institution = {Wuhan University}, location = {Wuhan}}",
+        );
+
+        let converted = input_reference_from_biblatex(&entry);
+
+        let monograph = converted.as_monograph().expect("expected a Monograph");
+        assert_eq!(
+            monograph.publisher,
+            Some(Publisher {
+                name: "Wuhan University".into(),
+                place: Some("Wuhan".into()),
+            })
+        );
+    }
+
+    #[test]
+    fn given_title_and_subtitle_when_converted_then_title_is_structured() {
+        let entry = parse_single_entry(
+            "@book{b3, title = {Main Title}, subtitle = {A Subtitle}, date = {2024}}",
+        );
+
+        let converted = input_reference_from_biblatex(&entry);
+
+        let monograph = converted.as_monograph().expect("expected a Monograph");
+        assert_eq!(
+            monograph.title,
+            Some(Title::Structured(StructuredTitle {
+                full: None,
+                main: "Main Title".to_string(),
+                sub: Subtitle::String("A Subtitle".to_string()),
+            }))
+        );
+    }
+
+    #[test]
+    fn given_incollection_with_isbn_when_converted_then_isbn_is_on_the_parent_collection() {
+        let entry = parse_single_entry(
+            "@incollection{c1, title = {Chapter}, booktitle = {Book}, date = {2024}, isbn = {978-0-13-468599-1}}",
+        );
+
+        let converted = input_reference_from_biblatex(&entry);
+
+        let component = converted
+            .as_collection_component()
+            .expect("expected a CollectionComponent");
+        let parent = match component.container.as_ref().expect("expected a container") {
+            WorkRelation::Embedded(inner) => inner
+                .as_collection()
+                .expect("expected an embedded Collection"),
+            WorkRelation::Id(_) => panic!("expected an embedded container, not an id reference"),
+        };
+        assert_eq!(parent.isbn, Some("978-0-13-468599-1".to_string()));
+    }
+
+    #[rstest]
+    #[case::proceedings_maps_to_book("@proceedings{p1, title={T}, date={2024}}", "book")]
+    #[case::mvproceedings_maps_to_book("@mvproceedings{p1, title={T}, date={2024}}", "book")]
+    fn given_proceedings_entry_type_when_converted_then_maps_to_book(
         #[case] source: &str,
         #[case] expected_ref_type: &str,
     ) {
