@@ -19,6 +19,9 @@ indexmap = { version = "2.2.6", features = ["serde"] }
 thiserror = "2.0"
 url = { version = "2.5", features = ["serde"] }
 
+[dev-dependencies]
+rstest = "0.26"
+
 [lints]
 workspace = true
 

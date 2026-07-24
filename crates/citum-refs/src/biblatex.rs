@@ -186,7 +186,7 @@ pub fn input_reference_from_biblatex(entry: &biblatex_crate::Entry) -> InputRefe
         .or_else(|| field_str("language"))
         .map(Into::into);
 
-    let entry_type = entry.entry_type.to_string().to_lowercase();
+    let entry_type = entry.entry_type.to_biblatex().to_string().to_lowercase();
 
     let ctx = BibRefContext {
         id,
@@ -200,10 +200,14 @@ pub fn input_reference_from_biblatex(entry: &biblatex_crate::Entry) -> InputRefe
     };
 
     match entry_type.as_str() {
-        "book" | "mvbook" | "collection" | "mvcollection" | "manual" | "report" => {
+        "book" | "mvbook" | "collection" | "mvcollection" | "manual" | "report" | "thesis"
+        | "online" | "unpublished" => {
             let mono_type = match entry_type.as_str() {
                 "manual" => MonographType::Manual,
                 "report" => MonographType::Report,
+                "thesis" => MonographType::Thesis,
+                "online" => MonographType::Webpage,
+                "unpublished" => MonographType::Manuscript,
                 _ => MonographType::Book,
             };
             InputReference::Monograph(Box::new(biblatex_monograph(mono_type, &entry_type, ctx)))
@@ -318,6 +322,7 @@ pub fn contributors_from_biblatex_persons(persons: &[biblatex_crate::Person]) ->
 )]
 mod tests {
     use super::*;
+    use rstest::rstest;
 
     fn parse_single_entry(source: &str) -> biblatex_crate::Entry {
         let bibliography =
@@ -350,5 +355,38 @@ mod tests {
 
         assert_eq!(converted.number(), Some("2".to_string()));
         assert_eq!(converted.report_number(), None);
+    }
+
+    #[test]
+    fn given_techreport_with_number_when_converted_then_maps_to_report_type_and_report_numbering() {
+        let entry = parse_single_entry(
+            "@techreport{k1,\n  title = {T},\n  date = {2024},\n  number = {TR-9}\n}",
+        );
+
+        let converted = input_reference_from_biblatex(&entry);
+
+        assert_eq!(converted.ref_type(), "report");
+        assert_eq!(converted.report_number(), Some("TR-9".to_string()));
+        assert_eq!(converted.number(), None);
+    }
+
+    #[rstest]
+    #[case::phdthesis_maps_to_thesis("@phdthesis{k1, title={T}, date={2024}}", "thesis")]
+    #[case::mastersthesis_maps_to_thesis("@mastersthesis{k1, title={T}, date={2024}}", "thesis")]
+    #[case::thesis_maps_to_thesis("@thesis{k1, title={T}, date={2024}}", "thesis")]
+    #[case::online_maps_to_webpage("@online{k1, title={T}, date={2024}}", "webpage")]
+    #[case::unpublished_maps_to_manuscript(
+        "@unpublished{k1, title={T}, date={2024}}",
+        "manuscript"
+    )]
+    fn given_biblatex_entry_type_when_converted_then_maps_to_expected_monograph_type(
+        #[case] source: &str,
+        #[case] expected_ref_type: &str,
+    ) {
+        let entry = parse_single_entry(source);
+
+        let converted = input_reference_from_biblatex(&entry);
+
+        assert_eq!(converted.ref_type(), expected_ref_type);
     }
 }
