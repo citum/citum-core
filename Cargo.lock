@@ -766,6 +766,7 @@ dependencies = [
  "citum-schema",
  "csl-legacy",
  "indexmap 2.14.0",
+ "rstest",
  "serde",
  "serde_json",
  "serde_yaml_ng",
