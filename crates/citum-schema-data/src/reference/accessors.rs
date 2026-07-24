@@ -1067,6 +1067,11 @@ impl InputReference {
             ClassExtension::AudioVisual(r) => {
                 r.medium.as_ref().map(|m| Self::normalize_genre_medium(m))
             }
+            // Software carries the CSL `medium` value under `platform` (see
+            // `from_software_ref`); unlike the other classes, GB/T 7714's oracle
+            // expects the carrier code verbatim (e.g. "Apparatus"), not
+            // kebab-cased.
+            ClassExtension::Software(r) => r.platform.clone(),
             _ => None,
         }
     }
