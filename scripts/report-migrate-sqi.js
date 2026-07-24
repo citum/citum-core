@@ -499,7 +499,13 @@ function normalizedEqual(left, right) {
   if (typeof left !== 'string' || typeof right !== 'string') {
     return false;
   }
-  return normalizeText(left) === normalizeText(right);
+  // Minimization-acceptance checks compare oracle snapshots against each other
+  // (not citum's rendering against the oracle), so a stray trailing-punctuation
+  // difference here is noise, not the class of defect this comparison guards
+  // against -- unlike the shared normalizeText used by the fidelity harness,
+  // this strip stays local to this file.
+  const stripTrailingPunctuation = (text) => text.replace(/[.,;:]\s*$/, '');
+  return stripTrailingPunctuation(normalizeText(left)) === stripTrailingPunctuation(normalizeText(right));
 }
 
 function strictSectionEquivalent(section) {

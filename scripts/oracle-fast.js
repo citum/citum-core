@@ -34,7 +34,7 @@ const {
   findRefDataForEntry,
   textSimilarity,
 } = require('./oracle-utils');
-const { renderWithCitumProcessor } = require('./oracle');
+const { renderWithCitumProcessor, bibliographyComparisonMatches } = require('./oracle');
 const { attachRegisteredDivergenceAdjustments } = require('./lib/oracle-divergences');
 
 const PROJECT_ROOT = path.resolve(__dirname, '..');
@@ -325,7 +325,7 @@ function run() {
       entryResult.oracle = comparison.expected;
       entryResult.citum = comparison.actual;
       entryResult.caseMismatch = comparison.caseMismatch;
-      if (comparison.match) {
+      if (bibliographyComparisonMatches(styleName, comparison, opts.caseSensitive)) {
         entryResult.match = true;
         rawResults.bibliography.passed++;
       } else {
@@ -404,4 +404,9 @@ if (require.main === module) {
 module.exports = {
   parseArgs,
   run,
+  // Re-exported so tests can confirm this module's bibliography pairing loop
+  // is wired to the same strict-fidelity gate oracle.js uses for
+  // STRICT_BIBLIOGRAPHY_STYLES, rather than falling back to the lenient
+  // similarity-threshold match.
+  bibliographyComparisonMatches,
 };
