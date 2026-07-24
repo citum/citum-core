@@ -1125,6 +1125,7 @@ impl InputReference {
             }),
             ClassExtension::LegalCase(r) => r.reporter.clone().map(Title::Single),
             ClassExtension::Statute(r) => r.code.clone().map(Title::Single),
+            ClassExtension::Regulation(r) => r.code.clone().map(Title::Single),
             ClassExtension::Treaty(r) => r.reporter.clone().map(Title::Single),
             ClassExtension::Event(r) => r.container.as_ref().and_then(|c| match c {
                 WorkRelation::Embedded(p) => p.title().or_else(|| p.container_title()),

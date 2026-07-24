@@ -1110,4 +1110,202 @@ bibliography:
       prefix: '. CSTR:'
     - variable: doi
       prefix: '. DOI:'
+    legal-case:
+    - number: citation-number
+      wrap:
+        punctuation: brackets
+    - group:
+      - title: primary
+      - message: gb-t-7714-type-code
+        args:
+          type: { reference-type: key }
+          carrier: { carrier: { online: OL, absent: '-' } }
+        wrap:
+          punctuation: brackets
+      delimiter: ''
+      suffix: //
+    - group:
+      - title: container-title
+      - number: volume
+        when-numeric: short
+      delimiter: { mark: colon }
+      suffix: '. '
+    - group:
+      - date: issued
+        form: year
+        fallback: []
+      - number: pages
+      delimiter: { mark: colon }
+    treaty:
+    - number: citation-number
+      wrap:
+        punctuation: brackets
+    - contributor: author
+      form: long
+      name-order: family-first
+      delimiter: { mark: comma }
+      sort-separator: ' '
+      suffix: '. '
+    - group:
+      - title: primary
+      - message: gb-t-7714-type-code
+        args:
+          type: { reference-type: key }
+          carrier: { carrier: { online: OL, absent: '-' } }
+        wrap:
+          punctuation: brackets
+      delimiter: ''
+      suffix: //
+    - group:
+      - title: container-title
+      - variable: volume
+        prefix: 'v.'
+      delimiter: { mark: colon }
+      suffix: '. '
+    - group:
+      - date: issued
+        form: year
+        fallback: []
+      - number: pages
+      delimiter: { mark: colon }
+    regulation,statute:
+    - number: citation-number
+      wrap:
+        punctuation: brackets
+    - group:
+      - title: primary
+      - message: gb-t-7714-type-code
+        args:
+          type: { reference-type: key }
+          carrier: { carrier: { online: OL, absent: '-' } }
+        wrap:
+          punctuation: brackets
+      delimiter: ''
+      suffix: //
+    - group:
+      - title: container-title
+      - variable: volume
+        prefix: 'v.'
+      delimiter: { mark: colon }
+      suffix: '. '
+    - variable: url
+      prefix: '. '
+    - identifier: cstr
+      prefix: '. CSTR:'
+    - variable: doi
+      prefix: '. DOI:'
+    hearing:
+    - number: citation-number
+      wrap:
+        punctuation: brackets
+    - group:
+      - title: primary
+      - number: number
+      delimiter: { mark: colon }
+    - message: gb-t-7714-type-code
+      args:
+        type: { reference-type: key }
+        carrier: { carrier: { online: OL, absent: '-' } }
+      wrap:
+        punctuation: brackets
+      suffix: '. '
+    - date: issued
+      form: year
+      fallback: []
+      wrap: parentheses
+      suffix: '. '
+    - variable: url
+    - identifier: cstr
+      prefix: '. CSTR:'
+    - variable: doi
+      prefix: '. DOI:'
+    motion-picture:
+    - number: citation-number
+      wrap:
+        punctuation: brackets
+    - contributor: author
+      form: long
+      name-order: family-first
+      delimiter: { mark: comma }
+      sort-separator: ' '
+      suffix: '. '
+    - title: primary
+    - message: gb-t-7714-type-code
+      args:
+        type: { reference-type: key }
+        carrier: { carrier: { online: OL, absent: '-' } }
+      wrap:
+        punctuation: brackets
+      suffix: '. '
+    - date: issued
+      form: year
+      fallback: []
+    - variable: url
+      prefix: '. '
+    - identifier: cstr
+      prefix: '. CSTR:'
+    - variable: doi
+      prefix: '. DOI:'
+    broadcast:
+    - number: citation-number
+      wrap:
+        punctuation: brackets
+    - contributor: author
+      form: long
+      name-order: family-first
+      delimiter: { mark: comma }
+      sort-separator: ' '
+      suffix: '. '
+    - group:
+      - group:
+        - title: primary
+        - number: number
+        delimiter: { mark: colon }
+      - message: gb-t-7714-type-code
+        args:
+          type: { reference-type: key }
+          carrier: { carrier: { online: OL, absent: '-' } }
+        wrap:
+          punctuation: brackets
+      delimiter: ''
+      suffix: //
+    - title: container-title
+      suffix: '. '
+    - date: issued
+      form: year
+      fallback: []
+    - variable: url
+      prefix: '. '
+    - identifier: cstr
+      prefix: '. CSTR:'
+    - variable: doi
+      prefix: '. DOI:'
+    interview:
+    - number: citation-number
+      wrap:
+        punctuation: brackets
+    - contributor: author
+      form: long
+      name-order: family-first
+      delimiter: { mark: comma }
+      sort-separator: ' '
+      suffix: '. '
+    - title: primary
+    - message: gb-t-7714-type-code
+      args:
+        type: { reference-type: key }
+        carrier: { carrier: { online: OL, absent: '-' } }
+      wrap:
+        punctuation: brackets
+      suffix: '. '
+    - date: issued
+      form: year-month-day
+      fallback: []
+      wrap: parentheses
+      suffix: '. '
+    - variable: url
+    - identifier: cstr
+      prefix: '. CSTR:'
+    - variable: doi
+      prefix: '. DOI:'
   groups-enabled: true
