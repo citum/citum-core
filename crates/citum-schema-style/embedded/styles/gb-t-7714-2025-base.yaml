@@ -320,7 +320,11 @@ bibliography:
               delimiter: { mark: colon }
             - date: issued
               form: year
-              fallback: []
+              fallback:
+              - date: accessed
+                form: year
+                wrap:
+                  punctuation: brackets
             delimiter: { mark: comma }
           - number: pages
           delimiter: { mark: colon }
@@ -689,7 +693,11 @@ bibliography:
             delimiter: { mark: colon }
           - date: issued
             form: year
-            fallback: []
+            fallback:
+            - date: accessed
+              form: year
+              wrap:
+                punctuation: brackets
           delimiter: { mark: comma }
         - number: pages
         delimiter: { mark: colon }
@@ -891,8 +899,8 @@ bibliography:
       form: year-month-day
       wrap:
         punctuation: brackets
-      suffix: '. '
     - variable: url
+      prefix: '. '
     - identifier: cstr
       prefix: '. CSTR:'
     - variable: doi
