@@ -351,11 +351,19 @@ function getArchiveFragments(ref) {
 
 function stripTrailingArchiveFragments(text, fragments) {
   let stripped = text || '';
+  // Set aside a trailing terminal mark so the archive-fragment suffix pattern
+  // (anchored to end-of-string) still matches when the rendered text legitimately
+  // ends in punctuation after the fragment (e.g. "..., Jerusalem.").
+  const trailingPunctuationMatch = stripped.match(/[.,;:]\s*$/);
+  const trailingPunctuation = trailingPunctuationMatch ? trailingPunctuationMatch[0] : '';
+  if (trailingPunctuation) {
+    stripped = stripped.slice(0, stripped.length - trailingPunctuation.length);
+  }
   for (const fragment of [...fragments].reverse()) {
     const suffixPattern = new RegExp(`,\\s*${escapeRegex(fragment)}\\s*$`);
     stripped = stripped.replace(suffixPattern, '');
   }
-  return stripped;
+  return stripped + trailingPunctuation;
 }
 
 function normalizeAncientYear(text, ref, oracleText) {

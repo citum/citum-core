@@ -1047,4 +1047,5 @@ module.exports = {
   renderWithCitumProcessor,
   resolveAuthoredStylePath,
   runOracle,
+  STRICT_BIBLIOGRAPHY_STYLES,
 };

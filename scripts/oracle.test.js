@@ -409,6 +409,43 @@ test('div-005 recognizes structured archival manuscript detail as an intentional
   assert.deepEqual(adjustment?.itemIds, ['dead-sea-scrolls']);
 });
 
+test('div-005 still recognizes the archive-fragment divergence when both sides end in a terminal period', () => {
+  const policy = loadVerificationPolicy();
+  const divergenceRule = resolveRegisteredDivergence(policy, 'div-005');
+  const entry = {
+    id: 'hn-dead-sea-scrolls',
+    oracle: '“The Community Rule (1QS),” Manuscript scroll, 100 BC.',
+    citum: '“The Community Rule (1QS)”, Manuscript scroll, -100, Shrine of the Book, Israel Antiquities Authority, Jerusalem.',
+    match: false,
+  };
+  const citationFixture = {
+    id: 'hn-dead-sea-scrolls',
+    items: [{ id: 'dead-sea-scrolls' }],
+  };
+  const testItems = {
+    'dead-sea-scrolls': {
+      id: 'dead-sea-scrolls',
+      type: 'manuscript',
+      issued: { 'date-parts': [[-100]] },
+      'archive-info': {
+        name: 'Israel Antiquities Authority',
+        location: 'Shrine of the Book',
+        place: 'Jerusalem',
+      },
+    },
+  };
+
+  const adjustment = explainCitationMismatchFromDiv005(
+    entry,
+    citationFixture,
+    testItems,
+    divergenceRule
+  );
+
+  assert.equal(adjustment?.divergenceId, 'div-005');
+  assert.deepEqual(adjustment?.itemIds, ['dead-sea-scrolls']);
+});
+
 test('div-010 masks a Latin-script citation mismatch that is punctuation-only after remapping', () => {
   const policy = loadVerificationPolicy();
   const divergenceRule = resolveRegisteredDivergence(policy, 'div-010');
@@ -913,7 +950,7 @@ test('component parsing slices normalized citeproc flush-layout text', () => {
   });
 
   assert.equal(components.title.value, 'Introduction to library services for library technicians');
-  assert.equal(components.publisher.value, 'Libraries Unlimited, Inc');
+  assert.equal(components.publisher.value, 'Libraries Unlimited, Inc.');
   assert.equal(components.year.value, '1982');
 });
 
@@ -946,6 +983,37 @@ test('GB/T bibliography grading requires exact normalized equality', () => {
     false
   );
   assert.equal(bibliographyComparisonMatches('apa-7th', comparison), true);
+});
+
+test('GB/T bibliography grading catches a missing terminal period', () => {
+  const comparison = compareText(
+    'New York：Bantam Dell Publishing Group，1988.',
+    'New York：Bantam Dell Publishing Group，1988'
+  );
+  assert.equal(comparison.match, true, 'similarity remains available for diagnostics');
+  assert.equal(
+    bibliographyComparisonMatches('gb-t-7714-2025-numeric', comparison),
+    false
+  );
+  assert.equal(bibliographyComparisonMatches('apa-7th', comparison), true);
+});
+
+test('compareText reports a case mismatch even when a trailing-punctuation difference also co-occurs', () => {
+  const comparison = compareText(
+    'Skinner, Quentin. “Meaning and Understanding in the History of Ideas.” History and Theory, vol. 8, no. 1, 2002, pp. 3–53, https://doi.org/10.2307/2504188.',
+    'Skinner, Quentin. “Meaning and understanding in the history of ideas.” History and Theory, vol. 8, no. 1, 2002, pp. 3–53, https://doi.org/10.2307/2504188'
+  );
+  assert.equal(comparison.match, false);
+  assert.equal(comparison.caseMismatch, true);
+});
+
+test('compareText does not report a case mismatch for a pure trailing-punctuation difference', () => {
+  const comparison = compareText(
+    'LeCun, Yann. “Deep Learning.” Nature, https://doi.org/10.1038/nature14539.',
+    'LeCun, Yann. “Deep Learning.” Nature, https://doi.org/10.1038/nature14539'
+  );
+  assert.equal(comparison.caseMismatch, false);
+  assert.equal(comparison.match, true, 'similarity fallback still applies for non-strict styles');
 });
 
 test('compareComponents reports differing component values as mismatches', () => {

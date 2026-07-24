@@ -60,7 +60,6 @@ function normalizeText(text) {
     // Strip bibliography numbering prefix after whitespace normalization (allow hidden directional marks).
     // Only strip when the numeric label is followed by actual entry content.
     .replace(/^[\u200e\u200f\u202a-\u202e\u2066-\u2069]*\d+\.(?=[^\d])\s*/, '')
-    .replace(/[.,;:]\s*$/g, '')
     .trim();
 }
 
@@ -148,7 +147,20 @@ function compareText(expectedText, actualText, options = {}) {
     return { expected, actual, match: true, caseMismatch: false, similarity: 1 };
   }
 
-  const caseMismatch = expected.toLowerCase() === actual.toLowerCase();
+  // Case-mismatch detection must stay meaningful even when expected/actual also
+  // differ by trailing punctuation (e.g. one side is missing a terminal period) --
+  // otherwise a real case defect goes undetected just because an unrelated
+  // punctuation defect happens to co-occur on the same entry. Comparing the
+  // punctuation-stripped forms for inequality (not just their lowercased forms)
+  // keeps a pure trailing-punctuation difference from being misreported as a
+  // case mismatch: two strings that are already identical once trailing
+  // punctuation is ignored are trivially case-insensitive-equal too, but that's
+  // not a case defect.
+  const stripTrailingPunctuation = (text) => text.replace(/[.,;:]\s*$/, '');
+  const strippedExpected = stripTrailingPunctuation(expected);
+  const strippedActual = stripTrailingPunctuation(actual);
+  const caseMismatch =
+    strippedExpected !== strippedActual && strippedExpected.toLowerCase() === strippedActual.toLowerCase();
   if (caseSensitive && caseMismatch) {
     return { expected, actual, match: false, caseMismatch: true, similarity: 1 };
   }
