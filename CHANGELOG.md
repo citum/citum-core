@@ -5,6 +5,108 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.78.0] - 2026-07-24
+
+### Bug Fixes
+
+**ci**
+
+- Enforce squash merge commit policy ([`bd19b78`](https://github.com/citum/citum-core/commit/bd19b7884f14d67969891c18d081327a33785cd7))
+
+- Pin checkout action v6 ([`059f9ee`](https://github.com/citum/citum-core/commit/059f9eea92ec58dfcea76a27aa7105144471ae88))
+
+
+**engine**
+
+- Restore locale type-variant fallback in bilingual styles ([`41ce890`](https://github.com/citum/citum-core/commit/41ce890a067ea782fa636592df73e26add98f19c))
+
+- Tailor case mapping by locale ([`93ff216`](https://github.com/citum/citum-core/commit/93ff21681437f233a2854a0ddf0bf78ca838dffd))
+
+- Exempt dates from component dedup ([`e6d7adb`](https://github.com/citum/citum-core/commit/e6d7adba254b6e56f339ceb0b4dc3286e037d06c))
+
+- Scope disambig grouping to bib config ([`a306577`](https://github.com/citum/citum-core/commit/a306577c9115b2f085004152ee9059e0f88a45e9))
+
+- Apply year-suffix to date fallback ([`7039c37`](https://github.com/citum/citum-core/commit/7039c37f4ae2eccbb1bf6f4b45b6c7d0479e445e))
+
+
+**hooks**
+
+- Honor primary history for mirrors ([`80c1c72`](https://github.com/citum/citum-core/commit/80c1c72bef11afc87eb6ce532d13bb5710cd2e26))
+
+
+**migrate**
+
+- Convert citeproc html titles to djot ([`14c1651`](https://github.com/citum/citum-core/commit/14c1651b4bbb357f32cbfd989fcb86835238bd6e))
+
+
+**report**
+
+- Add GB/T date-annotation divergence ([`0e9c8c4`](https://github.com/citum/citum-core/commit/0e9c8c42cbad57fd70b66cce36c6d5e5b6ba546e))
+
+- Stop masking punctuation-only defects ([`7c5ca94`](https://github.com/citum/citum-core/commit/7c5ca948a8b7e9ab904049ee49cbf9548d2efc56))
+
+
+**styles**
+
+- Rebuild GB/T author-date variants ([`9ac83a1`](https://github.com/citum/citum-core/commit/9ac83a1ceb4f867b3a56995a7b43f1ffa7a841d5))
+
+- Move GB/T anonymous term to locale ([`165142c`](https://github.com/citum/citum-core/commit/165142c64b169eaa3cb270a2fe0a58b5ca503eb7))
+
+- Gb/t 7714 entry terminal period ([`71c06a3`](https://github.com/citum/citum-core/commit/71c06a3ceded00977121cd1772db8515d6b662ed))
+
+- Fill gb-t-7714 numeric bib gaps ([`b6849c6`](https://github.com/citum/citum-core/commit/b6849c636c6b69030a02c4e0e899703850338822))
+
+- Add missing gb-t-7714 type-variants ([`edcdcf4`](https://github.com/citum/citum-core/commit/edcdcf46184f8a36a09ef5641b01185898502b8d))
+
+
+
+### Documentation
+
+**spec**
+
+- Activate PER_ITEM_TERM_LOCALE ([`8e2b841`](https://github.com/citum/citum-core/commit/8e2b8414db2a581437a1ec34f505603356cd4248))
+
+- Add bean on note-wrap config redesign ([`0cd8762`](https://github.com/citum/citum-core/commit/0cd87622ae49cd93a5c560441065f5801a2e9c83))
+
+- Fix broken calendar-note spec link ([`cc4c3b7`](https://github.com/citum/citum-core/commit/cc4c3b7943aca366cc0c8a58cbe55a076c563a97))
+
+
+
+### Features
+
+**engine**
+
+- Support term-locale: item ([`9acb619`](https://github.com/citum/citum-core/commit/9acb61968ab03cbd22caad9d41487e510c03b288))
+
+- Warn on unavailable item term locale ([`e6326d6`](https://github.com/citum/citum-core/commit/e6326d626d8d1da3bb60b3879be930ef8e9d144c))
+
+- Add punctuation width presets ([`2f2e4b2`](https://github.com/citum/citum-core/commit/2f2e4b27504daf688eee7fb886c208b9d1a9268f))
+
+- Suppress date note per component ([`93e5d60`](https://github.com/citum/citum-core/commit/93e5d60e0d72d1ee7c55690baffcdc21649399ec))
+
+- Prefer locale message for anonymous ([`a064398`](https://github.com/citum/citum-core/commit/a064398b79d2d976c09439307be9fb94f68be573))
+
+
+**locale**
+
+- Add localized digit systems ([`7a16188`](https://github.com/citum/citum-core/commit/7a1618809f16d082abed6b82c53d97ed71f7b874))
+
+- Add punctuation realization spacing ([`9240973`](https://github.com/citum/citum-core/commit/9240973ee314e38005575a26f53de5c1c43c0aa5))
+
+
+**schema**
+
+- Add multilingual term-locale opt-in ([`082390a`](https://github.com/citum/citum-core/commit/082390a7d83d302a83692b02c131cee5d5519900))
+
+
+
+### Testing
+
+**engine**
+
+- Use zh-CN locale in era fixtures ([`505c460`](https://github.com/citum/citum-core/commit/505c460c5c8ea365f3c95e3efe026d059f5bd8d7))
+
+
 ## [0.77.0] - 2026-07-21
 
 ### Bug Fixes
