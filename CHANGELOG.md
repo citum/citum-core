@@ -5,6 +5,86 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.80.0] - 2026-08-07
+
+### Bug Fixes
+
+**engine**
+
+- Punctuation-in-quote under markup ([`6e99c72`](https://github.com/citum/citum-core/commit/6e99c724a50d2c84610cef3715546a9f369391a6))
+
+- Keep comma after abbreviation period ([`05bfcf8`](https://github.com/citum/citum-core/commit/05bfcf8971edb7dc1feb02496cfcc8536f26bb9e))
+
+- Year-suffix follows render order ([`b3dec80`](https://github.com/citum/citum-core/commit/b3dec8049c7163279c49a98bff7588589ab90120))
+
+- Add missing Narrator ContributorRole ([`f5e75a2`](https://github.com/citum/citum-core/commit/f5e75a2f7fbfaf20aa53e2987ba5f5e90e3fe4ef))
+
+
+**schema**
+
+- Type title category mappings ([`b996fb6`](https://github.com/citum/citum-core/commit/b996fb69534ee316a4039ed8ab8a7935f9789137))
+
+- Remove all type-selector keyword ([`b460bc6`](https://github.com/citum/citum-core/commit/b460bc6f98d14820830d7b508ca8398623ee4ef5))
+
+
+**styles**
+
+- Localize chicago contributor roles ([`865c269`](https://github.com/citum/citum-core/commit/865c2693cce78b8073cbb42781052767091fb099))
+
+- Quote chicago newspaper/thesis titles ([`a98c891`](https://github.com/citum/citum-core/commit/a98c89156cfec393643a86c5c022f5d6c0346abc))
+
+
+
+### Documentation
+
+**spec**
+
+- Specify EDTF-keyed locale date names ([`1e085f4`](https://github.com/citum/citum-core/commit/1e085f435f51b2088a01c8ce481c6bb5f86550a6))
+
+- Record punctuation-in-quote markup fix ([`22894b4`](https://github.com/citum/citum-core/commit/22894b4d80c2ae2800594c289ec05cfc9f35ebd9))
+
+- Specify processor-owned markers ([`678bb68`](https://github.com/citum/citum-core/commit/678bb68e17959a2df4b989ce25be6600a067d624))
+
+- Define typed title mappings ([`005f074`](https://github.com/citum/citum-core/commit/005f0741bfe7eddd1f985c06312de9297382aec6))
+
+- Remove all type-selector keyword ([`81555bb`](https://github.com/citum/citum-core/commit/81555bba89a1a3071aaf213450d1668f265c6074))
+
+- Year-suffix order under resolved sorts ([`bc72b51`](https://github.com/citum/citum-core/commit/bc72b51eadee4439834d46f14d46e63a3be5d635))
+
+- Chicago strategy, localization policy ([`c472d51`](https://github.com/citum/citum-core/commit/c472d51fc29ef956ed466ba7386593ea5a243c46))
+
+
+
+### Features
+
+**engine**
+
+- Add day-zero-pad date option ([`5dbe34d`](https://github.com/citum/citum-core/commit/5dbe34d752d4488b5fa6f98015828bdde04336f4))
+
+
+**schema**
+
+- Key locale date names by EDTF code ([`c583483`](https://github.com/citum/citum-core/commit/c5834838838f263a0889eacc1219fa250e6ebf41))
+
+- Own markers in the processor ([`6595cf0`](https://github.com/citum/citum-core/commit/6595cf0b1b12ebf0e5f2409590354a620b4e0705))
+
+
+**scripts**
+
+- Add STYLE010 localization lint rule ([`8f00c33`](https://github.com/citum/citum-core/commit/8f00c330d39643633966a358e2e86dc41169d4b4))
+
+
+
+### Refactor
+
+**styles**
+
+- Ieee titles via category config ([`613ffb9`](https://github.com/citum/citum-core/commit/613ffb94f73388b294aaf22913b2488d68e3d1fa))
+
+
+
+### Testing
+
 ## [0.79.0] - 2026-08-02
 
 ### Bug Fixes
