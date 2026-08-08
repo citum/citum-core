@@ -10,7 +10,7 @@ tags:
     - style
     - tooling
 created_at: 2026-08-08T11:23:25Z
-updated_at: 2026-08-08T11:23:25Z
+updated_at: 2026-08-08T11:26:17Z
 ---
 
 Citum's four embedded Chicago styles were each migrated independently from a flattened, fully-built CSL output file, then their extends: relationships (chicago-18-base.yaml, and each other) were reconstructed by hand afterward -- inferred by comparing the independently-migrated YAML files. style-variant-builder's own diffs are a better source of truth for that structure: each is a delta against the *same* shared templates/chicago-template.csl, so the diff itself already says, unambiguously, what's shared versus variant-specific -- no reconstruction needed.
@@ -31,7 +31,7 @@ Not all hunks are equally automatable. The goal of a first script pass is not fu
 
 Whatever comes out of this still needs citeproc-js verification -- structural correctness (the diff says what changed) isn't the same as rendering correctness (Citum's declarative model expressing that change correctly). This regenerates candidate YAML and candidate extends structure; it doesn't replace the report-core.js / oracle.js parity check.
 
-- [ ] Confirm the sibling-vs-descendant finding above: read chicago-notes.diff and chicago-shortened-notes-bibliography.diff side by side against the template to verify neither depends on the other, and check whether chicago-shortened-notes-bibliography-core.yaml's current parity failures correlate with content only reachable via chicago-notes-18th's citation grammar (its citation.ibid block, its subsequent-form type-variants) that the CSL source never had
-- [ ] Prototype the hunk classifier against just these three diffs; report the split between auto-generated and flagged-for-review hunks
+- [x] Confirm the sibling-vs-descendant finding above: read chicago-notes.diff and chicago-shortened-notes-bibliography.diff side by side against the template to verify neither depends on the other -- confirmed mechanically by the classifier run below (neither diff's hunks touch the other's macros). Still open: whether chicago-shortened-notes-bibliography-core.yaml's current parity failures actually correlate with content only reachable via chicago-notes-18th's citation grammar -- that needs the render-level check in the next checklist item, not just the structural one.
+- [x] Prototype the hunk classifier against just these three diffs; report the split between auto-generated and flagged-for-review hunks -- scripts/chicago-diff-classifier.py. Result: 30 hunks total (22 author-date, 4 notes, 4 shortened-notes-bibliography); 10/30 auto-generatable (6 info-metadata, 3 element-attrs, 1 variable-removed), 12 macro-swaps needing the axis-map cross-check, 8 unclassified <choose> restructurings needing manual/cluster-work cross-check. Confirms the sibling-vs-descendant finding mechanically: chicago-notes.diff's 4 hunks never touch <citation>/<bibliography> macro references at all (only metadata + et-al attributes), while chicago-shortened-notes-bibliography.diff independently swaps both citation and bibliography macros directly off the template's own defaults -- neither diff depends on the other.
 - [ ] If the sibling-relationship finding holds, evaluate re-basing chicago-shortened-notes-bibliography-core.yaml onto chicago-18-base directly instead of chicago-notes-18th, as a bounded experiment, verified against citeproc-js before touching the shipped style
 - [ ] Report findings; decide whether to extend the classifier to the fourth relationship (taylor-and-francis-chicago-author-date-core's extends: chicago-author-date-18th, which does match its CSL source's actual `rel="template"` relationship, so is lower priority to re-examine)
