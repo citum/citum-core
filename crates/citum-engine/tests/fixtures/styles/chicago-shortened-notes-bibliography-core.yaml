@@ -599,3 +599,4 @@ bibliography:
   - variable: doi
     prefix: https://doi.org/
   - variable: url
+

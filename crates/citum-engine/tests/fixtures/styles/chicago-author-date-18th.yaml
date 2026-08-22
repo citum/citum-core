@@ -39,6 +39,8 @@ options:
     pattern.chicago-volume-lower: "vol. {$number}"
     pattern.chicago-version: "V. {$version}"
   date-fallback: standard
+  dates:
+    range-format: expanded
   # multilingual, page-range-format, dates, punctuation-in-quote, and
   # contributors.demote-non-dropping-particle are inherited from chicago-18-base.
   locators: note
