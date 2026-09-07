@@ -1,10 +1,12 @@
 # Render-When Contract Specification
 
-**Status:** Active
-**Version:** 1.1
-**Date:** 2026-07-13
+**Status:** Active (vocabulary frozen — see v1.2)
+**Version:** 1.2
+**Date:** 2026-09-06
 **Supersedes:** None
-**Related:** `csl26-qyub`
+**Related:** `csl26-qyub`,
+`docs/architecture/audits/2026-09-06_RENDER_WHEN_DISPOSITION.md`,
+`docs/specs/GROUP_SELECT.md`
 
 ## Purpose
 
@@ -17,6 +19,17 @@ semantics, and validation rules.
 The mechanism is intentionally bounded: independent `field-present` and
 `field-absent` probes combined with AND only. No OR, value comparisons, or
 arbitrary boolean expressions.
+
+**As of v1.2, the field vocabulary below is frozen — no further fields will
+be added.** A full-corpus inventory (`docs/architecture/audits/2026-09-06_RENDER_WHEN_DISPOSITION.md`)
+found that every one of the 125 existing uses is one of two shapes: a
+fallback where the tested field is the same one the branch renders (now
+served by `docs/specs/GROUP_SELECT.md`'s ordered-candidate-list primitive,
+which needs no predicate at all), or a structural policy gate where the
+tested field never appears in what it guards (not yet served by anything —
+see that audit's "Work-form routing" section). New style needs that look
+like a `render-when` field addition should be routed to one of those two
+efforts, not to this contract.
 
 ## Scope
 
@@ -79,8 +92,16 @@ value.
 | `genre` | genre exists |
 | `archive` | archive or repository name exists |
 | `archive-location` | archive location or shelfmark exists |
+| `volume-or-issue` | the volume number, or the issue number when volume is absent — "does this serial component have any volume/issue identifier at all?" |
+| `part-number` | the document-level part number used by multivolume and multipart works |
+| `part-number-numeric` | a document-level part number whose value is a bare numeric value |
+| `part-number-non-numeric` | a document-level part number whose value already contains a textual label |
+| `number-of-volumes` | the total number of volumes in a multivolume work |
+| `volume-title` | the title of an individual volume within a multivolume work |
 
-New fields may be added when all of the following hold:
+**Frozen as of v1.2 — no new fields will be added to this table.** The
+extension criteria that governed v1.0/v1.1 growth are recorded here for
+history:
 
 - presence has one unambiguous, documented reference accessor meaning;
 - a real style forcing case needs it, and the need is a field-presence
@@ -90,9 +111,28 @@ New fields may be added when all of the following hold:
 - engine behavior stays generic and does not inspect style identity;
 - this contract and generated schema documentation are updated.
 
+The 2026-09-06 disposition audit found that every candidate field an
+embedded-style parity pass wanted (`url`, `pages`, `publisher-place`) failed
+the second
+criterion on inspection — each was a stand-in for a fallback owned
+elsewhere, not a genuine field-presence distinction. Rather than
+re-litigate that same question per proposal, the vocabulary is closed. The
+routing for those three cases is not interchangeable — each goes to a
+different, specific mechanism:
+
+| Field | Routes to |
+|---|---|
+| `publisher-place` | `docs/specs/GROUP_SELECT.md` (`select: first`, output-based fallback) |
+| `url` | `docs/specs/MEDIUM_DESIGNATOR.md` (a bundled bibliography option, not a template fallback) |
+| `pages` / `volume` | extending `ArticleJournalNoPageFallback` (`options/bibliography.rs`), tracked in `csl26-8z39` |
+
+A proposed new field is evidence that a need belongs to one of these three,
+or to the not-yet-designed work-form routing primitive (see the audit's
+"Work-form routing" section) — not to this contract.
+
 Field growth does not imply operator growth. Multiple-field lists, OR,
 comparisons, arbitrary expressions, and new branch forms each require a
-separate design proposal.
+separate design proposal, and remain out of scope regardless of the freeze.
 
 ### Validation
 
@@ -137,6 +177,18 @@ schema-gen` was run and produced no diff, which is expected, not an omission.
 
 ## Changelog
 
+- v1.2 (2026-09-06): Froze the field vocabulary — no new fields will be
+  added. Added six `TemplateConditionField` variants that existed in the
+  schema but were missing from this table (`volume-or-issue`,
+  `part-number`, `part-number-numeric`, `part-number-non-numeric`,
+  `number-of-volumes`, `volume-title` — the corpus's highest-volume fields).
+  Fallback-shaped uses route to `docs/specs/GROUP_SELECT.md`; structural
+  policy-gate uses await a work-form-routing design under `csl26-40n4`.
+  Added a per-field routing table for the three fields a parity pass
+  wanted (`publisher-place` → `select: first`, `url` →
+  `docs/specs/MEDIUM_DESIGNATOR.md`, `pages`/`volume` → extending
+  `ArticleJournalNoPageFallback`, tracked in `csl26-8z39`). See
+  `docs/architecture/audits/2026-09-06_RENDER_WHEN_DISPOSITION.md`.
 - v1.1 (2026-07-13): Implemented validation and behavior tests; promoted to
   Active.
 - v1.0 (2026-07-13): Initial contract specification.
