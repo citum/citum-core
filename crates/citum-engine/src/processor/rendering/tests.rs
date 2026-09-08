@@ -107,6 +107,7 @@ fn explicit_author_year_group_style() -> Style {
                         delimiter: Some(DelimiterPunctuation::Space),
                         rendering: Rendering::default(),
                         render_when: None,
+                        select: TemplateGroupSelect::All,
                         custom: None,
                     }),
                     TemplateComponent::Variable(TemplateVariable {
@@ -160,6 +161,7 @@ fn explicit_author_year_group_with_locator_delimiter_style() -> Style {
                         delimiter: Some(DelimiterPunctuation::Space),
                         rendering: Rendering::default(),
                         render_when: None,
+                        select: TemplateGroupSelect::All,
                         custom: None,
                     }),
                     TemplateComponent::Variable(TemplateVariable {
@@ -402,6 +404,7 @@ fn test_strip_author_component_nested_list() {
         delimiter: Some(DelimiterPunctuation::Space),
         rendering: Rendering::default(),
         render_when: None,
+        select: TemplateGroupSelect::All,
         custom: None,
     });
 
@@ -1241,6 +1244,350 @@ fn sentence_initial_group_still_capitalizes_leading_contributor_role_prose() {
     let result = render_single_bibliography_entry(style, reference);
 
     assert_eq!(result, "Edited by Ada Smith");
+}
+
+// docs/specs/GROUP_SELECT.md: `select: first` renders the first child that
+// produces non-empty output and discards the rest, with no group-level
+// "backed by real data" gate the way `select: all` has.
+mod group_select_first {
+    use super::*;
+    use citum_schema::reference::{Monograph, MonographType, Title};
+
+    fn book(id: &str, doi: Option<&str>, isbn: Option<&str>) -> Reference {
+        Reference::Monograph(Box::new(Monograph {
+            id: Some(id.into()),
+            r#type: MonographType::Book,
+            title: Some(Title::Single(format!("Title {id}"))),
+            doi: doi.map(str::to_string),
+            isbn: isbn.map(str::to_string),
+            ..Default::default()
+        }))
+    }
+
+    fn doi_or_isbn_group() -> TemplateComponent {
+        TemplateComponent::Group(TemplateGroup {
+            group: vec![
+                TemplateComponent::Variable(TemplateVariable {
+                    variable: SimpleVariable::Doi,
+                    ..Default::default()
+                }),
+                TemplateComponent::Variable(TemplateVariable {
+                    variable: SimpleVariable::Isbn,
+                    ..Default::default()
+                }),
+            ],
+            select: TemplateGroupSelect::First,
+            ..Default::default()
+        })
+    }
+
+    #[test]
+    fn select_first_uses_the_first_candidate_that_renders() {
+        let style = bibliography_style_with_template(vec![doi_or_isbn_group()]);
+        let reference = book("both", Some("10.1/doi"), Some("ISBN-1"));
+
+        let result = render_single_bibliography_entry(style, reference);
+
+        assert_eq!(result, "10.1/doi");
+    }
+
+    #[test]
+    fn select_first_falls_through_to_a_later_candidate_when_the_first_is_empty() {
+        let style = bibliography_style_with_template(vec![doi_or_isbn_group()]);
+        let reference = book("isbn-only", None, Some("ISBN-2"));
+
+        let result = render_single_bibliography_entry(style, reference);
+
+        assert_eq!(result, "ISBN-2");
+    }
+
+    #[test]
+    fn select_first_group_renders_nothing_when_no_candidate_renders() {
+        let style = bibliography_style_with_template(vec![
+            TemplateComponent::Title(TemplateTitle {
+                title: TitleType::Primary,
+                ..Default::default()
+            }),
+            doi_or_isbn_group(),
+        ]);
+        let reference = book("neither", None, None);
+
+        let result = render_single_bibliography_entry(style, reference);
+
+        assert_eq!(result, "Title neither");
+    }
+
+    #[test]
+    fn select_first_term_only_direct_child_renders_with_no_wrapping_needed() {
+        // A locale message as a direct `select: first` child works with no
+        // group-wrapping, unlike `select: all`'s term-only-content gate
+        // (`sentence_initial_term_group_preserves_locale_term_case` needs an
+        // inner group wrapper for the same shape).
+        let style =
+            bibliography_style_with_template(vec![TemplateComponent::Group(TemplateGroup {
+                group: vec![
+                    TemplateComponent::Variable(TemplateVariable {
+                        variable: SimpleVariable::Isbn,
+                        ..Default::default()
+                    }),
+                    TemplateComponent::Message(TemplateMessage {
+                        message: "term.no-date".to_string(),
+                        form: Some(citum_schema::locale::TermForm::Short),
+                        ..Default::default()
+                    }),
+                ],
+                select: TemplateGroupSelect::First,
+                ..Default::default()
+            })]);
+        let reference = book("no-isbn", None, None);
+
+        let result = render_single_bibliography_entry(style, reference);
+
+        assert_eq!(result, "n.d.");
+    }
+
+    #[test]
+    fn select_first_losing_candidates_date_probe_leaves_no_trace_for_a_later_occurrence() {
+        // Policy is deliberately inverted from the common case (no fallback
+        // for a genuinely-first occurrence, `n.d.` for a later one) so the
+        // two outcomes render different text: if the losing `date: issued`
+        // candidate's occurrence probe leaked out of the group (csl26-2hr4),
+        // the real sibling `date: issued` below would wrongly see itself as
+        // a *later* occurrence and render `n.d.`; isolated correctly, it
+        // still sees itself as first and renders nothing.
+        let mut style = bibliography_style_with_template(vec![
+            TemplateComponent::Group(TemplateGroup {
+                group: vec![
+                    TemplateComponent::Date(TemplateDate {
+                        date: citum_schema::template::DateVariable::Issued,
+                        form: DateForm::Year,
+                        ..Default::default()
+                    }),
+                    TemplateComponent::Variable(TemplateVariable {
+                        variable: SimpleVariable::Isbn,
+                        ..Default::default()
+                    }),
+                ],
+                select: TemplateGroupSelect::First,
+                ..Default::default()
+            }),
+            TemplateComponent::Date(TemplateDate {
+                date: citum_schema::template::DateVariable::Issued,
+                form: DateForm::Year,
+                ..Default::default()
+            }),
+        ]);
+        style.options = Some(
+            serde_yaml::from_str(
+                r#"
+date-fallback:
+  first-issued:
+    default: none
+  later-issued:
+    default: standard
+"#,
+            )
+            .expect("lane policy should parse"),
+        );
+        let reference = book("undated", None, Some("ISBN-3"));
+
+        let result = render_single_bibliography_entry(style, reference);
+
+        assert_eq!(result, "ISBN-3");
+    }
+
+    #[test]
+    fn select_first_winning_candidate_with_an_empty_nested_group_still_renders_correctly() {
+        // The winning candidate is itself a `select: all` group whose first
+        // child is a term-only nested group (empty under `select: all`'s
+        // "backed by real data" gate) -- that nested emptiness must not
+        // affect the winning candidate's own (unrelated) content, the
+        // forcing case for the csl26-2hr4 tracker-merge-order prerequisite.
+        let winning_candidate = TemplateComponent::Group(TemplateGroup {
+            group: vec![
+                TemplateComponent::Group(TemplateGroup {
+                    group: vec![TemplateComponent::Message(TemplateMessage {
+                        message: "term.no-date".to_string(),
+                        form: Some(citum_schema::locale::TermForm::Short),
+                        ..Default::default()
+                    })],
+                    ..Default::default()
+                }),
+                TemplateComponent::Variable(TemplateVariable {
+                    variable: SimpleVariable::Isbn,
+                    ..Default::default()
+                }),
+            ],
+            ..Default::default()
+        });
+        let style =
+            bibliography_style_with_template(vec![TemplateComponent::Group(TemplateGroup {
+                group: vec![
+                    winning_candidate,
+                    TemplateComponent::Variable(TemplateVariable {
+                        variable: SimpleVariable::Doi,
+                        ..Default::default()
+                    }),
+                ],
+                select: TemplateGroupSelect::First,
+                ..Default::default()
+            })]);
+        let reference = book("nested-empty", Some("10.1/unused"), Some("ISBN-4"));
+
+        let result = render_single_bibliography_entry(style, reference);
+
+        assert_eq!(result, "ISBN-4");
+    }
+
+    #[test]
+    fn select_first_nested_inside_select_all_and_vice_versa() {
+        // select: first nested inside select: all.
+        let all_wrapping_first =
+            bibliography_style_with_template(vec![TemplateComponent::Group(TemplateGroup {
+                group: vec![
+                    doi_or_isbn_group(),
+                    TemplateComponent::Title(TemplateTitle {
+                        title: TitleType::Primary,
+                        ..Default::default()
+                    }),
+                ],
+                delimiter: Some(DelimiterPunctuation::Space),
+                ..Default::default()
+            })]);
+        let result = render_single_bibliography_entry(
+            all_wrapping_first,
+            book("outer-all", None, Some("ISBN-5")),
+        );
+        assert_eq!(result, "ISBN-5 Title outer-all");
+
+        // select: all nested inside select: first.
+        let first_wrapping_all =
+            bibliography_style_with_template(vec![TemplateComponent::Group(TemplateGroup {
+                group: vec![
+                    TemplateComponent::Group(TemplateGroup {
+                        group: vec![TemplateComponent::Variable(TemplateVariable {
+                            variable: SimpleVariable::Isbn,
+                            ..Default::default()
+                        })],
+                        ..Default::default()
+                    }),
+                    TemplateComponent::Variable(TemplateVariable {
+                        variable: SimpleVariable::Doi,
+                        ..Default::default()
+                    }),
+                ],
+                select: TemplateGroupSelect::First,
+                ..Default::default()
+            })]);
+        let result = render_single_bibliography_entry(
+            first_wrapping_all,
+            book("outer-first", Some("10.1/unused"), Some("ISBN-6")),
+        );
+        assert_eq!(result, "ISBN-6");
+    }
+
+    #[test]
+    fn select_first_combines_with_render_when_on_the_same_group() {
+        let style =
+            bibliography_style_with_template(vec![TemplateComponent::Group(TemplateGroup {
+                group: vec![
+                    TemplateComponent::Variable(TemplateVariable {
+                        variable: SimpleVariable::Doi,
+                        ..Default::default()
+                    }),
+                    TemplateComponent::Variable(TemplateVariable {
+                        variable: SimpleVariable::Isbn,
+                        ..Default::default()
+                    }),
+                ],
+                select: TemplateGroupSelect::First,
+                render_when: Some(TemplateGroupCondition {
+                    field_present: Some(TemplateConditionField::Title),
+                    field_absent: None,
+                }),
+                ..Default::default()
+            })]);
+
+        // render_when fails (no title) -- select: first never evaluated.
+        let gated_off = Reference::Monograph(Box::new(Monograph {
+            id: Some("no-title".into()),
+            r#type: MonographType::Book,
+            doi: Some("10.1/should-not-render".to_string()),
+            ..Default::default()
+        }));
+        assert_eq!(
+            render_single_bibliography_entry(style.clone(), gated_off),
+            ""
+        );
+
+        // render_when passes -- select: first proceeds normally.
+        let gated_on = book("gated-on", Some("10.1/renders"), Some("ISBN-7"));
+        assert_eq!(
+            render_single_bibliography_entry(style, gated_on),
+            "10.1/renders"
+        );
+    }
+
+    fn isbn_or_no_date_fallback_joined_with_doi() -> TemplateComponent {
+        TemplateComponent::Group(TemplateGroup {
+            delimiter: Some(DelimiterPunctuation::Colon),
+            group: vec![
+                TemplateComponent::Group(TemplateGroup {
+                    group: vec![
+                        TemplateComponent::Variable(TemplateVariable {
+                            variable: SimpleVariable::Isbn,
+                            ..Default::default()
+                        }),
+                        TemplateComponent::Message(TemplateMessage {
+                            message: "term.no-date".to_string(),
+                            form: Some(citum_schema::locale::TermForm::Short),
+                            ..Default::default()
+                        }),
+                    ],
+                    select: TemplateGroupSelect::First,
+                    ..Default::default()
+                }),
+                TemplateComponent::Variable(TemplateVariable {
+                    variable: SimpleVariable::Doi,
+                    ..Default::default()
+                }),
+            ],
+            ..Default::default()
+        })
+    }
+
+    #[test]
+    fn select_first_term_only_fallback_does_not_make_an_enclosing_select_all_group_meaningful() {
+        // Regression for a `report-core` fidelity drop found while migrating
+        // T&F-CSE's publisher-place fallback to `select: first`: an outer
+        // `select: all` group must stay suppressed when its only "content"
+        // is a nested `select: first` group whose winner is a term-only
+        // fallback -- exactly the suppression a real CSL `<group>` performs
+        // (a literal `<text value="...">` never counts toward the "at
+        // least one bound variable rendered" test), even though the nested
+        // group's *structure* contains a real variable (`isbn`) that lost.
+        let style =
+            bibliography_style_with_template(vec![isbn_or_no_date_fallback_joined_with_doi()]);
+        let reference = book("neither-isbn-nor-doi", None, None);
+
+        let result = render_single_bibliography_entry(style, reference);
+
+        assert_eq!(result, "");
+    }
+
+    #[test]
+    fn select_first_term_only_fallback_still_joins_when_a_sibling_has_real_content() {
+        // Complement of the regression above: once a real sibling in the
+        // outer `select: all` group has content, the fallback correctly
+        // joins alongside it.
+        let style =
+            bibliography_style_with_template(vec![isbn_or_no_date_fallback_joined_with_doi()]);
+        let reference = book("doi-only", Some("10.1/x"), None);
+
+        let result = render_single_bibliography_entry(style, reference);
+
+        assert_eq!(result, "n.d.: 10.1/x");
+    }
 }
 
 // csl26-huuz (piece 3): a year-suffix letter attached to a fallback date

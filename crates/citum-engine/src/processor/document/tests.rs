@@ -17,8 +17,8 @@ use citum_schema::options::{
 };
 use citum_schema::template::{
     ContributorForm, ContributorRole, DateForm, DateVariable, Rendering, TemplateComponent,
-    TemplateContributor, TemplateDate, TemplateGroup, TemplateTerm, TemplateTitle, TitleType,
-    WrapPunctuation,
+    TemplateContributor, TemplateDate, TemplateGroup, TemplateGroupSelect, TemplateTerm,
+    TemplateTitle, TitleType, WrapPunctuation,
 };
 use citum_schema::{BibliographySpec, CitationSpec, NoteStartTextCase, Style};
 use csl_legacy::csl_json::{
@@ -569,6 +569,7 @@ fn test_repro_djot_rendering() {
                             },
                             delimiter: None,
                             render_when: None,
+                            select: TemplateGroupSelect::All,
                             custom: None,
                         }),
                     ]

@@ -1794,12 +1794,40 @@ pub struct TemplateGroup {
     pub render_when: Option<TemplateGroupCondition>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub delimiter: Option<DelimiterPunctuation>,
+    /// How children are combined: `all` (default) renders every
+    /// non-suppressed child and joins them; `first` renders the first child
+    /// that produces non-empty output and discards the rest. See
+    /// `docs/specs/GROUP_SELECT.md`.
+    #[serde(default, skip_serializing_if = "TemplateGroupSelect::is_all")]
+    pub select: TemplateGroupSelect,
     #[serde(flatten, default)]
     pub rendering: Rendering,
 
     /// Custom user-defined fields for extensions.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub custom: Option<HashMap<String, serde_json::Value>>,
+}
+
+/// How a `TemplateGroup`'s children are combined into the group's output.
+#[derive(Debug, Deserialize, Serialize, Clone, Copy, PartialEq, Eq, Default)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[serde(rename_all = "kebab-case")]
+pub enum TemplateGroupSelect {
+    /// Render every non-suppressed child and join them (today's behavior).
+    #[default]
+    All,
+    /// Render the first child that produces non-empty output; discard the
+    /// rest. Rejected by validation with fewer than two children or
+    /// combined with `delimiter`.
+    First,
+}
+
+impl TemplateGroupSelect {
+    /// Whether this is the default `all` mode, for `skip_serializing_if`.
+    #[must_use]
+    pub fn is_all(&self) -> bool {
+        matches!(self, Self::All)
+    }
 }
 
 /// Field-presence condition for rendering a template group.

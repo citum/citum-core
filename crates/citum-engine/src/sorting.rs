@@ -703,10 +703,43 @@ fn first_contributor_component_ref(
     None
 }
 
-fn first_contributor_component(
+/// Reference-specific counterpart of `first_contributor_component_ref`,
+/// used only where a specific reference is available (`primary_contributor_for_citation`/
+/// `primary_contributor_for_bibliography`) so a `select: first` group's
+/// winning candidate can be resolved (see
+/// `crate::values::select_group_children`), rather than always taking the
+/// structurally first child. The reference-independent original stays as-is
+/// for the `*_may_have_list_primary` structural queries, which ask "could
+/// any reference make this render" and have no reference to resolve a
+/// winner against.
+fn first_contributor_component_ref_for_reference<'a>(
+    template: &'a [citum_schema::template::TemplateComponent],
+    reference: &Reference,
+) -> Option<&'a citum_schema::template::TemplateContributor> {
+    for component in template {
+        match component {
+            citum_schema::template::TemplateComponent::Contributor(contributor) => {
+                return Some(contributor);
+            }
+            citum_schema::template::TemplateComponent::Group(group) => {
+                let children = crate::values::select_group_children(group, reference);
+                if let Some(contributor) =
+                    first_contributor_component_ref_for_reference(children, reference)
+                {
+                    return Some(contributor);
+                }
+            }
+            _ => {}
+        }
+    }
+    None
+}
+
+fn first_contributor_component_for_reference(
     template: &[citum_schema::template::TemplateComponent],
+    reference: &Reference,
 ) -> Option<citum_schema::template::TemplateContributor> {
-    first_contributor_component_ref(template).cloned()
+    first_contributor_component_ref_for_reference(template, reference).cloned()
 }
 
 fn template_has_list_primary(template: &[citum_schema::template::TemplateComponent]) -> bool {
@@ -790,7 +823,7 @@ pub(crate) fn primary_contributor_for_citation(
 ) -> Option<citum_schema::template::TemplateContributor> {
     let language = reference.language().map(|language| language.to_string());
     let template = spec.resolve_template_for_type(&reference.ref_type(), language.as_deref())?;
-    first_contributor_component(&template)
+    first_contributor_component_for_reference(&template, reference)
 }
 
 fn primary_contributor_for_bibliography(
@@ -799,7 +832,7 @@ fn primary_contributor_for_bibliography(
     language: Option<&str>,
 ) -> Option<citum_schema::template::TemplateContributor> {
     let template = spec.resolve_template_for_type(&reference.ref_type(), language)?;
-    first_contributor_component(&template)
+    first_contributor_component_for_reference(&template, reference)
 }
 
 fn first_date_component_ref<'a>(
@@ -822,7 +855,8 @@ fn first_date_component_ref<'a>(
                         crate::values::group_condition_matches(reference, condition)
                     }) =>
             {
-                if let Some(date) = first_date_component_ref(&group.group, reference, issued_only) {
+                let children = crate::values::select_group_children(group, reference);
+                if let Some(date) = first_date_component_ref(children, reference, issued_only) {
                     return Some(date);
                 }
             }
@@ -970,6 +1004,179 @@ mod tests {
         });
         let legacy: csl_legacy::csl_json::Reference = serde_json::from_value(json).unwrap();
         legacy.into()
+    }
+
+    // docs/specs/GROUP_SELECT.md: `first_date_component_ref` must resolve a
+    // `select: first` group's *actual* winning candidate per reference, not
+    // just the structurally first one -- otherwise a reference could sort
+    // as if its first candidate applied while rendering its second.
+    mod select_first_winner_resolution {
+        use super::*;
+        use citum_schema::reference::WorkRelation;
+        use citum_schema::template::{
+            DateForm, DateVariable, Rendering, SimpleVariable, TemplateComponent, TemplateDate,
+            TemplateGroup, TemplateGroupSelect, TemplateVariable,
+        };
+
+        fn monograph(id: &str, issued: Option<&str>, original: Option<&str>) -> Reference {
+            Reference::Monograph(Box::new(Monograph {
+                id: Some(id.into()),
+                r#type: MonographType::Book,
+                title: Some(Title::Single(format!("Title {id}"))),
+                issued: issued.map_or_else(DateValue::default, DateValue::new),
+                original: original.map(|value| {
+                    WorkRelation::Embedded(Box::new(Reference::Monograph(Box::new(Monograph {
+                        issued: DateValue::new(value),
+                        ..Default::default()
+                    }))))
+                }),
+                ..Default::default()
+            }))
+        }
+
+        fn select_first_original_or_issued() -> Vec<TemplateComponent> {
+            vec![TemplateComponent::Group(TemplateGroup {
+                group: vec![
+                    TemplateComponent::Date(TemplateDate {
+                        date: DateVariable::OriginalPublished,
+                        form: DateForm::Year,
+                        ..Default::default()
+                    }),
+                    TemplateComponent::Date(TemplateDate {
+                        date: DateVariable::Issued,
+                        form: DateForm::Year,
+                        ..Default::default()
+                    }),
+                ],
+                select: TemplateGroupSelect::First,
+                ..Default::default()
+            })]
+        }
+
+        #[test]
+        fn resolves_the_second_candidate_when_the_first_is_empty() {
+            let template = select_first_original_or_issued();
+            let reference = monograph("no-original", Some("2000"), None);
+
+            let winner = first_date_component_ref(&template, &reference, false)
+                .expect("a date component should resolve");
+
+            assert_eq!(winner.date, DateVariable::Issued);
+        }
+
+        #[test]
+        fn resolves_the_first_candidate_when_it_is_present() {
+            let template = select_first_original_or_issued();
+            let reference = monograph("with-original", Some("1995"), Some("2010"));
+
+            let winner = first_date_component_ref(&template, &reference, false)
+                .expect("a date component should resolve");
+
+            assert_eq!(winner.date, DateVariable::OriginalPublished);
+        }
+
+        #[test]
+        fn sort_key_tracks_the_winning_candidate_not_the_structurally_first_one() {
+            // Reference A has no original date (Issued wins, 2000).
+            // Reference B has an original date (OriginalPublished wins, 2010),
+            // even though its own Issued (1995) differs. A structurally-first
+            // resolution would read OriginalPublished for both -- None for A
+            // (sorting last) and 2010 for B -- giving the opposite order.
+            let a = monograph("a", Some("2000"), None);
+            let b = monograph("b", Some("1995"), Some("2010"));
+            let template_a = select_first_original_or_issued();
+            let template_b = select_first_original_or_issued();
+
+            let winner_a = first_date_component_ref(&template_a, &a, false)
+                .expect("a should resolve a winning date component");
+            let winner_b = first_date_component_ref(&template_b, &b, false)
+                .expect("b should resolve a winning date component");
+
+            assert_eq!(winner_a.date, DateVariable::Issued);
+            assert_eq!(winner_b.date, DateVariable::OriginalPublished);
+
+            let key_a =
+                crate::values::date::resolve_date_variable(&winner_a.date, &a).map(|v| v.value);
+            let key_b =
+                crate::values::date::resolve_date_variable(&winner_b.date, &b).map(|v| v.value);
+            assert_eq!(
+                (key_a, key_b),
+                (Some("2000".to_string()), Some("2010".to_string())),
+                "the resolved sort key must be each reference's actually-rendered date (a's Issued, b's OriginalPublished), not the structurally-first candidate for both"
+            );
+        }
+
+        fn select_first_doi_or_issued() -> Vec<TemplateComponent> {
+            vec![TemplateComponent::Group(TemplateGroup {
+                group: vec![
+                    TemplateComponent::Variable(TemplateVariable {
+                        variable: SimpleVariable::Doi,
+                        ..Default::default()
+                    }),
+                    TemplateComponent::Date(TemplateDate {
+                        date: DateVariable::Issued,
+                        form: DateForm::Year,
+                        ..Default::default()
+                    }),
+                ],
+                select: TemplateGroupSelect::First,
+                ..Default::default()
+            })]
+        }
+
+        #[test]
+        fn falls_through_a_dataless_variable_candidate_to_the_date_that_actually_renders() {
+            // Codex adversarial review finding: an unmodeled candidate kind
+            // (Variable) defaulted to "would render" regardless of whether
+            // the reference actually had that data, so a `[variable: doi,
+            // date: issued]` select:first group with no DOI resolved DOI as
+            // the structural "winner" -- the real renderer falls through to
+            // `date: issued`, but sorting.rs found no date component at all.
+            let template = select_first_doi_or_issued();
+            let reference = monograph("no-doi", Some("2021"), None);
+
+            let winner = first_date_component_ref(&template, &reference, false)
+                .expect("the date candidate should resolve once the DOI candidate is skipped");
+
+            assert_eq!(winner.date, DateVariable::Issued);
+        }
+
+        #[test]
+        fn a_suppressed_first_candidate_is_skipped_even_when_it_has_data() {
+            let reference = Reference::Monograph(Box::new(Monograph {
+                id: Some("suppressed-doi".into()),
+                r#type: MonographType::Book,
+                title: Some(Title::Single("Title suppressed-doi".to_string())),
+                issued: DateValue::new("2022"),
+                doi: Some("10.1/should-be-skipped".to_string()),
+                ..Default::default()
+            }));
+
+            let template = vec![TemplateComponent::Group(TemplateGroup {
+                group: vec![
+                    TemplateComponent::Variable(TemplateVariable {
+                        variable: SimpleVariable::Doi,
+                        rendering: Rendering {
+                            suppress: Some(true),
+                            ..Default::default()
+                        },
+                        ..Default::default()
+                    }),
+                    TemplateComponent::Date(TemplateDate {
+                        date: DateVariable::Issued,
+                        form: DateForm::Year,
+                        ..Default::default()
+                    }),
+                ],
+                select: TemplateGroupSelect::First,
+                ..Default::default()
+            })];
+
+            let winner = first_date_component_ref(&template, &reference, false)
+                .expect("the date candidate should resolve once the suppressed DOI is skipped");
+
+            assert_eq!(winner.date, DateVariable::Issued);
+        }
     }
 
     fn romanized_config() -> Config {

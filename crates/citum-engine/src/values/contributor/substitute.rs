@@ -770,7 +770,11 @@ fn resolve_category_quote(reference: &Reference, options: &RenderOptions<'_>) ->
 /// (e.g. `title: primary`), honoring `render_when` branches the same way
 /// the normal render path resolves them — see
 /// [`crate::values::group_condition_matches`]. Returns the first matching
-/// node in document order, matching how the renderer walks a template.
+/// node in document order, matching how the renderer walks a template. A
+/// `select: first` group descends only into its winning candidate (see
+/// [`crate::values::select_group_children`]) — a losing candidate's title
+/// node must never supply substitution formatting for a title that
+/// actually renders from elsewhere in the group.
 fn find_template_title_node<'a>(
     template: &'a [TemplateComponent],
     title_type: &TitleType,
@@ -790,7 +794,8 @@ fn find_template_title_node<'a>(
                 }) {
                     continue;
                 }
-                if let Some(found) = find_template_title_node(&group.group, title_type, reference) {
+                let children = crate::values::select_group_children(group, reference);
+                if let Some(found) = find_template_title_node(children, title_type, reference) {
                     return Some(found);
                 }
             }

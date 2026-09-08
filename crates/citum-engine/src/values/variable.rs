@@ -20,7 +20,7 @@ use citum_schema::template::{SimpleVariable, TemplateVariable};
 /// Returns the `short_title` from the embedded parent of collection or serial
 /// components, or None if the parent is an ID reference or the component
 /// type doesn't support short titles.
-fn container_title_short(reference: &Reference) -> Option<String> {
+pub(crate) fn container_title_short(reference: &Reference) -> Option<String> {
     reference.container_title().and_then(|t| match t {
         citum_schema::reference::types::Title::Shorthand(short, _) => Some(short),
         citum_schema::reference::types::Title::Single(s) => Some(s),
@@ -28,7 +28,7 @@ fn container_title_short(reference: &Reference) -> Option<String> {
     })
 }
 
-fn event_place(reference: &Reference) -> Option<String> {
+pub(crate) fn event_place(reference: &Reference) -> Option<String> {
     match reference.extension() {
         ClassExtension::Event(event) => event.location.clone(),
         ClassExtension::Monograph(monograph) => embedded_event_place(monograph.event.as_ref()?),
@@ -45,7 +45,7 @@ fn event_place(reference: &Reference) -> Option<String> {
     }
 }
 
-fn event_title(reference: &Reference) -> Option<String> {
+pub(crate) fn event_title(reference: &Reference) -> Option<String> {
     match reference.extension() {
         ClassExtension::Event(event) => event.title.as_ref().map(ToString::to_string),
         ClassExtension::Monograph(monograph) => embedded_event_title(monograph.event.as_ref()?),
@@ -107,7 +107,7 @@ fn embedded_container_event_place(relation: &WorkRelation) -> Option<String> {
     embedded_event_place(collection.event.as_ref()?)
 }
 
-fn dimensions(reference: &Reference) -> Option<String> {
+pub(crate) fn dimensions(reference: &Reference) -> Option<String> {
     match reference.extension() {
         ClassExtension::Monograph(monograph) => {
             monograph.duration.clone().or(monograph.size.clone())
@@ -118,7 +118,7 @@ fn dimensions(reference: &Reference) -> Option<String> {
     }
 }
 
-fn raw_medium(reference: &Reference) -> Option<String> {
+pub(crate) fn raw_medium(reference: &Reference) -> Option<String> {
     match reference.extension() {
         ClassExtension::Monograph(monograph) => monograph.medium.clone(),
         ClassExtension::CollectionComponent(component) => component.medium.clone(),
@@ -129,7 +129,7 @@ fn raw_medium(reference: &Reference) -> Option<String> {
     }
 }
 
-fn raw_genre(reference: &Reference) -> Option<String> {
+pub(crate) fn raw_genre(reference: &Reference) -> Option<String> {
     match reference.extension() {
         ClassExtension::Monograph(monograph) => monograph.genre.clone(),
         ClassExtension::CollectionComponent(component) => component.genre.clone(),
@@ -140,7 +140,7 @@ fn raw_genre(reference: &Reference) -> Option<String> {
     }
 }
 
-fn references(reference: &Reference) -> Option<String> {
+pub(crate) fn references(reference: &Reference) -> Option<String> {
     match reference.extension() {
         ClassExtension::Monograph(monograph) => monograph.references.clone(),
         _ => None,

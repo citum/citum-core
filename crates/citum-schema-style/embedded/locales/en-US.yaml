@@ -973,6 +973,11 @@ messages:
   term.retrieved: "retrieved"
   term.no-date: "n.d."
   term.no-date-long: "no date"
+  # T&F-CSE's publisher-place fallback (docs/specs/GROUP_SELECT.md worked
+  # example): taylor-and-francis-council-of-science-editors-author-date.csl:80
+  # renders `[place unknown]`; brackets come from the component's own
+  # `wrap: brackets`, not baked into the term text.
+  term.place-unknown: "place unknown"
   # GB/T 7714's own anonymous-author convention (not the CSL legacy
   # `terms.anonymous` "anon." catalog entry) — see csl26-6eak.
   term.anonymous: "Anon"

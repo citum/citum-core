@@ -160,7 +160,12 @@ bibliography:
       text-case: capitalize-first
     - delimiter: ": "
       group:
-      - variable: publisher-place
+      - select: first
+        group:
+        - variable: publisher-place
+        - message: term.place-unknown
+          wrap:
+            punctuation: brackets
       - variable: publisher
     - number: pages
       prefix: ". p. "
@@ -185,6 +190,11 @@ bibliography:
   - title: primary
   - delimiter: ": "
     group:
-    - variable: publisher-place
+    - select: first
+      group:
+      - variable: publisher-place
+      - message: term.place-unknown
+        wrap:
+          punctuation: brackets
     - variable: publisher
   - variable: url
