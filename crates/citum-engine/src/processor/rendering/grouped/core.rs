@@ -1371,8 +1371,9 @@ impl Renderer<'_> {
         let fmt = F::default();
         let mut group_tracker = tracker.clone();
         let values = self.render_group_child_values(&fmt, ctx, group, &mut group_tracker);
-        tracker.merge_from(group_tracker);
+        tracker.advance_issued_occurrences_from(&group_tracker);
         let values = values?;
+        tracker.merge_from(group_tracker);
         let default_delimiter = citum_schema::template::DelimiterPunctuation::Comma;
         let punctuation = group.delimiter.as_ref().unwrap_or(&default_delimiter);
         let (script, realization) = crate::values::punctuation_realization_context(
