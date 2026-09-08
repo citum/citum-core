@@ -283,6 +283,18 @@ impl TemplateComponentTracker {
         self.substituted_bases.extend(other.substituted_bases);
         self.issued_occurrences = self.issued_occurrences.max(other.issued_occurrences);
     }
+
+    /// Advance the issued-date occurrence counter from a child tracker,
+    /// regardless of whether the child ultimately rendered anything.
+    ///
+    /// Unlike `rendered_vars`/`substituted_bases`, a suppressed or blank
+    /// `date: issued` still occupies its structural position in the
+    /// template's fallback-lane ordering (see `TemplateDate::suppress_note`),
+    /// so this half of the merge must happen even when the caller discards
+    /// the rest of `other`.
+    fn advance_issued_occurrences_from(&mut self, other: &Self) {
+        self.issued_occurrences = self.issued_occurrences.max(other.issued_occurrences);
+    }
 }
 
 /// Core style resources borrowed by every [`Renderer`] instance.
