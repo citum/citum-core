@@ -33,6 +33,10 @@ pub struct BibliographyConfig {
     /// Article-journal-specific bibliography policies.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub article_journal: Option<ArticleJournalBibliographyConfig>,
+    /// Online-access medium marker and cited-date bracket for the
+    /// vancouver/NLM style family. See `docs/specs/MEDIUM_DESIGNATOR.md`.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub online_access: Option<OnlineAccessConfig>,
     /// String to substitute for repeating authors (e.g., "———").
     #[serde(skip_serializing_if = "Option::is_none")]
     pub subsequent_author_substitute: Option<String>,
@@ -136,6 +140,42 @@ pub struct ArticleJournalBibliographyConfig {
 pub enum ArticleJournalNoPageFallback {
     /// Replace the standard article detail block with the DOI component.
     Doi,
+}
+
+/// Online-access medium marker and cited-date bracket bundle for the
+/// vancouver/NLM style family (`docs/specs/MEDIUM_DESIGNATOR.md`). Both
+/// fields are engine-injected — not authored template components — because
+/// which title anchors the marker depends on per-reference data the style
+/// author can't know ahead of time (see the spec's Anchor Selection).
+#[derive(Debug, Default, PartialEq, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[serde(rename_all = "kebab-case")]
+pub struct OnlineAccessConfig {
+    /// Locale message rendered bracketed and capitalized-first onto the
+    /// container title when present, or the reference's own title
+    /// otherwise, whenever the reference has a URL. Omitting it disables
+    /// the marker even when a URL exists.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub medium_marker: Option<crate::options::substitute::SubstituteMessage>,
+    /// Locale message naming the term inside the accessed-date bracket
+    /// (`term.cited` for NLM/springer, `term.accessed` for T&F-CSE).
+    /// Omitting it disables the bracket even when a URL exists.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub cited_date_label: Option<crate::options::substitute::SubstituteMessage>,
+    /// Date form for the accessed-date bracket. Only meaningful when
+    /// `cited_date_label` is set.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub cited_date_form: Option<crate::template::DateForm>,
+    /// Forward-compat: captures unknown keys when an older engine reads a
+    /// style produced by a newer schema. Empty by default; treated as a
+    /// SoftDegrade signal. See `docs/specs/FORWARD_COMPATIBILITY.md`.
+    #[serde(
+        flatten,
+        default,
+        skip_serializing_if = "std::collections::BTreeMap::is_empty"
+    )]
+    #[cfg_attr(feature = "schema", schemars(skip))]
+    pub unknown_fields: std::collections::BTreeMap<String, serde_yaml::Value>,
 }
 
 /// Named policies for anonymous (no visible author) reference-work entries.
@@ -358,6 +398,7 @@ impl Default for BibliographyConfig {
             label_wrap: None,
             label_separator: None,
             article_journal: None,
+            online_access: None,
             subsequent_author_substitute: None,
             subsequent_author_substitute_rule: None,
             hanging_indent: None,
@@ -483,6 +524,115 @@ mod tests {
         let json = serde_json::to_string(&config).unwrap();
         let deserialized: BibliographyConfig = serde_json::from_str(&json).unwrap();
         assert_eq!(config, deserialized);
+    }
+
+    #[test]
+    fn test_online_access_deserializes() {
+        let json = r#"{"online-access":{"medium-marker":{"message":"term.internet"},"cited-date-label":{"message":"term.cited"},"cited-date-form":"full"}}"#;
+        let config: BibliographyConfig = serde_json::from_str(json).unwrap();
+        let online_access = config.online_access.expect("online-access should parse");
+        assert_eq!(
+            online_access.medium_marker.map(|m| m.message),
+            Some("term.internet".to_string())
+        );
+        assert_eq!(
+            online_access.cited_date_label.map(|m| m.message),
+            Some("term.cited".to_string())
+        );
+        assert_eq!(
+            online_access.cited_date_form,
+            Some(crate::template::DateForm::Full)
+        );
+    }
+
+    #[test]
+    fn test_online_access_rejects_bare_scalar_medium_marker() {
+        let json = r#"{"online-access":{"medium-marker":"term.internet"}}"#;
+        let result: Result<BibliographyConfig, _> = serde_json::from_str(json);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_online_access_survives_bibliography_options_merge_when_child_has_none() {
+        // Codex adversarial review finding: `BibliographyOptions::merge`
+        // listed `article_journal` (online_access's direct structural
+        // precedent) but not `online_access` itself, so a style inheriting
+        // an `online-access:` block from a base style through this typed
+        // merge path silently lost it.
+        let parent_marker = OnlineAccessConfig {
+            medium_marker: Some(crate::options::substitute::SubstituteMessage {
+                message: "term.internet".to_string(),
+                form: None,
+                rendering: crate::template::Rendering::default(),
+            }),
+            cited_date_label: None,
+            cited_date_form: None,
+            unknown_fields: std::collections::BTreeMap::new(),
+        };
+        let mut parent = crate::options::BibliographyOptions {
+            online_access: Some(parent_marker.clone()),
+            ..Default::default()
+        };
+        let child = crate::options::BibliographyOptions::default();
+
+        parent.merge(&child);
+
+        assert_eq!(parent.online_access, Some(parent_marker));
+    }
+
+    #[test]
+    fn test_online_access_child_override_wins_on_bibliography_options_merge() {
+        let parent = crate::options::BibliographyOptions {
+            online_access: Some(OnlineAccessConfig {
+                medium_marker: Some(crate::options::substitute::SubstituteMessage {
+                    message: "term.internet".to_string(),
+                    form: None,
+                    rendering: crate::template::Rendering::default(),
+                }),
+                cited_date_label: None,
+                cited_date_form: None,
+                unknown_fields: std::collections::BTreeMap::new(),
+            }),
+            ..Default::default()
+        };
+        let child_online_access = OnlineAccessConfig {
+            medium_marker: None,
+            cited_date_label: Some(crate::options::substitute::SubstituteMessage {
+                message: "term.accessed".to_string(),
+                form: None,
+                rendering: crate::template::Rendering::default(),
+            }),
+            cited_date_form: Some(crate::template::DateForm::Year),
+            unknown_fields: std::collections::BTreeMap::new(),
+        };
+        let mut parent = parent;
+        let child = crate::options::BibliographyOptions {
+            online_access: Some(child_online_access.clone()),
+            ..Default::default()
+        };
+
+        parent.merge(&child);
+
+        assert_eq!(parent.online_access, Some(child_online_access));
+    }
+
+    #[test]
+    fn test_online_access_authored_value_reaches_runtime_config() {
+        let authored = crate::options::BibliographyOptions {
+            online_access: Some(OnlineAccessConfig {
+                medium_marker: Some(crate::options::substitute::SubstituteMessage {
+                    message: "term.internet".to_string(),
+                    form: None,
+                    rendering: crate::template::Rendering::default(),
+                }),
+                cited_date_label: None,
+                cited_date_form: None,
+                unknown_fields: std::collections::BTreeMap::new(),
+            }),
+            ..Default::default()
+        };
+        let runtime = authored.to_bibliography_config();
+        assert!(runtime.online_access.is_some());
     }
 
     #[test]

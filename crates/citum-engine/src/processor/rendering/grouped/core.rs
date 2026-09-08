@@ -1078,6 +1078,7 @@ impl Renderer<'_> {
 
         let template = self.apply_anonymous_entry_bibliography_policy(reference, template)?;
         let template = self.apply_article_journal_bibliography_policy(reference, template);
+        let template = self.apply_online_access_bibliography_policy(reference, template);
 
         self.process_template_request_with_format::<F>(
             reference,

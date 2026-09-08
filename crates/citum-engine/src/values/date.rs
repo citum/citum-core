@@ -847,7 +847,9 @@ fn inline_disamb_suffix(formatted: &str, form: &DateForm, year: &str, suffix: &s
     }
 
     let year_index = match form {
-        DateForm::Year | DateForm::YearMonthDay => formatted.find(year),
+        DateForm::Year | DateForm::YearMonthDay | DateForm::YearMonthAbbrDay => {
+            formatted.find(year)
+        }
         DateForm::YearMonth
         | DateForm::Full
         | DateForm::DayMonthAbbrYear
@@ -1146,6 +1148,33 @@ fn format_single_date(
                 (true, _) => Some(year),
                 (false, None) => Some(format!("{month}-{year}")),
                 (false, Some(d)) => Some(format!("{}-{month}-{year}", format_day(d, zero_pad_day))),
+            }
+        }
+        DateForm::YearMonthAbbrDay => {
+            let year = extract_year(date);
+            if year.is_empty() {
+                return None;
+            }
+            let month = extract_month(date, &locale.dates.months.short, &locale.dates.seasons);
+            // CSL's `form="text"` strips periods from the abbreviated month
+            // for this shape (e.g. "Jan", not "Jan."), unlike
+            // `DayMonthAbbrYear`/`MonthAbbrDayYear`, which don't.
+            let month = crate::values::strip_trailing_periods(&month);
+            let day = date.day();
+            let month_opt = (!month.is_empty()).then_some(month.as_str());
+            if let Some(rendered) = locale.resolve_date_pattern(
+                "pattern.date-year-month-abbr-day",
+                Some(&year),
+                month_opt,
+                day,
+                zero_pad_day,
+            ) {
+                return Some(rendered);
+            }
+            match (month.is_empty(), day) {
+                (true, _) => Some(year),
+                (false, None) => Some(format!("{year} {month}")),
+                (false, Some(d)) => Some(format!("{year} {month} {}", format_day(d, zero_pad_day))),
             }
         }
         _ => Some(extract_year(date)),
@@ -2068,6 +2097,36 @@ mod locale_pattern_tests {
             None,
         )
         .expect("date should render")
+    }
+
+    fn year_month_abbr_day(locale: &Locale, edtf: &str) -> String {
+        format_single_date(
+            &DateValue::new(edtf.to_string()),
+            &DateForm::YearMonthAbbrDay,
+            locale,
+            None,
+        )
+        .expect("date should render")
+    }
+
+    #[test]
+    fn en_us_year_month_abbr_day_strips_periods_and_omits_the_comma() {
+        // MEDIUM_DESIGNATOR.md's cited-date bracket needs CSL's
+        // `form="text"` shape: year first, abbreviated month with periods
+        // stripped, no comma -- distinct from both `YearMonthDay` (long
+        // month, comma) and `DayMonthAbbrYear`/`MonthAbbrDayYear`
+        // (abbreviated but keep the period).
+        assert_eq!(year_month_abbr_day(&en_us(), "2024-01-15"), "2024 Jan 15");
+    }
+
+    #[test]
+    fn en_us_year_month_abbr_day_missing_day_falls_back() {
+        assert_eq!(year_month_abbr_day(&en_us(), "2024-01"), "2024 Jan");
+    }
+
+    #[test]
+    fn en_us_year_month_abbr_day_missing_month_falls_back_to_year() {
+        assert_eq!(year_month_abbr_day(&en_us(), "2024"), "2024");
     }
 
     #[test]

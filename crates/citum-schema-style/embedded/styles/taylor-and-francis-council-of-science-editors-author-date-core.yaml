@@ -120,6 +120,10 @@ bibliography:
     hanging-indent: false
     separator: ". "
     entry-suffix: .
+    online-access:
+      medium-marker: {message: term.internet}
+      cited-date-label: {message: term.accessed}
+      cited-date-form: year-month-abbr-day
   type-variants:
     [article-journal, article-magazine, article-newspaper, dataset, entry-encyclopedia]:
     - contributor: author

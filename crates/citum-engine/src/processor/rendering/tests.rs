@@ -2059,3 +2059,268 @@ date-fallback:
         assert_eq!(rendered, "c1947");
     }
 }
+
+mod online_access {
+    use super::*;
+    use citum_schema::options::substitute::SubstituteMessage;
+    use citum_schema::options::{BibliographyOptions, OnlineAccessConfig};
+    use citum_schema::reference::{
+        DateValue, Monograph, MonographType, Statute, Title, WorkRelation,
+    };
+    use url::Url;
+
+    fn style_with_online_access(
+        template: Vec<TemplateComponent>,
+        config: OnlineAccessConfig,
+    ) -> Style {
+        let mut style = bibliography_style_with_template(template);
+        if let Some(bib) = style.bibliography.as_mut() {
+            bib.options = Some(BibliographyOptions {
+                online_access: Some(config),
+                ..Default::default()
+            });
+        }
+        style
+    }
+
+    fn medium_marker_only() -> OnlineAccessConfig {
+        OnlineAccessConfig {
+            medium_marker: Some(SubstituteMessage {
+                message: "term.internet".to_string(),
+                form: None,
+                rendering: Rendering::default(),
+            }),
+            ..Default::default()
+        }
+    }
+
+    fn cited_date_only() -> OnlineAccessConfig {
+        OnlineAccessConfig {
+            cited_date_label: Some(SubstituteMessage {
+                message: "term.cited".to_string(),
+                form: None,
+                rendering: Rendering::default(),
+            }),
+            cited_date_form: Some(DateForm::Year),
+            ..Default::default()
+        }
+    }
+
+    fn title_and_container_template() -> Vec<TemplateComponent> {
+        vec![
+            TemplateComponent::Title(TemplateTitle {
+                title: TitleType::Primary,
+                ..Default::default()
+            }),
+            TemplateComponent::Title(TemplateTitle {
+                title: TitleType::ContainerTitle,
+                rendering: Rendering {
+                    prefix: Some(DelimiterPunctuation::Space),
+                    ..Default::default()
+                },
+                ..Default::default()
+            }),
+        ]
+    }
+
+    fn webpage(id: &str, url: Option<&str>) -> Reference {
+        Reference::Monograph(Box::new(Monograph {
+            id: Some(id.into()),
+            r#type: MonographType::Webpage,
+            title: Some(Title::Single(format!("Title {id}"))),
+            url: url.map(|value| Url::parse(value).expect("test URL should parse")),
+            ..Default::default()
+        }))
+    }
+
+    #[test]
+    fn medium_marker_attaches_to_own_title_when_reference_has_url_and_no_container() {
+        let style = style_with_online_access(
+            vec![TemplateComponent::Title(TemplateTitle {
+                title: TitleType::Primary,
+                ..Default::default()
+            })],
+            medium_marker_only(),
+        );
+        let reference = webpage("web1", Some("https://example.test/page"));
+
+        let result = render_single_bibliography_entry(style, reference);
+
+        assert_eq!(result, "Title web1 [Internet]");
+    }
+
+    #[test]
+    fn medium_marker_does_not_render_without_a_url() {
+        let style = style_with_online_access(
+            vec![TemplateComponent::Title(TemplateTitle {
+                title: TitleType::Primary,
+                ..Default::default()
+            })],
+            medium_marker_only(),
+        );
+        let reference = webpage("web2", None);
+
+        let result = render_single_bibliography_entry(style, reference);
+
+        assert_eq!(result, "Title web2");
+    }
+
+    #[test]
+    fn medium_marker_attaches_to_the_container_title_when_the_container_is_an_embedded_work() {
+        let style = style_with_online_access(title_and_container_template(), medium_marker_only());
+        let reference = Reference::Monograph(Box::new(Monograph {
+            id: Some("chap1".into()),
+            r#type: MonographType::Book,
+            title: Some(Title::Single("Chapter Title".to_string())),
+            container: Some(WorkRelation::Embedded(Box::new(Reference::Monograph(
+                Box::new(Monograph {
+                    title: Some(Title::Single("Parent Volume".to_string())),
+                    ..Default::default()
+                }),
+            )))),
+            url: Some(Url::parse("https://example.test/chapter").expect("test URL")),
+            ..Default::default()
+        }));
+
+        let result = render_single_bibliography_entry(style, reference);
+
+        assert_eq!(result, "Chapter Title Parent Volume [Internet]");
+    }
+
+    #[test]
+    fn medium_marker_attaches_to_own_title_for_a_legal_type_with_a_flat_reporter_container() {
+        // Statute::container_title() returns Some (from the flat `code`
+        // field), but it's not an embedded work -- the marker must anchor
+        // to the statute's own title, not the reporter/code string. This
+        // is the gap MEDIUM_DESIGNATOR.md's Anchor Selection flags.
+        let style = style_with_online_access(title_and_container_template(), medium_marker_only());
+        let reference = Reference::Statute(Box::new(Statute {
+            id: Some("bill1".into()),
+            title: Some(Title::Single("Civil Rights Act".to_string())),
+            original: None,
+            authority: None,
+            volume: None,
+            code: Some("42 U.S.C.".to_string()),
+            number: None,
+            page: None,
+            created: DateValue::default(),
+            section: None,
+            chapter_number: None,
+            issued: DateValue::default(),
+            url: Some(Url::parse("https://example.test/statute").expect("test URL")),
+            accessed: None,
+            language: None,
+            field_languages: Default::default(),
+            note: None,
+            keywords: None,
+            unknown_fields: Default::default(),
+        }));
+
+        let result = render_single_bibliography_entry(style, reference);
+
+        assert_eq!(result, "Civil Rights Act [Internet] 42 U.S.C.");
+    }
+
+    #[test]
+    fn cited_date_bracket_renders_after_the_issued_date_when_url_and_accessed_are_present() {
+        let style = style_with_online_access(
+            vec![
+                TemplateComponent::Title(TemplateTitle {
+                    title: TitleType::Primary,
+                    ..Default::default()
+                }),
+                TemplateComponent::Date(TemplateDate {
+                    date: DateVariable::Issued,
+                    form: DateForm::Year,
+                    ..Default::default()
+                }),
+            ],
+            cited_date_only(),
+        );
+        let reference = Reference::Monograph(Box::new(Monograph {
+            id: Some("web3".into()),
+            r#type: MonographType::Webpage,
+            title: Some(Title::Single("Title web3".to_string())),
+            url: Some(Url::parse("https://example.test/page").expect("test URL")),
+            issued: DateValue::new("2020"),
+            accessed: Some(DateValue::new("2021")),
+            ..Default::default()
+        }));
+
+        let result = render_single_bibliography_entry(style, reference);
+
+        assert_eq!(result, "Title web3. 2020 [cited 2021]");
+    }
+
+    #[test]
+    fn cited_date_bracket_uses_the_configured_label_term_not_a_hardcoded_one() {
+        // T&F-CSE names `term.accessed`, not `term.cited` -- the bracket's
+        // term must come from `cited_date_label`, not be hardcoded.
+        let style = style_with_online_access(
+            vec![
+                TemplateComponent::Title(TemplateTitle {
+                    title: TitleType::Primary,
+                    ..Default::default()
+                }),
+                TemplateComponent::Date(TemplateDate {
+                    date: DateVariable::Issued,
+                    form: DateForm::Year,
+                    ..Default::default()
+                }),
+            ],
+            OnlineAccessConfig {
+                cited_date_label: Some(SubstituteMessage {
+                    message: "term.accessed".to_string(),
+                    form: None,
+                    rendering: Rendering::default(),
+                }),
+                cited_date_form: Some(DateForm::Year),
+                ..Default::default()
+            },
+        );
+        let reference = Reference::Monograph(Box::new(Monograph {
+            id: Some("web5".into()),
+            r#type: MonographType::Webpage,
+            title: Some(Title::Single("Title web5".to_string())),
+            url: Some(Url::parse("https://example.test/page").expect("test URL")),
+            issued: DateValue::new("2020"),
+            accessed: Some(DateValue::new("2021")),
+            ..Default::default()
+        }));
+
+        let result = render_single_bibliography_entry(style, reference);
+
+        assert_eq!(result, "Title web5. 2020 [accessed 2021]");
+    }
+
+    #[test]
+    fn cited_date_bracket_absent_when_the_label_is_not_configured() {
+        let style = style_with_online_access(
+            vec![
+                TemplateComponent::Title(TemplateTitle {
+                    title: TitleType::Primary,
+                    ..Default::default()
+                }),
+                TemplateComponent::Date(TemplateDate {
+                    date: DateVariable::Issued,
+                    form: DateForm::Year,
+                    ..Default::default()
+                }),
+            ],
+            medium_marker_only(),
+        );
+        let reference = Reference::Monograph(Box::new(Monograph {
+            id: Some("web4".into()),
+            r#type: MonographType::Webpage,
+            title: Some(Title::Single("Title web4".to_string())),
+            url: Some(Url::parse("https://example.test/page").expect("test URL")),
+            issued: DateValue::new("2020"),
+            accessed: Some(DateValue::new("2021")),
+            ..Default::default()
+        }));
+
+        let result = render_single_bibliography_entry(style, reference);
+
+        assert_eq!(result, "Title web4 [Internet]. 2020");
+    }
+}

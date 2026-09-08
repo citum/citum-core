@@ -567,6 +567,7 @@ impl Locale {
             "circa" => Some(GeneralTerm::Circa),
             "available-at" => Some(GeneralTerm::AvailableAt),
             "ibid" => Some(GeneralTerm::Ibid),
+            "internet" => Some(GeneralTerm::Internet),
             "and" => Some(GeneralTerm::And),
             "role-conjunction" => Some(GeneralTerm::RoleConjunction),
             "et-al" => Some(GeneralTerm::EtAl),

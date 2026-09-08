@@ -52,6 +52,10 @@ bibliography:
       sort-separator: " "
     entry-suffix: .
     separator: ". "
+    online-access:
+      medium-marker: {message: term.internet}
+      cited-date-label: {message: term.cited}
+      cited-date-form: year-month-abbr-day
   type-variants:
     [article-journal, article-magazine, article-newspaper, dataset, entry-encyclopedia]:
     - contributor: author

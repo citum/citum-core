@@ -68,6 +68,13 @@ bibliography:
   options:
     entry-suffix: .
     separator: '. '
+    # cited-date-label is deliberately omitted: this style already renders
+    # the [cited DATE] bracket via its own pattern.cited-date/
+    # pattern.accessed-date messages below (docs/specs/MEDIUM_DESIGNATOR.md
+    # notes this as redundant with -- not a replacement for -- that
+    # existing, already-correct implementation).
+    online-access:
+      medium-marker: {message: term.internet}
   type-variants:
     article-journal:
     - contributor: author

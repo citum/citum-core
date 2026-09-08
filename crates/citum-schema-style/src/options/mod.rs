@@ -24,7 +24,7 @@ pub use crate::presets::{MultilingualConfigEntry, MultilingualPreset};
 pub use bibliography::{
     AnonymousEntriesMode, ArticleJournalBibliographyConfig, ArticleJournalNoPageFallback,
     BibliographyConfig, BibliographyPartitionHeading, BibliographyPartitionKind,
-    BibliographyPartitionMode, BibliographySortPartitioning, SecondFieldAlign,
+    BibliographyPartitionMode, BibliographySortPartitioning, OnlineAccessConfig, SecondFieldAlign,
     SubsequentAuthorSubstituteRule,
 };
 pub use cascade::ScopedRawOptions;
@@ -424,6 +424,10 @@ pub struct BibliographyOptions {
     /// Article-journal-specific bibliography policies.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub article_journal: Option<ArticleJournalBibliographyConfig>,
+    /// Online-access medium marker and cited-date bracket for the
+    /// vancouver/NLM style family. See `docs/specs/MEDIUM_DESIGNATOR.md`.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub online_access: Option<bibliography::OnlineAccessConfig>,
     /// String to substitute for repeating authors.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub subsequent_author_substitute: Option<String>,
@@ -981,6 +985,7 @@ impl BibliographyOptions {
     pub fn to_bibliography_config(&self) -> BibliographyConfig {
         BibliographyConfig {
             article_journal: self.article_journal.clone(),
+            online_access: self.online_access.clone(),
             subsequent_author_substitute: self.subsequent_author_substitute.clone(),
             subsequent_author_substitute_rule: self.subsequent_author_substitute_rule.clone(),
             hanging_indent: self.hanging_indent,
@@ -1077,6 +1082,7 @@ impl BibliographyOptions {
             volume_pages_delimiter,
             strip_periods,
             article_journal,
+            online_access,
             subsequent_author_substitute,
             subsequent_author_substitute_rule,
             hanging_indent,

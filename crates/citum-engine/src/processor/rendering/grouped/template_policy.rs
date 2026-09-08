@@ -3,20 +3,25 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 */
 
-//! Bibliography-template policy for `article-journal` and anonymous
-//! dictionary/encyclopedia/chapter entries. Decides whether a template needs
-//! filtering or rewriting for the current reference, and applies the rewrite.
+//! Bibliography-template policy for `article-journal`, anonymous
+//! dictionary/encyclopedia/chapter entries, and the online-access medium
+//! designator. Decides whether a template needs filtering or rewriting for
+//! the current reference, and applies the rewrite.
 
 use super::super::Renderer;
 use super::component_predicates::{
-    is_article_detail_component, is_doi_component, is_issued_date_component,
-    is_parent_container_title_component, is_parent_monograph_title_component,
-    is_primary_title_component, is_url_component, is_volume_component, reference_has_doi,
-    reference_has_online_access, reference_has_pages,
+    container_title_is_embedded_work, is_article_detail_component, is_doi_component,
+    is_issued_date_component, is_parent_container_title_component,
+    is_parent_monograph_title_component, is_primary_title_component, is_url_component,
+    is_volume_component, reference_has_doi, reference_has_online_access, reference_has_pages,
+    reference_has_url,
 };
 use crate::reference::Reference;
 use citum_schema::options::{AnonymousEntriesMode, ArticleJournalNoPageFallback};
-use citum_schema::template::{SimpleVariable, TemplateComponent};
+use citum_schema::template::{
+    DateVariable, DelimiterPunctuation, Rendering, SimpleVariable, TemplateComponent, TemplateDate,
+    TemplateGroup, TemplateMessage, WrapConfig, WrapPunctuation,
+};
 use std::borrow::Cow;
 
 #[derive(Clone, Copy)]
@@ -154,6 +159,137 @@ impl Renderer<'_> {
             .author()
             .is_some_and(|author| !self.resolve_contributor_names(&author).is_empty())
     }
+
+    /// Apply `docs/specs/MEDIUM_DESIGNATOR.md`'s `online-access` bundle: a
+    /// bracketed, capitalized-first medium marker attached to whichever
+    /// title anchors it, and a bracketed cited-date attached after the
+    /// issued date -- both engine-injected (not authored template
+    /// components), since which title anchors the marker depends on
+    /// per-reference data the style author can't know ahead of time.
+    pub(super) fn apply_online_access_bibliography_policy<'a>(
+        &self,
+        reference: &Reference,
+        template: Cow<'a, [TemplateComponent]>,
+    ) -> Cow<'a, [TemplateComponent]> {
+        let Some(config) = self
+            .bibliography_config
+            .as_ref()
+            .and_then(|config| config.online_access.as_ref())
+        else {
+            return template;
+        };
+        if !reference_has_url(reference) {
+            return template;
+        }
+
+        let mut rewritten: Option<Vec<TemplateComponent>> = None;
+
+        if let Some(marker) = config.medium_marker.as_ref() {
+            let anchor_is_container = reference.container_title().is_some()
+                && container_title_is_embedded_work(reference);
+            let predicate: fn(&TemplateComponent) -> bool = if anchor_is_container {
+                is_parent_container_title_component
+            } else {
+                is_primary_title_component
+            };
+            let marker_component = TemplateComponent::Message(TemplateMessage {
+                message: marker.message.clone(),
+                form: marker.form.clone(),
+                gender: None,
+                args: std::collections::HashMap::new(),
+                rendering: Rendering {
+                    text_case: Some(citum_schema::options::titles::TextCase::CapitalizeFirst),
+                    wrap: Some(WrapConfig {
+                        punctuation: WrapPunctuation::Brackets,
+                        inner_prefix: None,
+                        inner_suffix: None,
+                    }),
+                    ..Default::default()
+                },
+                custom: None,
+            });
+            let mut components = rewritten.take().unwrap_or_else(|| template.to_vec());
+            attach_after_first(&mut components, &predicate, &marker_component);
+            rewritten = Some(components);
+        }
+
+        if let Some(label) = config.cited_date_label.as_ref() {
+            let bracket = TemplateComponent::Group(TemplateGroup {
+                group: vec![
+                    TemplateComponent::Message(TemplateMessage {
+                        message: label.message.clone(),
+                        form: label.form.clone(),
+                        gender: None,
+                        args: std::collections::HashMap::new(),
+                        rendering: Rendering {
+                            // The real CSL never capitalizes this term; force
+                            // it explicitly rather than leaving `text_case`
+                            // unset, which lets ambient sentence-initial
+                            // capitalization apply when this bracket lands
+                            // first in a "sentence" within the entry.
+                            text_case: Some(citum_schema::options::titles::TextCase::AsIs),
+                            ..Default::default()
+                        },
+                        custom: None,
+                    }),
+                    TemplateComponent::Date(TemplateDate {
+                        date: DateVariable::Accessed,
+                        form: config.cited_date_form.clone().unwrap_or_default(),
+                        ..Default::default()
+                    }),
+                ],
+                delimiter: Some(DelimiterPunctuation::Space),
+                rendering: Rendering {
+                    wrap: Some(WrapConfig {
+                        punctuation: WrapPunctuation::Brackets,
+                        inner_prefix: None,
+                        inner_suffix: None,
+                    }),
+                    ..Default::default()
+                },
+                ..Default::default()
+            });
+            let mut components = rewritten.take().unwrap_or_else(|| template.to_vec());
+            attach_after_first(&mut components, &is_issued_date_component, &bracket);
+            rewritten = Some(components);
+        }
+
+        rewritten.map_or(template, Cow::Owned)
+    }
+}
+
+/// Find the first component (searching sibling-first, then recursing into
+/// nested `Group`s) matching `predicate`, and replace it in place with a
+/// `Group([original, addition], delimiter: Space)`. Returns whether a match
+/// was found. A single-space join is used unconditionally so the addition
+/// reads as part of the same "cell" as the original component, regardless
+/// of whatever delimiter the enclosing list uses between its own siblings
+/// (mirrors how the corresponding CSL macro call nests inside the anchor's
+/// own text run, not as a separately-delimited sibling).
+fn attach_after_first(
+    components: &mut [TemplateComponent],
+    predicate: &impl Fn(&TemplateComponent) -> bool,
+    addition: &TemplateComponent,
+) -> bool {
+    for component in components.iter_mut() {
+        if predicate(component) {
+            let original = component.clone();
+            *component = TemplateComponent::Group(TemplateGroup {
+                group: vec![original, addition.clone()],
+                delimiter: Some(DelimiterPunctuation::Space),
+                ..Default::default()
+            });
+            return true;
+        }
+    }
+    for component in components.iter_mut() {
+        if let TemplateComponent::Group(group) = component
+            && attach_after_first(&mut group.group, predicate, addition)
+        {
+            return true;
+        }
+    }
+    false
 }
 
 fn filter_article_journal_template_components(
