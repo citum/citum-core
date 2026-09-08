@@ -127,6 +127,25 @@ fn component_or_message_arg_contains(
     }
 }
 
+/// Whether `reference.container_title()` (if present) comes from an
+/// embedded parent work rather than a flat reporter/citation-code string.
+/// Legal types (case reporters, statute/regulation codes, treaty
+/// reporters) populate `container_title()` from a flat field, not a
+/// `WorkRelation` -- see `docs/specs/MEDIUM_DESIGNATOR.md`'s Anchor
+/// Selection, which needs this distinction so the online-access marker
+/// doesn't anchor to a legal citation string.
+pub(super) fn container_title_is_embedded_work(reference: &Reference) -> bool {
+    matches!(
+        reference.extension(),
+        citum_schema::reference::ClassExtension::Monograph(_)
+            | citum_schema::reference::ClassExtension::CollectionComponent(_)
+            | citum_schema::reference::ClassExtension::SerialComponent(_)
+            | citum_schema::reference::ClassExtension::Serial(_)
+            | citum_schema::reference::ClassExtension::Event(_)
+            | citum_schema::reference::ClassExtension::AudioVisual(_)
+    )
+}
+
 pub(super) fn is_issued_date_component(component: &TemplateComponent) -> bool {
     matches!(
         component,

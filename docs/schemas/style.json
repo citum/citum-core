@@ -1540,6 +1540,11 @@
           "description": "Zero-padded day, abbreviated month (periods stripped), full year,\nhyphen-joined: \"15-Jan-2024\" -- CSL's `form=\"numeric-leading-zeros\"`\nday plus `form=\"short\" strip-periods=\"true\"` month, used by\nAmerican Society of Mechanical Engineers' accessed-date bracket.",
           "type": "string",
           "const": "day-month-abbr-year-hyphen"
+        },
+        {
+          "description": "Year, then abbreviated month (periods stripped), then day, no\ncomma: \"2024 Jan 15\" — CSL's `form=\"text\"` shape used by the\nNLM/Vancouver style family's cited-date bracket. See\n`docs/specs/MEDIUM_DESIGNATOR.md`.",
+          "type": "string",
+          "const": "year-month-abbr-day"
         }
       ]
     },
@@ -3194,6 +3199,11 @@
           "description": "The term used for online resources (e.g., \"online\").",
           "type": "string",
           "const": "online"
+        },
+        {
+          "description": "The medium designator for online-only sources (e.g., the\n`[Internet]` marker in NLM/Vancouver-family bibliographies). See\n`docs/specs/MEDIUM_DESIGNATOR.md`.",
+          "type": "string",
+          "const": "internet"
         },
         {
           "description": "The adverb \"here\".",
@@ -8607,6 +8617,17 @@
             }
           ]
         },
+        "online-access": {
+          "description": "Online-access medium marker and cited-date bracket for the\nvancouver/NLM style family. See `docs/specs/MEDIUM_DESIGNATOR.md`.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/OnlineAccessConfig"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "subsequent-author-substitute": {
           "description": "String to substitute for repeating authors.",
           "type": [
@@ -8843,6 +8864,45 @@
           "const": "doi"
         }
       ]
+    },
+    "OnlineAccessConfig": {
+      "description": "Online-access medium marker and cited-date bracket bundle for the\nvancouver/NLM style family (`docs/specs/MEDIUM_DESIGNATOR.md`). Both\nfields are engine-injected — not authored template components — because\nwhich title anchors the marker depends on per-reference data the style\nauthor can't know ahead of time (see the spec's Anchor Selection).",
+      "type": "object",
+      "properties": {
+        "medium-marker": {
+          "description": "Locale message rendered bracketed and capitalized-first onto the\ncontainer title when present, or the reference's own title\notherwise, whenever the reference has a URL. Omitting it disables\nthe marker even when a URL exists.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SubstituteMessage"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "cited-date-label": {
+          "description": "Locale message naming the term inside the accessed-date bracket\n(`term.cited` for NLM/springer, `term.accessed` for T&F-CSE).\nOmitting it disables the bracket even when a URL exists.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SubstituteMessage"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "cited-date-form": {
+          "description": "Date form for the accessed-date bracket. Only meaningful when\n`cited_date_label` is set.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DateForm"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
     },
     "SubsequentAuthorSubstituteRule": {
       "description": "Rules for subsequent author substitution.",

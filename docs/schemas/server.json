@@ -347,6 +347,11 @@
           "const": "online"
         },
         {
+          "description": "The medium designator for online-only sources (e.g., the\n`[Internet]` marker in NLM/Vancouver-family bibliographies). See\n`docs/specs/MEDIUM_DESIGNATOR.md`.",
+          "type": "string",
+          "const": "internet"
+        },
+        {
           "description": "The adverb \"here\".",
           "type": "string",
           "const": "here"
@@ -1893,6 +1898,11 @@
           "description": "Zero-padded day, abbreviated month (periods stripped), full year,\nhyphen-joined: \"15-Jan-2024\" -- CSL's `form=\"numeric-leading-zeros\"`\nday plus `form=\"short\" strip-periods=\"true\"` month, used by\nAmerican Society of Mechanical Engineers' accessed-date bracket.",
           "type": "string",
           "const": "day-month-abbr-year-hyphen"
+        },
+        {
+          "description": "Year, then abbreviated month (periods stripped), then day, no\ncomma: \"2024 Jan 15\" — CSL's `form=\"text\"` shape used by the\nNLM/Vancouver style family's cited-date bracket. See\n`docs/specs/MEDIUM_DESIGNATOR.md`.",
+          "type": "string",
+          "const": "year-month-abbr-day"
         }
       ]
     },

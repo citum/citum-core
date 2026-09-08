@@ -219,6 +219,10 @@ crate::str_enum! {
         Forthcoming = "forthcoming",
         /// The term used for online resources (e.g., "online").
         Online = "online",
+        /// The medium designator for online-only sources (e.g., the
+        /// `[Internet]` marker in NLM/Vancouver-family bibliographies). See
+        /// `docs/specs/MEDIUM_DESIGNATOR.md`.
+        Internet = "internet",
         /// The adverb "here".
         Here = "here",
         /// The term used for deposited materials.

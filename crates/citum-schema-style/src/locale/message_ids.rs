@@ -40,6 +40,7 @@ impl Locale {
             GeneralTerm::Circa => "circa",
             GeneralTerm::Forthcoming => "forthcoming",
             GeneralTerm::Online => "online",
+            GeneralTerm::Internet => "internet",
             GeneralTerm::AvailableAt => "available-at",
             GeneralTerm::ReviewOf => "review-of",
             GeneralTerm::Here => "here",

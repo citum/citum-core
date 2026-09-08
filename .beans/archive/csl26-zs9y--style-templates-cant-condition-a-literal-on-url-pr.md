@@ -1,7 +1,7 @@
 ---
 # csl26-zs9y
 title: Style templates can't condition a literal on URL presence
-status: todo
+status: completed
 type: task
 priority: normal
 tags:
@@ -9,7 +9,7 @@ tags:
     - fidelity
     - style
 created_at: 2026-09-05T21:24:36Z
-updated_at: 2026-09-08T12:48:48Z
+updated_at: 2026-09-08T21:23:11Z
 parent: csl26-ccdt
 ---
 
@@ -50,3 +50,7 @@ Root cause reclassified: this is not a render-when gap (option (a) above), it's 
 Confirmed against the shipped .csl: `taylor-and-francis-national-library-of-medicine.csl:133-150` (title macro) and `springer-vancouver-brackets.csl:113-120` (accessed-date macro). Also affects `taylor-and-francis-council-of-science-editors-author-date`. IEEE's analogous "[Online]. Available: URL" pattern (noted above) is a plausible second consumer once this option exists, not part of this spec's acceptance criteria.
 
 Next: spec review, then implementation in a stacked PR.
+
+## Summary of Changes
+
+Resolved via docs/specs/MEDIUM_DESIGNATOR.md's online-access bibliography option (csl26-r4dn), not the render_when/TemplateConditionField::Url options this bean originally proposed -- root cause reclassified 2026-09-06 (see the bean's own Resolution direction note) to a narrower purpose-built option instead. The [Internet] marker, cited-date bracket, and title-suffix anchor-selection gap are all implemented and wired for taylor-and-francis-national-library-of-medicine, springer-vancouver-brackets, and taylor-and-francis-council-of-science-editors-author-date. IEEE's analogous [Online] pattern remains a plausible follow-up, not covered here.

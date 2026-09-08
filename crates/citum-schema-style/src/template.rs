@@ -1217,7 +1217,12 @@ crate::str_enum! {
         /// hyphen-joined: "15-Jan-2024" -- CSL's `form="numeric-leading-zeros"`
         /// day plus `form="short" strip-periods="true"` month, used by
         /// American Society of Mechanical Engineers' accessed-date bracket.
-        DayMonthAbbrYearHyphen = "day-month-abbr-year-hyphen"
+        DayMonthAbbrYearHyphen = "day-month-abbr-year-hyphen",
+        /// Year, then abbreviated month (periods stripped), then day, no
+        /// comma: "2024 Jan 15" — CSL's `form="text"` shape used by the
+        /// NLM/Vancouver style family's cited-date bracket. See
+        /// `docs/specs/MEDIUM_DESIGNATOR.md`.
+        YearMonthAbbrDay = "year-month-abbr-day"
     }
 }
 

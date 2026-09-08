@@ -610,6 +610,58 @@ terms:
     }
 
     #[test]
+    fn test_internet_general_term_resolves_a_locales_own_translation() {
+        // Codex adversarial review finding: `term.internet` (the
+        // online-access medium marker) didn't resolve through any locale's
+        // own `terms: internet: {...}` entry -- every locale (including
+        // en-US) already carries one, but "internet" wasn't a recognized
+        // `GeneralTerm` variant, so it was silently dropped during locale
+        // loading. Once recognized, a locale's own translation must win
+        // over the inherited en-US base value.
+        let yaml = r#"
+locale: de-DE
+dates:
+  months:
+    long: [Januar, Februar, März, April, Mai, Juni, Juli, August, September, Oktober, November, Dezember]
+    short: [Jan., Feb., Mär., Apr., Mai, Jun., Jul., Aug., Sep., Okt., Nov., Dez.]
+  seasons: [Frühling, Sommer, Herbst, Winter]
+roles: {}
+terms:
+  internet:
+    long: Internet
+"#;
+        let locale = Locale::from_yaml_str(yaml).unwrap();
+
+        assert_eq!(
+            locale.general_term(&GeneralTerm::Internet, &TermForm::Long, None),
+            Some("Internet")
+        );
+    }
+
+    #[test]
+    fn test_internet_general_term_falls_back_to_the_base_locale_when_unset() {
+        // A locale that doesn't author its own `internet:` term inherits
+        // en-US's, rather than resolving to nothing (graceful i18n
+        // fallback, not silently-dropped data).
+        let yaml = r#"
+locale: es-ES
+dates:
+  months:
+    long: [enero, febrero, marzo, abril, mayo, junio, julio, agosto, septiembre, octubre, noviembre, diciembre]
+    short: [ene., feb., mar., abr., may., jun., jul., ago., sept., oct., nov., dic.]
+  seasons: [primavera, verano, otoño, invierno]
+roles: {}
+terms: {}
+"#;
+        let locale = Locale::from_yaml_str(yaml).unwrap();
+
+        assert_eq!(
+            locale.general_term(&GeneralTerm::Internet, &TermForm::Long, None),
+            Some("internet")
+        );
+    }
+
+    #[test]
     fn test_resolved_locator_term_evaluates_plural_message() {
         let locale = Locale::en_us();
 
