@@ -5525,6 +5525,38 @@ fn given_positional_wrap_when_title_substituted_from_template_then_wrap_is_ignor
 }
 
 #[test]
+fn given_the_title_node_sits_behind_a_select_first_winner_when_substituting_then_the_winners_rendering_applies()
+ {
+    // Codex adversarial review finding: `find_template_title_node` walked
+    // `select: first` groups structurally, so a losing first candidate
+    // could still supply substitution formatting. Here the first candidate
+    // (`variable: doi`) has no data -- the reference built by
+    // `substitute_title_value_from_template` never sets a DOI -- so the
+    // `title: primary` second candidate is the actual winner, and its
+    // `emph: true` rendering must be what gets applied.
+    let template = vec![TemplateComponent::Group(TemplateGroup {
+        group: vec![
+            TemplateComponent::Variable(TemplateVariable {
+                variable: SimpleVariable::Doi,
+                ..Default::default()
+            }),
+            TemplateComponent::Title(TemplateTitle {
+                title: TitleType::Primary,
+                rendering: Rendering {
+                    emph: Some(true),
+                    ..Default::default()
+                },
+                ..Default::default()
+            }),
+        ],
+        select: TemplateGroupSelect::First,
+        ..Default::default()
+    })];
+    let result = substitute_title_value_from_template("Behind A Fallback", &template);
+    assert_eq!(result, "_Behind A Fallback_");
+}
+
+#[test]
 fn given_render_when_gated_nodes_when_title_substituted_from_template_then_matching_branch_wins() {
     // Two `render_when`-guarded groups, only one of which matches a
     // reference with no `editor` -- the walker must resolve the same
@@ -5545,6 +5577,7 @@ fn given_render_when_gated_nodes_when_title_substituted_from_template_then_match
                 field_absent: None,
             }),
             delimiter: None,
+            select: TemplateGroupSelect::All,
             rendering: Rendering::default(),
             custom: None,
         }),
@@ -5566,6 +5599,7 @@ fn given_render_when_gated_nodes_when_title_substituted_from_template_then_match
                 field_absent: Some(TemplateConditionField::Editor),
             }),
             delimiter: None,
+            select: TemplateGroupSelect::All,
             rendering: Rendering::default(),
             custom: None,
         }),
@@ -5594,6 +5628,7 @@ fn given_suppressed_group_precedes_active_title_when_substituted_from_template_t
             })],
             render_when: None,
             delimiter: None,
+            select: TemplateGroupSelect::All,
             rendering: Rendering {
                 suppress: Some(true),
                 ..Default::default()

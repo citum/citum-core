@@ -1369,11 +1369,23 @@ impl Renderer<'_> {
         }
 
         let fmt = F::default();
-        let mut group_tracker = tracker.clone();
-        let values = self.render_group_child_values(&fmt, ctx, group, &mut group_tracker);
-        tracker.advance_issued_occurrences_from(&group_tracker);
-        let values = values?;
-        tracker.merge_from(group_tracker);
+        let values = match group.select {
+            citum_schema::template::TemplateGroupSelect::All => {
+                let mut group_tracker = tracker.clone();
+                let values = self.render_group_child_values(&fmt, ctx, group, &mut group_tracker);
+                tracker.advance_issued_occurrences_from(&group_tracker);
+                let values = values?;
+                tracker.merge_from(group_tracker);
+                values
+            }
+            citum_schema::template::TemplateGroupSelect::First => {
+                let mut group_tracker = tracker.clone();
+                let values =
+                    self.render_group_first_child_values(&fmt, ctx, group, &mut group_tracker)?;
+                tracker.merge_from(group_tracker);
+                values
+            }
+        };
         let default_delimiter = citum_schema::template::DelimiterPunctuation::Comma;
         let punctuation = group.delimiter.as_ref().unwrap_or(&default_delimiter);
         let (script, realization) = crate::values::punctuation_realization_context(
@@ -1453,6 +1465,11 @@ impl Renderer<'_> {
         let mut values = Vec::with_capacity(group.group.len());
 
         for item in &group.group {
+            // Computed from `tracker`'s state as it stands before this
+            // item's own render call, so it reflects the same starting
+            // point a `select: first` child's internal winner-selection
+            // would use (see `effective_term_only_component`).
+            let term_only = self.effective_term_only_component::<F>(fmt, ctx, item, tracker);
             let Some(rendered) =
                 self.render_template_component_with_format::<F>(ctx, item, tracker)
             else {
@@ -1467,7 +1484,7 @@ impl Renderer<'_> {
             if rendered_detailed.text.trim().is_empty() {
                 continue;
             }
-            if !is_term_only_component(item) {
+            if !term_only {
                 has_meaningful_content = true;
             }
             values.push(rendered_detailed);
@@ -1477,6 +1494,103 @@ impl Renderer<'_> {
             return None;
         }
         Some(values)
+    }
+
+    /// Whether `component`'s actual rendered content is term-only.
+    ///
+    /// For most components this is just [`is_term_only_component`], a
+    /// purely structural check. But a `select: first` group is not
+    /// term-only or not as a whole -- only whichever candidate actually
+    /// wins ever appears in the output, so this simulates the same
+    /// winner-selection [`Self::render_group_first_child_values`] performs
+    /// (against a scratch clone of `tracker`, discarded afterwards) and
+    /// judges the winner alone. Without this, a `select: first` group
+    /// whose winner happens to be a term-only fallback (e.g. a bracketed
+    /// "[place unknown]" message) would count as non-term-only just
+    /// because a *losing* sibling candidate (e.g. `variable:
+    /// publisher-place`) is not term-only -- causing an enclosing
+    /// `select: all` group to treat the fallback text alone as
+    /// "meaningful content" and render it even when every other sibling
+    /// in that outer group is empty (see `docs/specs/GROUP_SELECT.md`).
+    fn effective_term_only_component<F>(
+        &self,
+        fmt: &F,
+        ctx: &TemplateRenderContext<'_>,
+        component: &TemplateComponent,
+        tracker: &TemplateComponentTracker,
+    ) -> bool
+    where
+        F: crate::render::format::OutputFormat<Output = String>,
+    {
+        let citum_schema::template::TemplateComponent::Group(group) = component else {
+            return is_term_only_component(component);
+        };
+        if group.select != citum_schema::template::TemplateGroupSelect::First {
+            return is_term_only_component(component);
+        }
+        for item in &group.group {
+            let mut candidate_tracker = tracker.clone();
+            let Some(rendered) =
+                self.render_template_component_with_format::<F>(ctx, item, &mut candidate_tracker)
+            else {
+                continue;
+            };
+            let rendered_detailed =
+                crate::render::component::render_component_detailed_with_format_and_renderer::<F>(
+                    &rendered,
+                    fmt,
+                    ctx.options.show_semantics,
+                );
+            if rendered_detailed.text.trim().is_empty() {
+                continue;
+            }
+            return self.effective_term_only_component(fmt, ctx, item, &candidate_tracker);
+        }
+        true
+    }
+
+    /// Render a `select: first` group's children in document order, using
+    /// the first candidate that produces non-empty text and discarding the
+    /// rest. Unlike [`Self::render_group_child_values`], there is no
+    /// "term-only content" gate: a candidate is judged solely on whether it
+    /// renders non-empty text (see `docs/specs/GROUP_SELECT.md`'s
+    /// Evaluation section).
+    ///
+    /// Each candidate is tried against its own clone of `group_tracker`'s
+    /// starting state, so a losing candidate — including a nested group's
+    /// tracker mutations at any depth — leaves no trace; only the winner's
+    /// tracker delta is written back into `group_tracker`.
+    fn render_group_first_child_values<F>(
+        &self,
+        fmt: &F,
+        ctx: &TemplateRenderContext<'_>,
+        group: &citum_schema::template::TemplateGroup,
+        group_tracker: &mut TemplateComponentTracker,
+    ) -> Option<Vec<crate::render::component::RenderedComponent>>
+    where
+        F: crate::render::format::OutputFormat<Output = String>,
+    {
+        let starting_state = group_tracker.clone();
+        for item in &group.group {
+            let mut candidate_tracker = starting_state.clone();
+            let Some(rendered) =
+                self.render_template_component_with_format::<F>(ctx, item, &mut candidate_tracker)
+            else {
+                continue;
+            };
+            let rendered_detailed =
+                crate::render::component::render_component_detailed_with_format_and_renderer::<F>(
+                    &rendered,
+                    fmt,
+                    ctx.options.show_semantics,
+                );
+            if rendered_detailed.text.trim().is_empty() {
+                continue;
+            }
+            *group_tracker = candidate_tracker;
+            return Some(vec![rendered_detailed]);
+        }
+        None
     }
 
     fn apply_entry_link_fallback(

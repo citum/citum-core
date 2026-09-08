@@ -56,8 +56,9 @@ mod tests;
 use crate::reference::Reference;
 use citum_schema::locale::Locale;
 use citum_schema::options::{Config, bibliography::BibliographyConfig};
+use citum_schema::reference::ClassExtension;
 use citum_schema::reference::types::Title;
-use citum_schema::template::{TemplateComponent, TitleType};
+use citum_schema::template::{SimpleVariable, TemplateComponent, TitleType};
 use std::sync::Arc;
 
 thread_local! {
@@ -83,6 +84,200 @@ pub(crate) fn group_condition_matches(
             .field_absent
             .as_ref()
             .is_none_or(|field| !condition_field_present(reference, field))
+}
+
+/// Resolve the effective children a template group contributes for
+/// structural consumers that walk a template without running the render
+/// pipeline (currently `sorting.rs`'s reference-specific date/contributor
+/// finders). For `select: all` this is every child, unchanged. For
+/// `select: first`, this is the single child that would win under the same
+/// "tried in order, first non-empty wins" contract
+/// `render_group_first_child_values` implements at render time —
+/// approximated here by a data-presence check
+/// (`component_would_render_for_select_first`) rather than a full render,
+/// since these consumers have no `OutputFormat`/locale to render with. This
+/// is the same class of approximation `group_condition_matches` already
+/// accepts for `render-when` in this file; see
+/// `docs/specs/GROUP_SELECT.md`.
+pub(crate) fn select_group_children<'a>(
+    group: &'a citum_schema::template::TemplateGroup,
+    reference: &Reference,
+) -> &'a [TemplateComponent] {
+    match group.select {
+        citum_schema::template::TemplateGroupSelect::All => &group.group,
+        citum_schema::template::TemplateGroupSelect::First => group
+            .group
+            .iter()
+            .find(|child| component_would_render_for_select_first(child, reference))
+            .map_or(&[], std::slice::from_ref),
+    }
+}
+
+/// Data-presence approximation of "does this component produce non-empty
+/// output", used only to resolve a `select: first` group's winning
+/// candidate for structural consumers (see [`select_group_children`]).
+/// `rendering.suppress` is checked for every kind up front (a suppressed
+/// component never renders, structurally or otherwise). Of the remaining
+/// kinds, only `variable: locator` still defaults to `true`: it depends on
+/// `options.locator_raw`, which these render-context-free consumers don't
+/// have. Every other kind is modeled against the reference's own data —
+/// see [`simple_variable_would_render`] for `Variable`.
+fn component_would_render_for_select_first(
+    component: &TemplateComponent,
+    reference: &Reference,
+) -> bool {
+    if component.rendering().suppress == Some(true) {
+        return false;
+    }
+    match component {
+        TemplateComponent::Group(group) => {
+            if group
+                .render_when
+                .as_ref()
+                .is_some_and(|condition| !group_condition_matches(reference, condition))
+            {
+                return false;
+            }
+            !select_group_children(group, reference).is_empty()
+        }
+        TemplateComponent::Date(date) => date::resolve_date_variable(&date.date, reference)
+            .is_some_and(|value| !value.is_empty()),
+        TemplateComponent::Contributor(contributor) => {
+            contributor_roles_have_data(&contributor.contributor, reference)
+        }
+        TemplateComponent::Variable(variable) => {
+            simple_variable_would_render(&variable.variable, reference)
+        }
+        _ => true,
+    }
+}
+
+/// Data-presence approximation of "does this `variable:` component produce
+/// non-empty output", mirroring
+/// [`crate::values::variable::resolve_variable_value`]'s dispatch (kept in
+/// sync by hand — that function is the render-time source of truth, this
+/// is a render-context-free shadow of it for [`component_would_render_for_select_first`]).
+/// Two deliberate narrowings from the real renderer:
+/// - `Genre`/`RawGenre`/`Medium`/`RawMedium` check the underlying raw field
+///   only, skipping the locale-lookup step the real renderer applies to
+///   produce display text — presence doesn't depend on that lookup's
+///   result, only on whether the field exists.
+/// - `Locator` defaults to `true` (unresolvable without `options.locator_raw`,
+///   which no caller of this function has). Every other kind matches the
+///   real renderer's data dependency exactly.
+pub(crate) fn simple_variable_would_render(
+    variable: &SimpleVariable,
+    reference: &Reference,
+) -> bool {
+    match variable {
+        SimpleVariable::Doi => reference.doi().is_some(),
+        SimpleVariable::Url => {
+            reference.url().is_some()
+                || (crate::values::type_class::synthesizes_doi_url(&reference.ref_type())
+                    && reference.doi().is_some())
+        }
+        SimpleVariable::Isbn => reference.isbn().is_some(),
+        SimpleVariable::Issn => reference.issn().is_some(),
+        SimpleVariable::Publisher => reference.publisher_str().is_some(),
+        SimpleVariable::PublisherPlace => reference.publisher_place().is_some(),
+        SimpleVariable::OriginalPublisher => reference.original_publisher_str().is_some(),
+        SimpleVariable::OriginalPublisherPlace => reference.original_publisher_place().is_some(),
+        SimpleVariable::EventTitle => variable::event_title(reference).is_some(),
+        SimpleVariable::EventPlace => variable::event_place(reference).is_some(),
+        SimpleVariable::Dimensions => variable::dimensions(reference).is_some(),
+        SimpleVariable::References => variable::references(reference).is_some(),
+        SimpleVariable::Scale => reference.scale().is_some(),
+        SimpleVariable::Genre => reference
+            .genre()
+            .is_some_and(|genre| genre != reference.ref_type()),
+        SimpleVariable::RawGenre => variable::raw_genre(reference).is_some(),
+        SimpleVariable::Medium => reference.medium().is_some(),
+        SimpleVariable::RawMedium => variable::raw_medium(reference).is_some(),
+        SimpleVariable::Status => reference.status().is_some(),
+        SimpleVariable::Abstract | SimpleVariable::Note => false,
+        SimpleVariable::Archive => reference.archive().is_some(),
+        SimpleVariable::ArchiveLocation => {
+            reference.archive_location().is_some()
+                || reference.archive_collection().is_some()
+                || reference.archive_series().is_some()
+                || reference.archive_box().is_some()
+                || reference.archive_folder().is_some()
+                || reference.archive_item().is_some()
+        }
+        SimpleVariable::ArchiveName => reference.archive_name().is_some(),
+        SimpleVariable::ArchivePlace => reference.archive_place().is_some(),
+        SimpleVariable::ArchiveCollection => reference.archive_collection().is_some(),
+        SimpleVariable::ArchiveCollectionId => reference.archive_collection_id().is_some(),
+        SimpleVariable::ArchiveSeries => reference.archive_series().is_some(),
+        SimpleVariable::ArchiveBox => reference.archive_box().is_some(),
+        SimpleVariable::ArchiveFolder => reference.archive_folder().is_some(),
+        SimpleVariable::ArchiveItem => reference.archive_item().is_some(),
+        SimpleVariable::ArchiveUrl => reference.archive_url().is_some(),
+        SimpleVariable::EprintId => reference.eprint_id().is_some(),
+        SimpleVariable::EprintServer => reference.eprint_server().is_some(),
+        SimpleVariable::EprintClass => reference.eprint_class().is_some(),
+        SimpleVariable::Authority => reference.authority().is_some(),
+        SimpleVariable::Code => reference.code().is_some(),
+        SimpleVariable::Reporter => reference.reporter().is_some(),
+        SimpleVariable::Page => reference.pages().is_some(),
+        SimpleVariable::Section => reference.section().is_some(),
+        SimpleVariable::Volume => reference.volume().is_some(),
+        SimpleVariable::Number => reference.number().is_some(),
+        SimpleVariable::DocketNumber => matches!(
+            reference.extension(),
+            ClassExtension::Brief(brief) if brief.docket_number.is_some()
+        ),
+        SimpleVariable::PatentNumber => matches!(
+            reference.extension(),
+            ClassExtension::Patent(patent) if !patent.patent_number.trim().is_empty()
+        ),
+        SimpleVariable::StandardNumber => matches!(
+            reference.extension(),
+            ClassExtension::Standard(standard) if !standard.standard_number.trim().is_empty()
+        ),
+        SimpleVariable::AdsBibcode => reference.ads_bibcode().is_some(),
+        SimpleVariable::ReportNumber => reference.report_number().is_some(),
+        SimpleVariable::Version => reference.version().is_some(),
+        SimpleVariable::VolumeTitle => reference.volume_title().is_some(),
+        SimpleVariable::ContainerTitleShort => variable::container_title_short(reference).is_some(),
+        SimpleVariable::Locator => true,
+        // `resolve_variable_value` has no explicit arm for these either —
+        // they fall to its own `_ => None` catch-all and never render via
+        // this dispatch (resolved elsewhere, or genuinely unimplemented).
+        SimpleVariable::Pmid
+        | SimpleVariable::Pmcid
+        | SimpleVariable::Annote
+        | SimpleVariable::Keyword
+        | SimpleVariable::Source => false,
+        // `SimpleVariable` is `#[non_exhaustive]`; a variant added later and
+        // not yet modeled here defaults to `true`, matching this module's
+        // existing "unmodeled kinds assume renders" philosophy.
+        _ => true,
+    }
+}
+
+/// Whether any role a `TemplateContributor` declares has reference data.
+/// Only covers the roles [`condition_field_present`] already special-cases
+/// (author/editor/translator/recipient); every other role defaults to
+/// `true`, matching this function's "unmodeled kinds assume renders" rule.
+fn contributor_roles_have_data(
+    roles: &citum_schema::template::ContributorRoles,
+    reference: &Reference,
+) -> bool {
+    use citum_schema::template::{ContributorRole, ContributorRoles};
+    let has_role_data = |role: &ContributorRole| match role {
+        ContributorRole::Author => reference.author().is_some(),
+        ContributorRole::Editor => reference.editor().is_some(),
+        ContributorRole::Translator => reference.translator().is_some(),
+        ContributorRole::Recipient => reference
+            .contributor(citum_schema::reference::ContributorRole::Recipient)
+            .is_some(),
+        _ => true,
+    };
+    match roles {
+        ContributorRoles::Single(role) => has_role_data(role),
+        ContributorRoles::Multiple(roles) => roles.iter().any(has_role_data),
+    }
 }
 
 fn condition_field_present(

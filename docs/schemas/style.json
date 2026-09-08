@@ -2636,6 +2636,10 @@
             }
           ]
         },
+        "select": {
+          "description": "How children are combined: `all` (default) renders every\nnon-suppressed child and joins them; `first` renders the first child\nthat produces non-empty output and discards the rest. See\n`docs/specs/GROUP_SELECT.md`.",
+          "$ref": "#/$defs/TemplateGroupSelect"
+        },
         "text-case": {
           "description": "Text-case transform to apply to the rendered value.",
           "anyOf": [
@@ -2906,6 +2910,21 @@
           "description": "The title of an individual volume within a multivolume work.",
           "type": "string",
           "const": "volume-title"
+        }
+      ]
+    },
+    "TemplateGroupSelect": {
+      "description": "How a `TemplateGroup`'s children are combined into the group's output.",
+      "oneOf": [
+        {
+          "description": "Render every non-suppressed child and join them (today's behavior).",
+          "type": "string",
+          "const": "all"
+        },
+        {
+          "description": "Render the first child that produces non-empty output; discard the\nrest. Rejected by validation with fewer than two children or\ncombined with `delimiter`.",
+          "type": "string",
+          "const": "first"
         }
       ]
     },

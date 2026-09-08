@@ -517,6 +517,18 @@ impl TemplateResourceBudget {
                         _ => {}
                     }
                 }
+                if group.select == crate::template::TemplateGroupSelect::First {
+                    if group.group.len() < 2 {
+                        return Err(format!(
+                            "{location}.group.select: `first` needs at least two children (no fallback behavior to express)"
+                        ));
+                    }
+                    if group.delimiter.is_some() {
+                        return Err(format!(
+                            "{location}.group.select: `first` cannot be combined with `delimiter` (meaningless when only one child ever contributes output)"
+                        ));
+                    }
+                }
                 self.check_template(&group.group, &format!("{location}.group"), depth + 1)?;
             }
             TemplateComponent::Message(message) => {
@@ -828,6 +840,55 @@ mod security_resource_tests {
             .expect_err("date-fallback candidates must share the template budget");
 
         assert!(err.contains("maximum template component count"));
+    }
+
+    #[test]
+    fn validate_resource_limits_rejects_select_first_with_fewer_than_two_children() {
+        let style = Style {
+            bibliography: Some(BibliographySpec {
+                template: Some(
+                    vec![TemplateComponent::Group(TemplateGroup {
+                        group: vec![TemplateComponent::default()],
+                        select: crate::template::TemplateGroupSelect::First,
+                        ..TemplateGroup::default()
+                    })]
+                    .into(),
+                ),
+                ..BibliographySpec::default()
+            }),
+            ..Style::default()
+        };
+
+        let err = style
+            .validate_resource_limits()
+            .expect_err("select: first with one child must be rejected");
+
+        assert!(err.contains("select: `first` needs at least two children"));
+    }
+
+    #[test]
+    fn validate_resource_limits_rejects_select_first_combined_with_delimiter() {
+        let style = Style {
+            bibliography: Some(BibliographySpec {
+                template: Some(
+                    vec![TemplateComponent::Group(TemplateGroup {
+                        group: vec![TemplateComponent::default(), TemplateComponent::default()],
+                        select: crate::template::TemplateGroupSelect::First,
+                        delimiter: Some(crate::template::DelimiterPunctuation::Space),
+                        ..TemplateGroup::default()
+                    })]
+                    .into(),
+                ),
+                ..BibliographySpec::default()
+            }),
+            ..Style::default()
+        };
+
+        let err = style
+            .validate_resource_limits()
+            .expect_err("select: first combined with delimiter must be rejected");
+
+        assert!(err.contains("select: `first` cannot be combined with `delimiter`"));
     }
 
     #[test]
