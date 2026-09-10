@@ -115,7 +115,7 @@
     ],
     "manifest": {
       "path": "docs/architecture/audits/2026-08-09-shortened-notes-coverage/manifest.yaml",
-      "sha256": "49b909c96182cef0a51f474e2f2c6a679d0d4a89f857e9efb31d948cfc96d347"
+      "sha256": "dd7e2af829ff0e40b5b238d68e951471fc60ad8fb3a71a3a2b50380b34b39d3f"
     },
     "relevance": {
       "default": "relevant",
@@ -169,7 +169,7 @@
         {
           "id": "chicago-notes-18th",
           "path": "crates/citum-schema-style/embedded/styles/chicago-notes-18th.yaml",
-          "sha256": "e65462d2c97b3acd2bd1767b10740733c143e01e9c5d73d04602b0f5a8cd16b8"
+          "sha256": "d34122bbe2c9e9667b2e43639b5d4d792b1978d05ed5a6c057d091adcea9366a"
         },
         {
           "id": "chicago-18-base",

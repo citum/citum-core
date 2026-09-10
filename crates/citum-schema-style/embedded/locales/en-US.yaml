@@ -978,6 +978,12 @@ messages:
   # renders `[place unknown]`; brackets come from the component's own
   # `wrap: brackets`, not baked into the term text.
   term.place-unknown: "place unknown"
+  # Chicago's broadcast identifier fallback (docs/specs/GROUP_SELECT.md
+  # corpus-sweep candidate, csl26-zc01): chicago-author-date.csl's
+  # `identifier-number-bib` macro renders a bare "episode" (lowercase,
+  # matching the retired `pattern.chicago-episode: "episode {$number}"`
+  # this term replaces) when a broadcast has a number but no genre.
+  term.episode: "episode"
   # GB/T 7714's own anonymous-author convention (not the CSL legacy
   # `terms.anonymous` "anon." catalog entry) — see csl26-6eak.
   term.anonymous: "Anon"

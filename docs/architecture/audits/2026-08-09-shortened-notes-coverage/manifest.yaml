@@ -20,7 +20,7 @@ style:
       sha256: 3d96422d93125f24c3e8bfd90653f4deeb4140b1422d3733673a7140b9ddb5c4
     - id: chicago-notes-18th
       path: crates/citum-schema-style/embedded/styles/chicago-notes-18th.yaml
-      sha256: e65462d2c97b3acd2bd1767b10740733c143e01e9c5d73d04602b0f5a8cd16b8
+      sha256: d34122bbe2c9e9667b2e43639b5d4d792b1978d05ed5a6c057d091adcea9366a
     - id: chicago-18-base
       path: crates/citum-schema-style/embedded/styles/chicago-18-base.yaml
       sha256: 1500f19c29a8c516b8b042a63b44183e7be5a3d75abe83d6ef8aef60d9c579ef

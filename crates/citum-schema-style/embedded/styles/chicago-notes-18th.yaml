@@ -500,20 +500,13 @@ citation:
     - title: parent-serial
       prefix: ", "
     - group:
-      - message: pattern.chicago-episode
-        args:
-          number:
-            variable: number
-      render-when:
-        field-absent: genre
-      prefix: ", "
-    - group:
-      - variable: genre
-        text-case: capitalize-first
+      - select: first
+        group:
+        - variable: genre
+          text-case: capitalize-first
+        - message: term.episode
       - variable: number
       delimiter: " "
-      render-when:
-        field-present: genre
       prefix: ", "
     - title: primary
       text-case: title
