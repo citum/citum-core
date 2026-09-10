@@ -851,7 +851,8 @@ fn inline_disamb_suffix(formatted: &str, form: &DateForm, year: &str, suffix: &s
         DateForm::YearMonth
         | DateForm::Full
         | DateForm::DayMonthAbbrYear
-        | DateForm::MonthAbbrDayYear => formatted.rfind(year),
+        | DateForm::MonthAbbrDayYear
+        | DateForm::DayMonthAbbrYearHyphen => formatted.rfind(year),
         DateForm::MonthDay => None,
         _ => None,
     };
@@ -1121,6 +1122,30 @@ fn format_single_date(
                 (false, Some(d)) => {
                     Some(format!("{month} {}, {year}", format_day(d, zero_pad_day)))
                 }
+            }
+        }
+        DateForm::DayMonthAbbrYearHyphen => {
+            let year = extract_year(date);
+            if year.is_empty() {
+                return None;
+            }
+            let month = extract_month(date, &locale.dates.months.short, &locale.dates.seasons);
+            let month = crate::values::strip_trailing_periods(&month);
+            let day = date.day();
+            let month_opt = (!month.is_empty()).then_some(month.as_str());
+            if let Some(rendered) = locale.resolve_date_pattern(
+                "pattern.date-day-month-abbr-year-hyphen",
+                Some(&year),
+                month_opt,
+                day,
+                zero_pad_day,
+            ) {
+                return Some(rendered);
+            }
+            match (month.is_empty(), day) {
+                (true, _) => Some(year),
+                (false, None) => Some(format!("{month}-{year}")),
+                (false, Some(d)) => Some(format!("{}-{month}-{year}", format_day(d, zero_pad_day))),
             }
         }
         _ => Some(extract_year(date)),
@@ -2064,6 +2089,53 @@ mod locale_pattern_tests {
     #[test]
     fn en_us_month_abbr_day_year_unchanged_by_pattern_machinery() {
         assert_eq!(month_abbr_day_year(&en_us(), "2023-01-12"), "Jan. 12, 2023");
+    }
+
+    /// ASME's accessed-date bracket: zero-padded day, abbreviated month with
+    /// periods stripped, full year, hyphen-joined -- "15-Jan-2024", matching
+    /// CSL's `form="numeric-leading-zeros"` day plus
+    /// `form="short" strip-periods="true"` month.
+    #[test]
+    fn en_us_day_month_abbr_year_hyphen_strips_periods_and_zero_pads_day() {
+        let config = citum_schema::options::dates::DateConfig {
+            day_zero_pad: true,
+            ..Default::default()
+        };
+        assert_eq!(
+            format_single_date(
+                &DateValue::new("2024-01-05".to_string()),
+                &DateForm::DayMonthAbbrYearHyphen,
+                &en_us(),
+                Some(&config)
+            ),
+            Some("05-Jan-2024".to_string())
+        );
+    }
+
+    #[test]
+    fn en_us_day_month_abbr_year_hyphen_missing_day_falls_back() {
+        assert_eq!(
+            format_single_date(
+                &DateValue::new("2024-01".to_string()),
+                &DateForm::DayMonthAbbrYearHyphen,
+                &en_us(),
+                None
+            ),
+            Some("Jan-2024".to_string())
+        );
+    }
+
+    #[test]
+    fn en_us_day_month_abbr_year_hyphen_missing_month_falls_back_to_year() {
+        assert_eq!(
+            format_single_date(
+                &DateValue::new("2024".to_string()),
+                &DateForm::DayMonthAbbrYearHyphen,
+                &en_us(),
+                None
+            ),
+            Some("2024".to_string())
+        );
     }
 
     #[test]

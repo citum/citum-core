@@ -1212,7 +1212,12 @@ crate::str_enum! {
         YearMonthDay = "year-month-day",
         DayMonthAbbrYear = "day-month-abbr-year",
         /// Abbreviated month + day + year in US order: "Jan 15, 2024".
-        MonthAbbrDayYear = "month-abbr-day-year"
+        MonthAbbrDayYear = "month-abbr-day-year",
+        /// Zero-padded day, abbreviated month (periods stripped), full year,
+        /// hyphen-joined: "15-Jan-2024" -- CSL's `form="numeric-leading-zeros"`
+        /// day plus `form="short" strip-periods="true"` month, used by
+        /// American Society of Mechanical Engineers' accessed-date bracket.
+        DayMonthAbbrYearHyphen = "day-month-abbr-year-hyphen"
     }
 }
 
