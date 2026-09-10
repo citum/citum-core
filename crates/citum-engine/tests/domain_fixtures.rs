@@ -699,6 +699,52 @@ fn given_chicago_shortened_notes_style_when_same_author_cluster_has_no_locator_t
     );
 }
 
+/// `chicago-shortened-notes-bibliography-core`'s author+title citation
+/// group used to gate on `render-when: field-present/absent: author`, a
+/// raw-field check blind to contributor substitution (`csl26-x79y`): an
+/// editor-only reference lost its contributor entirely instead of falling
+/// back to the editor, since `contributor: author`'s own substitution
+/// never got the chance to run. The fix removed the render-when pair
+/// entirely -- no new primitive needed, since the group's own
+/// emptiness/delimiter-join semantics already produce the same fallback.
+///
+/// Loads the live embedded style directly rather than through
+/// `load_style`'s `test_style_path` pin: `chicago-shortened-notes-
+/// bibliography-core` is one of the four Chicago styles pinned to a
+/// frozen fixture snapshot for unrelated in-flight wave work, and that
+/// snapshot still has the pre-fix render-when gate.
+#[test]
+fn given_chicago_shortened_notes_style_when_reference_has_only_an_editor_then_citation_substitutes_the_editor()
+ {
+    let root = project_root();
+    let style_bytes = fs::read(root.join(
+        "crates/citum-schema-style/embedded/styles/chicago-shortened-notes-bibliography-core.yaml",
+    ))
+    .expect("embedded chicago-shortened-notes-bibliography-core style should be readable");
+    let style = Style::from_yaml_bytes(&style_bytes).expect("style fixture should parse");
+    let bibliography =
+        load_bibliography(&root.join("tests/fixtures/references-secondary-roles.json"))
+            .expect("secondary-roles fixture should parse");
+
+    let processor = Processor::new(style, bibliography);
+    let citation = Citation {
+        items: vec![CitationItem {
+            id: "sr-editor-only".to_string(),
+            ..Default::default()
+        }],
+        ..Default::default()
+    };
+
+    let rendered = processor
+        .process_citation(&citation)
+        .expect("editor-only reference should render");
+
+    assert_eq!(
+        rendered, "Bennett and Cho, _The Handbook of Civic Archives_.",
+        "an editor-only reference must substitute the editor into the citation's contributor slot, not drop it"
+    );
+}
+
 /// Neither style's source CSL declares `collapse`, so a no-`collapse`
 /// author-date style now renders each same-author cite separately instead
 /// of collapsing. `taylor-and-francis-council-of-science-editors-author-date`

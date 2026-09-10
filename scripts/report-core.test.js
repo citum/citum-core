@@ -1600,7 +1600,13 @@ test('generateReport exposes the registered coverage audit on its corresponding 
   // month/day detail) moved it to 91. csl26-shp4 (added a `compiler`
   // contributor role and substitute candidate, so a compiler-only
   // reference no longer drops its contributor entirely) moved it to 92.
-  assert.equal(audit.postChangeEvidence.afterExactParity.passed, 92);
+  // csl26-x79y itself (closed): deleted the render-when pair flagged
+  // above -- the field-absent branch's content was already a subset of
+  // the field-present branch's, so the group's own emptiness/delimiter-
+  // join semantics handle the fallback without a render-when gate at
+  // all. An editor-only reference now substitutes the editor instead of
+  // dropping its contributor. Moved it to 93.
+  assert.equal(audit.postChangeEvidence.afterExactParity.passed, 93);
 });
 
 test('generateReport supports multi-style selected reports', {

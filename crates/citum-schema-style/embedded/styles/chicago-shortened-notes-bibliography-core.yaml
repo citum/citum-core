@@ -118,6 +118,12 @@ citation:
   subsequent: ~
   type-variants: ~
   template:
+  # No render-when gate needed here (csl26-x79y): a raw field-present:
+  # author check silently dropped the contributor for editor-only
+  # references, since contributor: author's own substitution (editor,
+  # then translator) never got the chance to run. This group's natural
+  # emptiness/delimiter-join behavior already degrades to a bare title
+  # when contributor: author renders nothing at all.
   - group:
     - contributor: author
       form: short
@@ -138,24 +144,6 @@ citation:
           field-absent: genre
       delimiter: ''
     delimiter: ", "
-    render-when:
-      field-present: author
-  - group:
-    - group:
-      - group:
-        - title: primary
-          wrap:
-            punctuation: quotes
-        render-when:
-          field-present: genre
-      - group:
-        - title: primary
-        render-when:
-          field-absent: genre
-      delimiter: ''
-    delimiter: ''
-    render-when:
-      field-absent: author
   - variable: locator
     prefix: ", "
   suffix: .

@@ -1,7 +1,7 @@
 ---
 # csl26-x79y
 title: render-when field-present:author ignores editor substitution
-status: todo
+status: completed
 type: bug
 priority: normal
 tags:
@@ -11,7 +11,7 @@ tags:
     - render-when
     - fidelity
 created_at: 2026-09-02T18:19:10Z
-updated_at: 2026-09-08T12:48:29Z
+updated_at: 2026-09-10T12:12:39Z
 parent: csl26-h7oc
 ---
 
@@ -26,3 +26,13 @@ Needs a decision: should `condition_field_present`'s Author (and likely Editor/T
 ## Cross-link (2026-09-06)
 
 This is exactly the blind spot `docs/specs/GROUP_SELECT.md` (Draft) is designed to close: `render-when`'s conditions read raw source fields and structurally cannot see substitution results (documented as policy in `RENDER_WHEN_CONTRACT.md`), while a `select: first` group tests actual output. Once `select: first` ships and chicago-shortened-notes-bibliography-core's author+title gate migrates to it, this bug is fixed by construction rather than by a semantics decision on `condition_field_present`. See `docs/architecture/audits/2026-09-06_RENDER_WHEN_DISPOSITION.md`.
+
+## Summary of Changes
+
+Fixed in `crates/citum-schema-style/embedded/styles/chicago-shortened-notes-bibliography-core.yaml`'s citation template: removed the `render-when: field-present/absent: author` pair gating the author+title group entirely, merging into one unconditional group.
+
+The absent-branch content (bare title) was already a strict subset of the present-branch content (contributor + title), so no replacement primitive was needed -- the group's existing emptiness/delimiter-join semantics correctly degrade to bare title when `contributor: author`'s own substitution (editor, then translator) also finds nothing, exactly as the cross-linked `docs/specs/GROUP_SELECT.md` note predicted.
+
+Verified: editor-only reference (sr-editor-only fixture) now renders "Bennett and Cho, _Title_" in the citation instead of dropping the contributor entirely; anonymous and normal-author references unaffected. chicago-shortened-notes-bibliography's exact-parity count moved 92->93/473 (chicago-18-base family aggregate 560->561/1629), zero regressions across the 35-style corpus.
+
+Landed as part of PR #1273 (stacked on #1270), alongside a genuine select:first migration example. See csl26-zc01 for a second, structurally-different `field-present: author` use (chicago-author-date-18th.yaml's interview type-variant) found while investigating this one -- not yet verified safe, do not assume the same fix applies.
