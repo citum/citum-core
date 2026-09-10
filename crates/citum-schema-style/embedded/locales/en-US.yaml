@@ -1055,6 +1055,14 @@ messages:
   pattern.locator-at: "at {$locator}"
   pattern.retrieved-from: "retrieved from {$url}"
   pattern.available-at: "available at {$url}"
+  # Deliberately bakes brackets into the pattern text (unlike most bracketed
+  # content elsewhere, which uses `wrap: {punctuation: brackets}`): the
+  # source CSL itself bakes them into its `<text value="[Online]"/>` literal,
+  # and folding "Online" into this same data-driven message (rather than a
+  # standalone `pattern.online`) is required so the whole thing renders
+  # empty when there's no URL -- a zero-arg pattern message is never empty,
+  # which broke `select: first`'s fallback for URL-less references.
+  pattern.online-available: "[Online]. Available: {$url}"
   pattern.chicago-aired-date: "aired {$date}"
   pattern.chicago-by: "by {$name}"
   pattern.chicago-interview-by: "interview by {$name}"

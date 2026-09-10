@@ -30,6 +30,12 @@ options:
     demote-non-dropping-particle: sort-only
     sort-separator: ', '
   titles: journal-emphasis
+  # Explicit form of the inherited `ieee`'s `dates: short`, plus
+  # day-zero-pad for the new accessed-date bracket ("[Accessed:
+  # 15-Jan-2024]") -- the only place in this style a day renders.
+  dates:
+    month: short
+    day-zero-pad: true
 citation:
   template-ref: numeric-citation
   wrap:
@@ -51,6 +57,12 @@ bibliography:
       delimiter-precedes-last: always
       sort-separator: ', '
     entry-suffix: .
+    # The real CSL's `<layout suffix=".">` is unconditional -- unlike
+    # Citum's default, it does not suppress the entry period when the
+    # entry happens to end in a bare URL or DOI (e.g. an accessed-only
+    # reference with no accessed date: "...interview.").
+    entry-suffix-after-url: true
+    entry-suffix-after-doi: true
     separator: ', '
     second-field-align: flush
   type-variants:
@@ -70,13 +82,31 @@ bibliography:
       - number: issue
         wrap:
           punctuation: parentheses
-    - variable: url
     - variable: publisher
     - number: pages
       label-form: short
-    - variable: doi
-      prefix: https://doi.org/
     - variable: publisher-place
+    - &asme-access-fallback
+      select: first
+      group:
+      - variable: doi
+        prefix: https://doi.org/
+      - group:
+        - message: pattern.online-available
+          args:
+            url:
+              variable: url
+        - group:
+          - message: pattern.accessed-date-colon
+            args:
+              date:
+                date: accessed
+                form: day-month-abbr-year-hyphen
+            text-case: capitalize-first
+          wrap:
+            punctuation: brackets
+        delimiter: ". "
+      prefix: ". "
     article-magazine:
     - contributor: author
       form: long
@@ -93,13 +123,11 @@ bibliography:
       - number: issue
         wrap:
           punctuation: parentheses
-    - variable: url
     - variable: publisher
     - number: pages
       label-form: short
-    - variable: doi
-      prefix: '. '
     - variable: publisher-place
+    - *asme-access-fallback
     chapter:
     - contributor: author
       form: long
@@ -116,13 +144,11 @@ bibliography:
       - number: issue
         wrap:
           punctuation: parentheses
-    - variable: url
     - variable: publisher
     - number: pages
       label-form: short
-    - variable: doi
-      prefix: '. '
     - variable: publisher-place
+    - *asme-access-fallback
     entry-encyclopedia:
     - contributor: author
       form: long
@@ -140,13 +166,11 @@ bibliography:
       - number: issue
         wrap:
           punctuation: parentheses
-    - variable: url
     - variable: publisher
     - number: pages
       label-form: short
-    - variable: doi
-      prefix: '. '
     - variable: publisher-place
+    - *asme-access-fallback
     paper-conference:
     - contributor: author
       form: long
@@ -163,13 +187,11 @@ bibliography:
       - number: issue
         wrap:
           punctuation: parentheses
-    - variable: url
     - variable: publisher
     - number: pages
       label-form: short
-    - variable: doi
-      prefix: '. '
     - variable: publisher-place
+    - *asme-access-fallback
     # citeproc-js does not italicize the dictionary/encyclopedia container
     # title (unlike a chapter's book container); the generic `template`
     # fallback's plain `title: parent-monograph` inherits emph:true from
@@ -192,12 +214,10 @@ bibliography:
       - number: issue
         wrap:
           punctuation: parentheses
-    - variable: url
     - variable: publisher
     - number: pages
-    - variable: doi
-      prefix: '. '
     - variable: publisher-place
+    - *asme-access-fallback
   template:
   - contributor: author
     form: long
@@ -214,9 +234,7 @@ bibliography:
     - number: issue
       wrap:
         punctuation: parentheses
-  - variable: url
   - variable: publisher
   - number: pages
-  - variable: doi
-    prefix: '. '
   - variable: publisher-place
+  - *asme-access-fallback

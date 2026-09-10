@@ -1888,6 +1888,11 @@
           "description": "Abbreviated month + day + year in US order: \"Jan 15, 2024\".",
           "type": "string",
           "const": "month-abbr-day-year"
+        },
+        {
+          "description": "Zero-padded day, abbreviated month (periods stripped), full year,\nhyphen-joined: \"15-Jan-2024\" -- CSL's `form=\"numeric-leading-zeros\"`\nday plus `form=\"short\" strip-periods=\"true\"` month, used by\nAmerican Society of Mechanical Engineers' accessed-date bracket.",
+          "type": "string",
+          "const": "day-month-abbr-year-hyphen"
         }
       ]
     },
