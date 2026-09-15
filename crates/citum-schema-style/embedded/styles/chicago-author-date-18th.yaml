@@ -633,22 +633,15 @@ bibliography:
       form: year
     - title: parent-serial
       emph: true
-    - group:
-      - message: pattern.chicago-episode
-        text-case: capitalize-first
-        args:
-          number:
-            variable: number
-      render-when:
-        field-absent: genre
-      prefix: ". "
-    - group:
-      - variable: genre
-        text-case: capitalize-first
+    - delimiter: " "
+      group:
+      - select: first
+        group:
+        - variable: genre
+          text-case: capitalize-first
+        - message: term.episode
+          text-case: capitalize-first
       - variable: number
-      delimiter: " "
-      render-when:
-        field-present: genre
       prefix: ". "
     - title: primary
       wrap:
