@@ -1246,6 +1246,88 @@ fn sentence_initial_group_still_capitalizes_leading_contributor_role_prose() {
     assert_eq!(result, "Edited by Ada Smith");
 }
 
+#[test]
+fn sentence_initial_message_respects_an_explicit_as_is_or_lowercase_case() {
+    // csl26-wt1u: springer-vancouver-brackets' hand-rolled `[cited ...]`
+    // bracket has no preceding component to group with for some
+    // type-variants (e.g. entry-dictionary), so it stands sentence-initial.
+    // The ambient capitalization above must not override a message the
+    // style has explicitly pinned to `as-is`/`lowercase`.
+    let reference = Reference::from(LegacyReference {
+        id: "cited-only".to_string(),
+        ref_type: "webpage".to_string(),
+        title: Some("Untitled".to_string()),
+        accessed: Some(LegacyDateVariable::year(2024)),
+        ..Default::default()
+    });
+
+    for text_case in [
+        citum_schema::options::titles::TextCase::AsIs,
+        citum_schema::options::titles::TextCase::Lowercase,
+    ] {
+        let cited_message: TemplateComponent = serde_yaml::from_str(&format!(
+            r#"
+message: pattern.cited-date
+args:
+  date:
+    date: accessed
+    form: year
+text-case: {}
+"#,
+            serde_yaml::to_string(&text_case)
+                .expect("text case should serialize")
+                .trim()
+        ))
+        .expect("cited-date message component should parse");
+        let style = bibliography_style_with_template(vec![
+            cited_message,
+            TemplateComponent::Title(TemplateTitle {
+                title: TitleType::Primary,
+                ..Default::default()
+            }),
+        ]);
+
+        let result = render_single_bibliography_entry(style, reference.clone());
+
+        assert_eq!(result, "cited 2024. Untitled");
+    }
+}
+
+#[test]
+fn sentence_initial_message_without_explicit_case_still_capitalizes() {
+    // Control for the guard above: a message with no explicit `text_case`
+    // (the common case -- most locale-message phrases are authored
+    // lowercase and rely on this ambient capital) must still capitalize.
+    let reference = Reference::from(LegacyReference {
+        id: "cited-only".to_string(),
+        ref_type: "webpage".to_string(),
+        title: Some("Untitled".to_string()),
+        accessed: Some(LegacyDateVariable::year(2024)),
+        ..Default::default()
+    });
+    let cited_message: TemplateComponent = serde_yaml::from_str(
+        r#"
+message: pattern.cited-date
+args:
+  date:
+    date: accessed
+    form: year
+"#,
+    )
+    .expect("cited-date message component should parse");
+    let style = bibliography_style_with_template(vec![
+        cited_message,
+        TemplateComponent::Title(TemplateTitle {
+            title: TitleType::Primary,
+            ..Default::default()
+        }),
+    ]);
+
+    let result = render_single_bibliography_entry(style, reference);
+
+    assert_eq!(result, "Cited 2024. Untitled");
+}
+
 // docs/specs/GROUP_SELECT.md: `select: first` renders the first child that
 // produces non-empty output and discards the rest, with no group-level
 // "backed by real data" gate the way `select: all` has.
