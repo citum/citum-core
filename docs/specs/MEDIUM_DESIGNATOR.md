@@ -1,8 +1,8 @@
 # Medium Designator Specification
 
 **Status:** Active
-**Version:** 1.1
-**Date:** 2026-09-08
+**Version:** 1.2
+**Date:** 2026-09-15
 **Supersedes:** None
 **Related:** `csl26-zs9y`, `csl26-8z39`, `csl26-e8ul`,
 `docs/architecture/audits/2026-09-06_RENDER_WHEN_DISPOSITION.md`,
@@ -55,6 +55,25 @@ Out of scope:
   genuinely different rules, not wording variants of one shared phrase —
   see Evidence. Tracked as its own design problem in `csl26-e8ul`,
   entangled with `csl26-8z39`'s DOI-preference logic for NLM specifically.
+
+### Known limitation: no per-type exclusion
+
+`online-access` is a single style-wide switch: `cited-date-label` fires on
+every type-variant carrying a `date: issued` anchor and a URL
+(`Renderer::apply_online_access_bibliography_policy`), with no way to
+exclude specific types. This is fine for NLM/CSE, whose shipped CSL emits
+the bracket uniformly for every type. It cannot serve
+`springer-vancouver-brackets`, whose CSL `date` macro excludes
+`bill`/`legislation`/`report` from the bracket while including everything
+else (`styles-legacy/springer-vancouver-brackets.csl:181-208`) — and even
+if the option gained a type-exclusion field, Citum's CSL-type conversion
+collapses `bill`(+title+authority, the Zotero pattern)/`hearing` into one
+Citum type and `legislation`/`statute` into another, so the source
+distinction the exclusion would need is already lost by the time a style
+template sees it. `csl26-wt1u` fixed springer's hand-rolled
+`pattern.cited-date` bracket in place instead of switching it onto this
+option, for exactly this reason. A future `exclude-types` field is possible
+but needs its own docs-only spec pass, not a decision made in passing here.
 
 ## Evidence
 
@@ -386,6 +405,10 @@ before the fix (asserting the old, wrong "2024, January 15" shape).
 
 ## Changelog
 
+- v1.2 (2026-09-15): Documented a known limitation found while trying to
+  put `online-access` to work on a fourth style: no per-type exclusion,
+  which rules it out for `springer-vancouver-brackets` (see Scope). No
+  behavior change to the option itself.
 - v1.1 (2026-09-08): Implemented. Status promoted to Active. Corrected two
   Implementation Notes claims found during implementation: `term.internet`
   needed a new `messages:` entry (not already-resolving, unlike

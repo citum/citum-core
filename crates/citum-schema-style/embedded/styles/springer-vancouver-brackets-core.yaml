@@ -68,11 +68,18 @@ bibliography:
   options:
     entry-suffix: .
     separator: '. '
-    # cited-date-label is deliberately omitted: this style already renders
-    # the [cited DATE] bracket via its own pattern.cited-date/
-    # pattern.accessed-date messages below (docs/specs/MEDIUM_DESIGNATOR.md
-    # notes this as redundant with -- not a replacement for -- that
-    # existing, already-correct implementation).
+    # cited-date-label is deliberately omitted, not because the hand-rolled
+    # pattern.cited-date bracket below is redundant with it (it needed its
+    # own date-form/case/punctuation fixes -- see csl26-wt1u), but because
+    # the option has no per-type exclusion and the shipped CSL's `date`
+    # macro excludes `bill`/`legislation`/`report` from this bracket while
+    # including every other type (styles-legacy/springer-vancouver-
+    # brackets.csl:181-208). Citum's CSL-type conversion collapses
+    # `bill`(+title+authority)/`hearing` into one Citum type and
+    # `legislation`/`statute` into another, so there is no single correct
+    # on/off answer for those two Citum type-variants under a style-wide
+    # option (docs/specs/MEDIUM_DESIGNATOR.md notes this as a known
+    # limitation of `online-access`).
     online-access:
       medium-marker: {message: term.internet}
   type-variants:
@@ -166,15 +173,18 @@ bibliography:
     - contributor: author
       form: long
     - title: primary
-    - date: issued
-      form: year
-    - message: pattern.cited-date
-      args:
-        date:
-          date: accessed
-          form: year-month-day
-      wrap:
-        punctuation: brackets
+    - delimiter: " "
+      group:
+      - date: issued
+        form: year
+      - message: pattern.cited-date
+        args:
+          date:
+            date: accessed
+            form: year-month-abbr-day
+        text-case: as-is
+        wrap:
+          punctuation: brackets
     - variable: url
     - message: pattern.accessed-date
       args:
@@ -232,7 +242,8 @@ bibliography:
       args:
         date:
           date: accessed
-          form: year-month-day
+          form: year-month-abbr-day
+      text-case: as-is
       wrap:
         punctuation: brackets
     - variable: url
@@ -248,8 +259,12 @@ bibliography:
         - component:
             variable: publisher
             suffix: '; '
-          before:
-            date: issued
+          # `date: issued` moved inside webpage's issued/cited-date group
+          # (csl26-wt1u); anchor on the preceding top-level title instead --
+          # same insertion point, since `add.before`/`after` only scan
+          # top-level components, not inside nested groups.
+          after:
+            title: primary
     legal-case:
     - title: primary
     - variable: reporter
@@ -286,15 +301,18 @@ bibliography:
     - title: primary
     - variable: publisher
       suffix: '; '
-    - date: issued
-      form: year
-    - message: pattern.cited-date
-      args:
-        date:
-          date: accessed
-          form: year-month-day
-      wrap:
-        punctuation: brackets
+    - delimiter: " "
+      group:
+      - date: issued
+        form: year
+      - message: pattern.cited-date
+        args:
+          date:
+            date: accessed
+            form: year-month-abbr-day
+        text-case: as-is
+        wrap:
+          punctuation: brackets
     - variable: url
     - message: pattern.accessed-date
       args:
@@ -323,15 +341,18 @@ bibliography:
       suffix: ': '
     - variable: publisher
       suffix: '; '
-    - date: issued
-      form: year
-    - message: pattern.cited-date
-      args:
-        date:
-          date: accessed
-          form: year-month-day
-      wrap:
-        punctuation: brackets
+    - delimiter: " "
+      group:
+      - date: issued
+        form: year
+      - message: pattern.cited-date
+        args:
+          date:
+            date: accessed
+            form: year-month-abbr-day
+        text-case: as-is
+        wrap:
+          punctuation: brackets
     - variable: doi
       prefix: https://doi.org/
 

@@ -177,7 +177,20 @@ impl Renderer<'_> {
                         locale,
                     );
             }
-            TemplateComponent::Message(message) if !message.message.starts_with("term.") => {
+            // Most locale-message text (role/label phrases) is authored
+            // lowercase and needs this ambient capital when it opens a
+            // sentence. A message the style has explicitly pinned to
+            // `as-is`/`lowercase` (e.g. a `[cited ...]` bracket whose
+            // wording must never capitalize) opts out instead of being
+            // silently overridden -- mirrors the `Contributor` arm's
+            // `prefix.is_some()` bypass above.
+            TemplateComponent::Message(message)
+                if !message.message.starts_with("term.")
+                    && !matches!(
+                        message.rendering.text_case,
+                        Some(TextCase::AsIs | TextCase::Lowercase)
+                    ) =>
+            {
                 let case =
                     crate::values::text_case::resolve_text_case(TextCase::CapitalizeFirst, locale);
                 component.value = if component.pre_formatted {
