@@ -654,8 +654,14 @@ test('apa-7th concision regression reflects preset-first success', () => {
   // reflects the wave-2 exact-parity fixes (csl26-7e6l): several suffix/label
   // corrections wrapped previously-flat components into groups (article-newspaper,
   // interview, base archive block) to fix real oracle mismatches, at the cost
-  // of a few more template components.
-  assert.equal(concision.score, 63, `expected embedded APA concision, got ${concision.score}`);
+  // of a few more template components. A further dip to 60.9 fixes the 9
+  // DOI/URL sites (article-journal, article-magazine, and others): they
+  // rendered both variable: doi and variable: url unconditionally, so a
+  // reference with both fields set rendered both URLs concatenated --
+  // citeproc-js prefers DOI and suppresses URL. Wrapped in select: first,
+  // preserving each site's exact prefix; the cost is the same select:first
+  // + group wrapper repeated across all 9 sites.
+  assert.equal(concision.score, 60.9, `expected embedded APA concision, got ${concision.score}`);
 });
 
 test('report-core exposes expected benchmark labels for representative styles', () => {
