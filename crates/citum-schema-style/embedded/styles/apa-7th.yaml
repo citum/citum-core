@@ -236,10 +236,12 @@ bibliography:
     - number: pages
       prefix: ", "
       suffix: "."
-    - variable: doi
-      prefix: "https://doi.org/"
-    - variable: url
-      prefix: " "
+    - select: first
+      group:
+      - variable: doi
+        prefix: "https://doi.org/"
+      - variable: url
+        prefix: " "
     article-magazine:
     - contributor: author
       form: long
@@ -282,10 +284,12 @@ bibliography:
     - number: pages
       prefix: ", "
       suffix: "."
-    - variable: doi
-      prefix: "https://doi.org/"
-    - variable: url
-      prefix: " "
+    - select: first
+      group:
+      - variable: doi
+        prefix: "https://doi.org/"
+      - variable: url
+        prefix: " "
     article-newspaper:
     - contributor: author
       form: long
@@ -322,10 +326,12 @@ bibliography:
       delimiter: ""
       prefix: ". "
       suffix: "."
-    - variable: doi
-      prefix: "https://doi.org/"
-    - variable: url
-      prefix: " "
+    - select: first
+      group:
+      - variable: doi
+        prefix: "https://doi.org/"
+      - variable: url
+        prefix: " "
     chapter:
     - contributor: author
       form: long
@@ -376,10 +382,12 @@ bibliography:
     - variable: publisher
       prefix: " "
       suffix: "."
-    - variable: doi
-      prefix: " https://doi.org/"
-    - variable: url
-      prefix: " "
+    - select: first
+      group:
+      - variable: doi
+        prefix: " https://doi.org/"
+      - variable: url
+        prefix: " "
     paper-conference:
     - contributor: author
       form: long
@@ -422,10 +430,12 @@ bibliography:
     - variable: publisher
       prefix: " "
       suffix: "."
-    - variable: doi
-      prefix: " https://doi.org/"
-    - variable: url
-      prefix: " "
+    - select: first
+      group:
+      - variable: doi
+        prefix: " https://doi.org/"
+      - variable: url
+        prefix: " "
     event:
     - contributor: author
       form: long
@@ -534,10 +544,12 @@ bibliography:
     - variable: publisher
       prefix: " "
       suffix: "."
-    - variable: doi
-      prefix: " https://doi.org/"
-    - variable: url
-      prefix: " "
+    - select: first
+      group:
+      - variable: doi
+        prefix: " https://doi.org/"
+      - variable: url
+        prefix: " "
     entry-encyclopedia:
     - contributor: author
       form: long
@@ -582,10 +594,12 @@ bibliography:
     - variable: publisher
       prefix: " "
       suffix: "."
-    - variable: doi
-      prefix: " https://doi.org/"
-    - variable: url
-      prefix: " "
+    - select: first
+      group:
+      - variable: doi
+        prefix: " https://doi.org/"
+      - variable: url
+        prefix: " "
     song:
     - contributor: author
       form: long
@@ -779,10 +793,12 @@ bibliography:
     - variable: publisher
       prefix: ". "
       suffix: "."
-    - variable: doi
-      prefix: " https://doi.org/"
-    - variable: url
-      prefix: " "
+    - select: first
+      group:
+      - variable: doi
+        prefix: " https://doi.org/"
+      - variable: url
+        prefix: " "
     post:
     - contributor: author
       form: long
@@ -909,10 +925,12 @@ bibliography:
   - variable: publisher
     prefix: ". "
     suffix: "."
-  - variable: doi
-    prefix: "https://doi.org/"
-  - variable: url
-    prefix: " "
+  - select: first
+    group:
+    - variable: doi
+      prefix: "https://doi.org/"
+    - variable: url
+      prefix: " "
   - group:
     - variable: archive-name
     - variable: archive-location
