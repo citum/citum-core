@@ -121,9 +121,11 @@ bibliography:
     - number: pages
     - date: issued
       form: year
-    - variable: doi
-      prefix: ", doi: "
-    - variable: url
+    - select: first
+      group:
+      - variable: doi
+        prefix: ", doi: "
+      - variable: url
     chapter:
     - contributor: author
       form: long
@@ -254,6 +256,8 @@ bibliography:
   - number: pages
   - date: issued
     form: month-abbr-day-year
-  - variable: doi
-    prefix: ", doi: "
-  - variable: url
+  - select: first
+    group:
+    - variable: doi
+      prefix: ", doi: "
+    - variable: url
