@@ -116,9 +116,18 @@ bibliography:
         - match:
             number: pages
           label-form: short
+      remove:
         - match:
-            variable: doi
-          prefix: https://doi.org/
+            select: first
+      add:
+        - component:
+            select: first
+            group:
+            - variable: doi
+              prefix: https://doi.org/
+            - variable: url
+          after:
+            number: pages
     article-magazine:
       modify:
         - match:
@@ -210,6 +219,8 @@ bibliography:
       wrap:
         punctuation: parentheses
   - number: pages
-  - variable: doi
-  - variable: url
+  - select: first
+    group:
+    - variable: doi
+    - variable: url
   sort: author-date-title
