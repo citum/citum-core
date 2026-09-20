@@ -123,6 +123,8 @@ limitation applies to other gendered locales, including French and Arabic.
 | `term.archive-item-label` | `$count` | Archive hierarchy: item/piece (plural-dispatched) |
 | `term.and`, `term.and-symbol`, `term.et-al`, `term.and-others` | none | Conjunctions |
 | `term.accessed`, `term.retrieved`, `term.no-date`, `term.no-date-long`, `term.forthcoming`, `term.circa`, `term.circa-long` | none | Date and access labels |
+| `term.cited`, `term.internet` | none | Vancouver/NLM online-access bracket and marker — see `bibliography.options.online-access` in the style author guide |
+| `term.place-unknown` | none | Fallback text for a missing `publisher-place`, e.g. via a `select: first` group |
 | `role.editor.label`, `role.editor.label-long`, `role.editor.verb` | `$count`, optional `$gender` for labels | Use the two-selector pattern for gender-aware label nouns |
 | `role.translator.label`, `role.translator.label-long`, `role.translator.verb` | `$count`, optional `$gender` for labels | Use the two-selector pattern for gender-aware label nouns |
 | `role.guest.label`, `role.guest.label-long`, `role.guest.verb` | `$count` | |

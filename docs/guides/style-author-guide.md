@@ -177,6 +177,68 @@ options:
 
 See `docs/specs/PER_DOCUMENT_CONFIG_OVERRIDES.md` for the full eligible-option set.
 
+### Locators
+
+`options.locators` controls how in-text locators (page, paragraph, section, …) are labelled,
+ranged, and punctuated. Like `options.contributors` and date forms, it takes a named preset, a
+preset with overrides, or a fully explicit block:
+
+| Preset | Behavior |
+|---|---|
+| `note` | Bare page numbers; short labels for other kinds |
+| `author-date` | Short labels for all kinds |
+| `numeric` | Same as `author-date`, but strips trailing periods from labels (`"p."` → `"p"`) — the Vancouver-family medical/science convention |
+
+```yaml
+options:
+  locators: note   # bare preset
+```
+
+```yaml
+options:
+  locators:
+    preset: note
+    kinds:
+      page: { attach: " " }
+      line: { attach: " " }
+```
+
+An explicit block sets config-level defaults (`default-label-form`, `range-format`,
+`strip-label-periods`, `label-case`, `attach`) and can override any of them per locator kind under
+`kinds`:
+
+```yaml
+# APA §8.13: page/paragraph locators abbreviate ("p. 33"); every other kind
+# gets a long, capitalized label ("Section 12").
+options:
+  locators:
+    default-label-form: long
+    label-case: capitalize-first
+    kinds:
+      page: { label-form: short, label-case: as-is }
+      paragraph: { label-form: short, label-case: as-is }
+```
+
+`label-case: as-is` on a kind opts that kind out of a config-level `label-case`, rather than
+inheriting it.
+
+`attach` overrides the delimiter joining the locator to its preceding sibling. It only takes
+effect when the locator is a **top-level** item in the citation or integral template — it has no
+effect on a locator nested inside a group. MLA uses it to render `(Smith 42)` with no comma before
+the page number, where the `note` preset's default would insert one:
+
+```yaml
+# MLA: no comma before the locator (default is ", ")
+options:
+  locators:
+    preset: note
+    kinds:
+      page: { attach: " " }
+      line: { attach: " " }
+```
+
+See `docs/specs/LOCATOR_RENDERING.md` for the full precedence rules.
+
 ## [layers] Template Components
 
 ### Contributor
@@ -193,8 +255,12 @@ Renders date fields using EDTF format.
 
 ```yaml
 - date: issued
-  form: year  # year | year-month | full | month-day | year-month-day
+  form: year  # year | year-month | full | month-day | year-month-day | year-month-abbr-day
 ```
+
+`year-month-abbr-day` reproduces CSL's `form="text"` cited-date shape (e.g. "2024 Jan 15") and is
+most often used for the accessed-date bracket described in
+[Online Access Designator](#online-access-designator).
 
 ### Title
 Renders the title of the item.
@@ -473,6 +539,15 @@ disambiguation all use the same resolved policy. Anonymous works that render an
 `otherwise` message therefore group consistently, while bibliography author
 sorting still uses the title key when no primary contributor resolves.
 
+> [!TIP]
+> **A simpler alternative for plain "try this, then that" renderings**
+> If what you need is just *render one thing, and if it's empty, render
+> something else* — with no contributor-specific policy, sorting, or
+> disambiguation semantics attached — see
+> [First-Match Groups](#first-match-groups-select-first) below. Reach for
+> `substitute` when the fallback is specifically about the author/contributor
+> slot; reach for `select: first` for everything else.
+
 ## [event_busy] Missing Dates (Fallback)
 
 A missing date renders blank by default. Templates only say which date to
@@ -524,6 +599,87 @@ map. Visible rendering and disambiguation share the first-issued resolution;
 an accessed-date candidate can render but remains retrieval metadata rather
 than work identity.
 
+> [!TIP]
+> **Not date-specific?**
+> `date-fallback` is issued-date-specific policy. For a plain "try one
+> rendering, then another" shape on any other field, see
+> [First-Match Groups](#first-match-groups-select-first) below.
+
+## [call_split] Groups and First-Match Fallback
+
+### Template Groups
+
+`group:` wraps a list of child components and renders them together. It
+accepts the same rendering options as any other component (`delimiter`,
+`prefix`, `suffix`) applied to the group as a whole, not to each child:
+
+```yaml
+- group:
+  - title: parent-serial
+    emph: true
+  - number: pages
+    prefix: ", "
+  delimiter: ""
+  prefix: ". "
+  suffix: "."
+```
+
+By default (`select: all`, which is also what happens when `select` is
+omitted), every non-suppressed child renders and the results join with
+`delimiter`. That is the behavior every group in this guide has used so far.
+
+### First-Match Groups (`select: first`)
+
+Set `select: first` on a group to render only the **first child that produces
+non-empty output**, discarding the rest. There is no condition and no
+field-presence test — a child either renders something or it doesn't, and
+that alone decides. This replaces the common "try `render-when` on a field,
+and its negation for the fallback" pattern with one group:
+
+```yaml
+# DOI if present, else URL (apa-7th.yaml)
+- select: first
+  group:
+  - variable: doi
+    prefix: "https://doi.org/"
+  - variable: url
+    prefix: " "
+```
+
+Candidates can be bare leaves — a term-only locale message works with no
+special authoring rule, because "does this specific candidate produce
+output" is exactly what rendering the message itself answers:
+
+```yaml
+# Container genre if present, else the term "Episode"
+# (chicago-author-date-18th.yaml)
+- select: first
+  group:
+  - variable: genre
+    text-case: capitalize-first
+  - message: term.episode
+    text-case: capitalize-first
+```
+
+`select: first` groups can nest inside `select: all` groups and vice versa;
+each level is judged independently by its own rule.
+
+**Validation:** a `select: first` group needs at least two children, and
+cannot also declare `delimiter` (there is nothing to delimit — only one
+child ever renders).
+
+**Which mechanism to reach for:**
+
+| Need | Use |
+|---|---|
+| Render one thing, or a different thing if the first is empty — no other semantics | `select: first` |
+| Condition rendering on a field's value or presence | `render-when` |
+| Author-slot fallback (editor → title → translator → anonymous label) | [`substitute`](#author-less-references-substitution) |
+| Missing `date: issued` fallback, with sort/disambiguation semantics | [`date-fallback`](#missing-dates-fallback) |
+
+See `docs/specs/GROUP_SELECT.md` for the full evaluation order and the
+relationship to `substitute`/`date-fallback`.
+
 ## [auto_awesome] Style Inheritance
 
 Inherit from a named base style using `extends:`. The base style supplies all
@@ -570,6 +726,7 @@ Use the option block that matches the scope of the behavior:
 | `citation.options.item-wrap` | `none`, `parentheses`, `brackets`, `superscript` | punctuation should wrap the marker **and the item body** (IEEE's `[1, p. 737]`) | `brackets` |
 | `bibliography.options.label-mode` | `none`, `numeric`, `alphabetic`, `author-date` | the style should change bibliography marker display | `numeric` |
 | `bibliography.options.label-separator` | any string | a gap should sit between marker and entry body; empty (the default) renders flush | `' '` |
+| `bibliography.options.online-access` | `{medium-marker, cited-date-label, cited-date-form}` | the style marks online-only references with an `[Internet]`-style tag and a `[cited …]` access-date bracket | see [Online Access Designator](#online-access-designator) below |
 
 Reference markers are processor-owned: declare `label-mode` rather than writing
 a `number: citation-number` or `number: citation-label` component, which are not
@@ -624,6 +781,56 @@ bibliography:
 >
 > If you need to change templates or `type-variants`, you are no longer making
 > a profile. You need a new base style or an independent style.
+
+### Online Access Designator
+
+The NLM/Vancouver citation family marks any reference it has only ever
+accessed online with two things, both keyed on the reference having a URL:
+an `[Internet]`-style marker bracketed onto a title, and a `[cited …]`-style
+bracket around the access date. `bibliography.options.online-access` is the
+bundle that captures both:
+
+```yaml
+bibliography:
+  options:
+    online-access:
+      medium-marker: {message: term.internet}
+      cited-date-label: {message: term.cited}   # term.accessed for T&F-CSE
+      cited-date-form: year-month-abbr-day
+```
+
+- `medium-marker` — a locale message rendered bracketed and
+  capitalized-first, whenever the reference has a URL. It anchors to the
+  container title when the reference has one, and to the reference's own
+  title otherwise.
+- `cited-date-label` — a locale message naming the term inside the
+  accessed-date bracket.
+- `cited-date-form` — the date form for that bracket; only meaningful when
+  `cited-date-label` is set. See [Date](#date) for `year-month-abbr-day` and
+  the other date forms.
+
+Both `medium-marker` and `cited-date-label` are independently optional:
+omitting either disables just that half of the bundle. When a reference has
+no URL, neither renders.
+
+> [!WARNING]
+> **Both fields are engine-injected, not template components**
+> `online-access` is resolved by the processor directly against
+> `bibliography.options`, not by anything you place in a template. Do not
+> also author a `group:`/`variable:` component to reproduce the marker or
+> bracket — that would duplicate it.
+
+> [!WARNING]
+> **No per-type exclusion**
+> `cited-date-label` fires on every type-variant carrying a `date: issued`
+> anchor and a URL, with no way to exclude specific types. This covers NLM
+> and T&F-CSE, whose shipped conventions apply the bracket uniformly. It
+> cannot represent Springer's convention, which excludes `bill`,
+> `legislation`, and `report` — Springer therefore sets only
+> `medium-marker` here and hand-authors its own cited-date bracket via
+> `pattern`-based template components instead. See "Known limitation: no
+> per-type exclusion" in `docs/specs/MEDIUM_DESIGNATOR.md` before assuming
+> `online-access` covers your style's date bracket.
 
 ## [category] Type Variants
 
