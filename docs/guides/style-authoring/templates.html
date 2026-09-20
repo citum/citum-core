@@ -93,6 +93,39 @@ and optional formatting around that data.</p>
                     <tbody><tr><td><code>contributor</code></td><td>author, editor, translator, and other contributor roles</td></tr><tr><td><code>date</code></td><td>issued, accessed, original-date, and other date fields</td></tr><tr><td><code>title</code></td><td>primary title, parent title, collection title</td></tr><tr><td><code>number</code></td><td>volume, issue, pages, edition, citation number</td></tr><tr><td><code>term</code></td><td>localized labels such as page, volume, or editor</td></tr><tr><td><code>variable</code></td><td>direct field output such as publisher, DOI, URL</td></tr></tbody>
                 </table>
             </div>
+        <h2 id="groups">Groups and first-match fallback</h2><p><code>group:</code> wraps child components and renders them together, joined by its
+own <code>delimiter</code>. By default every non-suppressed child renders
+(<code>select: all</code>). Set <code>select: first</code> to render only the first child
+that produces non-empty output — the declarative way to say "try this, and if it's
+empty, try that" without a pair of opposite <code>render-when</code> conditions.</p>
+
+            <div class="workshop-block">
+                <pre><code class="language-yaml"><span class="text-slate-400"># DOI if present, else URL</span>
+    <span class="text-slate-400">- </span><span class="text-primary">select</span>: <span class="text-emerald-400">first</span>
+      <span class="text-primary">group</span>:
+      <span class="text-slate-400">- </span><span class="text-primary">variable</span>: <span class="text-emerald-400">doi</span>
+        <span class="text-primary">prefix</span>: <span class="text-emerald-400">"https://doi.org/"</span>
+      <span class="text-slate-400">- </span><span class="text-primary">variable</span>: <span class="text-emerald-400">url</span>
+        <span class="text-primary">prefix</span>: <span class="text-emerald-400">" "</span></code></pre>
+            </div>
+        <p>A candidate can be a bare term-only message, since each candidate is judged only on
+whether it produces output — no group-level "backed by real data" check applies in
+<code>select: first</code> mode:</p>
+
+            <div class="workshop-block">
+                <pre><code class="language-yaml"><span class="text-slate-400"># Container genre if present, else the term "Episode"</span>
+    <span class="text-slate-400">- </span><span class="text-primary">select</span>: <span class="text-emerald-400">first</span>
+      <span class="text-primary">group</span>:
+      <span class="text-slate-400">- </span><span class="text-primary">variable</span>: <span class="text-emerald-400">genre</span>
+        <span class="text-primary">text-case</span>: <span class="text-emerald-400">capitalize-first</span>
+      <span class="text-slate-400">- </span><span class="text-primary">message</span>: <span class="text-emerald-400">term.episode</span>
+        <span class="text-primary">text-case</span>: <span class="text-emerald-400">capitalize-first</span></code></pre>
+            </div>
+        <p>A <code>select: first</code> group needs at least two children and cannot also declare
+<code>delimiter</code>. See the
+<a href="../../guides/style-author-guide.html#groups-and-first-match-fallback">Style Guide's
+Groups and First-Match Fallback section</a> for the full comparison with
+<code>render-when</code>, <code>substitute</code>, and <code>date-fallback</code>.</p>
         <h2 id="type-variants">Type variants</h2><p>Use <code>type-variants</code> when a reference type needs a different bibliography
 structure. Prefer small diff variants when the default template is mostly
 right.</p>

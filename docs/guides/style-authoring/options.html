@@ -140,6 +140,46 @@ dash and remains independent of the page/locator delimiter.</p>
 <code>page-range-format</code> and <code>page-range-delimiter</code> are now
 <code>range-format</code> and <code>range-delimiter</code>. Update authored
 styles before loading them with this schema version.</p>
+        <h2 id="locator-rendering">Locator rendering</h2><p><code>options.locators</code> controls locator labels beyond range formatting: label
+form, casing, trailing periods, and the delimiter attaching a locator to its
+preceding sibling. Use a bare preset, a preset with overrides, or an explicit
+block.</p>
+
+            <div class="doc-table-shell">
+                <table class="doc-table">
+                    <thead><tr><th>Preset</th><th>Behavior</th></tr></thead>
+                    <tbody><tr><td><code>note</code></td><td>Bare page numbers; short labels for other kinds</td></tr><tr><td><code>author-date</code></td><td>Short labels for all kinds</td></tr><tr><td><code>numeric</code></td><td>Same as <code>author-date</code>, plus strips trailing periods (Vancouver-family convention)</td></tr></tbody>
+                </table>
+            </div>
+
+            <div class="workshop-block">
+                <pre><code class="language-yaml"><span class="text-slate-400"># APA §8.13: page/paragraph abbreviate, every other kind gets a long label</span>
+<span class="text-indigo-400">options</span>:
+  <span class="text-primary">locators</span>:
+    <span class="text-primary">default-label-form</span>: <span class="text-emerald-400">long</span>
+    <span class="text-primary">label-case</span>: <span class="text-emerald-400">capitalize-first</span>
+    <span class="text-primary">kinds</span>:
+      <span class="text-primary">page</span>: { label-form: <span class="text-emerald-400">short</span>, label-case: <span class="text-emerald-400">as-is</span> }
+      <span class="text-primary">paragraph</span>: { label-form: <span class="text-emerald-400">short</span>, label-case: <span class="text-emerald-400">as-is</span> }</code></pre>
+            </div>
+
+            <p><code>label-case: as-is</code> on a kind opts that kind out of a config-level
+<code>label-case</code>. <code>attach</code> overrides the delimiter joining a top-level
+locator to its preceding sibling — MLA uses it to render <code>(Smith 42)</code> with
+no comma:</p>
+
+            <div class="workshop-block">
+                <pre><code class="language-yaml"><span class="text-indigo-400">options</span>:
+  <span class="text-primary">locators</span>:
+    <span class="text-primary">preset</span>: <span class="text-emerald-400">note</span>
+    <span class="text-primary">kinds</span>:
+      <span class="text-primary">page</span>: { attach: <span class="text-emerald-400">" "</span> }
+      <span class="text-primary">line</span>: { attach: <span class="text-emerald-400">" "</span> }</code></pre>
+            </div>
+
+            <p>See the
+<a href="../../guides/style-author-guide.html#locators">Style Guide's Locators section</a>
+for the full preset table and precedence rules.</p>
         <h2 id="component-rendering-options">Component rendering options</h2><p>Use component options for punctuation, wrapping, and emphasis.</p>
 
             <div class="workshop-block">
@@ -186,6 +226,30 @@ label options so locale files own language-specific text.</div>
       <span class="text-primary">selector</span>:
         <span class="text-primary">type</span>: <span class="text-emerald-400">legal-case</span></code></pre>
             </div>
+        <h2 id="online-access">Online access designator</h2><p><code>bibliography.options.online-access</code> is a bibliography-scoped bundle for
+the Vancouver/NLM style family: an <code>[Internet]</code>-style marker bracketed
+onto a title, plus a <code>[cited …]</code>-style access-date bracket — both fire only
+when the reference has a URL.</p>
+
+            <div class="workshop-block">
+                <pre><code class="language-yaml"><span class="text-indigo-400">bibliography</span>:
+  <span class="text-primary">options</span>:
+    <span class="text-primary">online-access</span>:
+      <span class="text-primary">medium-marker</span>: { message: <span class="text-emerald-400">term.internet</span> }
+      <span class="text-primary">cited-date-label</span>: { message: <span class="text-emerald-400">term.cited</span> }
+      <span class="text-primary">cited-date-form</span>: <span class="text-emerald-400">year-month-abbr-day</span></code></pre>
+            </div>
+
+            <div class="callout warning">
+                <span aria-hidden="true">⚠️</span>
+                <div><strong>Engine-injected, not a template component</strong>
+Both fields are resolved directly from <code>bibliography.options</code>. Do not also
+author a template component to reproduce the marker or date bracket.</div>
+            </div>
+
+            <p>Both fields are independently optional, and there is no per-type exclusion — see the
+<a href="../../guides/style-author-guide.html#online-access-designator">Style Guide's
+Online Access Designator section</a> for the Springer limitation and workaround.</p>
         <h2 id="document-level-abbreviation-maps">Document-level abbreviation maps</h2><p>Abbreviation maps belong to the document input, not the style. They replace
 full rendered strings after value extraction and before output assembly.</p>
 
