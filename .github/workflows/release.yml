@@ -178,8 +178,11 @@ jobs:
         run: |
           python3 scripts/bump.py schema "${{ steps.resolve.outputs.level }}" \
             --yes --no-commit --no-tag --no-validate
+          python3 scripts/sync-style-versions.py
           cargo run --bin citum --features schema -- schema --out-dir docs/schemas
           git add crates/citum-schema-style/src/version.rs \
+            crates/citum-schema-style/embedded/styles \
+            styles \
             docs/reference/SCHEMA_VERSIONING.md \
             docs/schemas
           if ! git diff --cached --quiet; then
@@ -199,11 +202,14 @@ jobs:
           cargo release --workspace --no-publish --no-push $TAG_FLAG --no-confirm --execute \
             "${{ steps.resolve.outputs.level }}"
 
+          python3 scripts/pin-registry-sources.py
+
           npm install --prefix scripts
           cargo build --quiet --bin citum
           node scripts/refresh-style-coverage-audits.js \
             --citum-bin target/debug/citum
-          git add docs/architecture/audits
+          git add crates/citum-schema-style/embedded/registry/default.yaml \
+            docs/architecture/audits
           if ! git diff --cached --quiet; then
             git commit \
               -m "chore(report): refresh coverage audit packets" \
@@ -516,7 +522,11 @@ jobs:
 
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e  # v6
         with:
-          node-version: "22"
+          node-version: "24"
+
+      - uses: denoland/setup-deno@22d081ff2d3a40755e97629de92e3bcbfa7cf2ed  # v2.0.5
+        with:
+          deno-version: "2.x"
 
       - uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32  # v2
         with:
@@ -527,8 +537,22 @@ jobs:
         with:
           tool: wasm-pack
 
+      - name: Install JSR smoke-test dependencies
+        run: |
+          npm install --prefix scripts
+          npx --prefix scripts playwright install --with-deps chromium
+
       - name: Build JSR package
         run: ./scripts/build-jsr-package.sh
+
+      - name: Execute documented JSR API
+        run: |
+          node scripts/test-jsr-package.mjs
+          deno run --allow-read scripts/test-jsr-package.mjs
+          node scripts/test-jsr-package-browser.mjs
+
+      - name: Audit pinned style catalog
+        run: ./scripts/validate-registry-catalog.sh
 
       - name: Dry-run JSR publish
         working-directory: target/jsr/citum

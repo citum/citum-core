@@ -580,7 +580,7 @@ mod tests {
         let (nearest, differing) = nearest_preset(&unrelated_shape, &named);
 
         assert_eq!(nearest, None);
-        assert!(differing.is_empty());
+        assert_eq!(differing, Vec::<String>::new());
     }
 
     #[test]
@@ -593,7 +593,7 @@ mod tests {
         let (nearest, differing) = nearest_preset(&non_object_shape, &named);
 
         assert_eq!(nearest, None);
-        assert!(differing.is_empty());
+        assert_eq!(differing, Vec::<String>::new());
     }
 
     #[test]
@@ -601,16 +601,16 @@ mod tests {
         // ALL is what the analyzer's named_keys functions iterate; a variant missing its config()
         // dispatch arm would panic here rather than silently vanishing from the analyzer.
         for (name, _) in contributor_named_keys() {
-            assert!(!name.is_empty());
+            assert_ne!(name, "");
         }
         for (name, _) in date_named_keys() {
-            assert!(!name.is_empty());
+            assert_ne!(name, "");
         }
         for (name, _) in title_named_keys() {
-            assert!(!name.is_empty());
+            assert_ne!(name, "");
         }
         for (name, _) in locator_named_keys() {
-            assert!(!name.is_empty());
+            assert_ne!(name, "");
         }
     }
 }

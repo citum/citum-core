@@ -11,5 +11,8 @@
     "citeproc": "^2.4.63",
     "js-yaml": "^4.1.1",
     "marked": "^18.0.1"
+  },
+  "devDependencies": {
+    "playwright": "1.63.0"
   }
 }

@@ -1222,7 +1222,7 @@ mod tests {
         let sort = entry.resolve();
 
         // Verify it resolves to a valid Sort
-        assert!(!sort.template.is_empty());
+        assert_ne!(sort.template, Vec::new());
     }
 
     /// Test that `Sort::group_sort()` maps author/year/title keys and skips

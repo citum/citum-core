@@ -16,7 +16,7 @@ use crate::render::latex::Latex;
 use crate::render::markdown::Markdown;
 use crate::render::plain::PlainText;
 use crate::render::typst::Typst;
-use citum_schema::Style;
+use citum_schema::{Locale, Style};
 
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -46,10 +46,9 @@ pub struct FormatDocumentRequest {
     /// field. The base style is never mutated.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub style_overrides: Option<String>,
-    /// Optional locale override as a BCP 47 language tag (e.g. `en-US`).
-    /// When omitted or set to en-US the engine uses its built-in en-US locale;
-    /// other locales emit a warning and fall back to en-US until adapter-side
-    /// locale resolution is wired through.
+    /// Optional locale override as a BCP 47 language tag (e.g. `en-GB`).
+    /// Resolution order is explicit request, style default, then `en-US`.
+    /// Unbundled locales emit a warning and fall back to `en-US`.
     pub locale: Option<String>,
     /// Output format (plain, html, djot, latex, typst). Defaults to plain
     /// when omitted from the request.
@@ -209,27 +208,11 @@ pub fn format_document_with_style(
         apply_style_overrides(&mut style, src)?;
     }
 
-    // Locale: the engine has no resolver chain for non-en-US locales.
-    // Adapters with a citum_store dep can pre-resolve and call
-    // Processor::with_locale directly; for now, emit a warning when a
-    // non-en-US tag is requested and fall back to en-US.
-    if let Some(tag) = &request.locale
-        && !tag.is_empty()
-        && !tag.eq_ignore_ascii_case("en-us")
-    {
-        warnings.push(Warning {
-            level: WarningLevel::Warning,
-            code: "locale_fallback".to_string(),
-            citation_id: None,
-            ref_id: None,
-            message: format!(
-                "Requested locale '{tag}' could not be loaded by the engine; falling back to en-US. Adapter-side locale resolution is not yet wired through."
-            ),
-        });
-    }
+    let (locale, locale_warnings) = resolve_embedded_locale(&style, request.locale.as_deref());
+    warnings.extend(locale_warnings);
 
     let bibliography = request.refs.resolve_local()?;
-    let mut processor = Processor::new(style, bibliography);
+    let mut processor = Processor::with_locale(style, bibliography, locale);
     warnings.extend(unknown_reference_class_warnings(&processor.bibliography));
     warnings.extend(unknown_reference_field_warnings(&processor.bibliography));
     warnings.extend(unknown_enum_warnings(&processor));
@@ -412,6 +395,67 @@ pub fn format_document_with_style(
         bibliography_blocks,
         warnings,
     })
+}
+
+/// Resolve the effective embedded locale for a style and optional request override.
+///
+/// The explicit request locale takes precedence over `style.info.default-locale`,
+/// followed by `en-US`. Style-level locale overrides apply only when the request
+/// did not explicitly select another locale. Missing locale data degrades to
+/// `en-US` and returns a structured warning.
+#[must_use]
+pub fn resolve_embedded_locale(style: &Style, requested: Option<&str>) -> (Locale, Vec<Warning>) {
+    let explicit = requested.filter(|tag| !tag.is_empty());
+    let effective = explicit
+        .or(style.info.default_locale.as_deref())
+        .unwrap_or("en-US");
+    let canonical = citum_schema::embedded::EMBEDDED_LOCALE_IDS
+        .iter()
+        .find(|candidate| candidate.eq_ignore_ascii_case(effective))
+        .copied();
+    let mut warnings = Vec::new();
+    let mut locale = canonical
+        .and_then(citum_schema::embedded::get_locale)
+        .unwrap_or_else(|| {
+            warnings.push(locale_warning(format!(
+                "Requested locale '{effective}' is not bundled; falling back to en-US"
+            )));
+            Locale::en_us().resolved_for(effective)
+        });
+
+    if explicit.is_none()
+        && let Some(override_id) = style
+            .options
+            .as_ref()
+            .and_then(|options| options.locale_override.as_deref())
+    {
+        match citum_schema::embedded::get_locale_override_bytes(override_id) {
+            Some(bytes) => {
+                use citum_schema::locale::raw::RawLocaleOverride;
+                match serde_yaml::from_slice::<RawLocaleOverride>(bytes) {
+                    Ok(locale_override) => locale.apply_override(&locale_override.into()),
+                    Err(error) => warnings.push(locale_warning(format!(
+                        "Bundled locale override '{override_id}' is invalid: {error}"
+                    ))),
+                }
+            }
+            None => warnings.push(locale_warning(format!(
+                "Locale override '{override_id}' is not bundled; rendering without the override"
+            ))),
+        }
+    }
+
+    (locale, warnings)
+}
+
+fn locale_warning(message: String) -> Warning {
+    Warning {
+        level: WarningLevel::Warning,
+        code: "locale_fallback".to_string(),
+        citation_id: None,
+        ref_id: None,
+        message,
+    }
 }
 
 /// Process citations and return formatted text.
@@ -645,6 +689,62 @@ mod tests {
             }),
             ..Default::default()
         }
+    }
+
+    #[test]
+    fn embedded_locale_resolution_uses_request_then_style_then_english() {
+        let mut style = make_test_style();
+        style.info.default_locale = Some("en-GB".to_string());
+
+        let (style_locale, style_warnings) = resolve_embedded_locale(&style, None);
+        assert_eq!(style_locale.locale, "en-GB");
+        assert!(!style_locale.grammar_options.punctuation_in_quote);
+        assert!(style_warnings.is_empty());
+
+        let (requested_locale, requested_warnings) = resolve_embedded_locale(&style, Some("en-US"));
+        assert_eq!(requested_locale.locale, "en-US");
+        assert!(requested_locale.grammar_options.punctuation_in_quote);
+        assert!(requested_warnings.is_empty());
+
+        style.info.default_locale = None;
+        let (fallback_locale, fallback_warnings) = resolve_embedded_locale(&style, None);
+        assert_eq!(fallback_locale.locale, "en-US");
+        assert!(fallback_warnings.is_empty());
+    }
+
+    #[test]
+    fn embedded_locale_resolution_warns_when_requested_locale_is_unavailable() {
+        let style = make_test_style();
+
+        let (locale, warnings) = resolve_embedded_locale(&style, Some("cy-GB"));
+
+        assert_eq!(locale.locale, "en-US");
+        assert_eq!(warnings.len(), 1);
+        assert_eq!(warnings[0].code, "locale_fallback");
+        assert_eq!(
+            warnings[0].message,
+            "Requested locale 'cy-GB' is not bundled; falling back to en-US"
+        );
+    }
+
+    #[test]
+    fn embedded_locale_resolution_applies_style_override_without_explicit_request() {
+        let mut style = make_test_style();
+        style.info.default_locale = Some("en-GB".to_string());
+        style
+            .options
+            .as_mut()
+            .expect("test style options")
+            .locale_override = Some("en-US-chicago".to_string());
+
+        let (overridden, warnings) = resolve_embedded_locale(&style, None);
+        assert_eq!(overridden.locale, "en-GB");
+        assert!(overridden.grammar_options.punctuation_in_quote);
+        assert!(warnings.is_empty());
+
+        let (explicit, warnings) = resolve_embedded_locale(&style, Some("en-GB"));
+        assert!(!explicit.grammar_options.punctuation_in_quote);
+        assert!(warnings.is_empty());
     }
 
     fn make_test_bibliography() -> RefsInput {
@@ -894,7 +994,7 @@ mod tests {
         assert!(result.is_ok());
         let res = result.unwrap();
         assert_eq!(res.formatted_citations.len(), 1);
-        assert!(!res.formatted_citations[0].text.is_empty());
+        assert_ne!(res.formatted_citations[0].text, "");
     }
 
     #[test]

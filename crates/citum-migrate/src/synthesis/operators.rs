@@ -330,7 +330,7 @@ mod tests {
             .map(|proposal| proposal.name)
             .collect();
 
-        assert!(!first.is_empty());
+        assert_ne!(first, Vec::<String>::new());
         assert_eq!(first, second);
     }
 

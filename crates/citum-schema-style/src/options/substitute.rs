@@ -191,7 +191,7 @@ pub struct Substitute {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub contributor_role_case: Option<crate::options::titles::TextCase>,
     /// Ordered values tried after the semantic author is unavailable.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[serde(default, alias = "template", skip_serializing_if = "Option::is_none")]
     pub candidates: Option<SubstituteCandidates>,
     /// Type-specific primary-contributor candidate overrides.
     #[serde(default, skip_serializing_if = "HashMap::is_empty")]
@@ -392,7 +392,7 @@ mod tests {
     fn none_resolves_to_an_empty_policy() {
         let config: SubstituteConfig = serde_yaml::from_str("none").expect("none parses");
         assert!(config.is_disabled());
-        assert!(config.resolve().candidates().is_empty());
+        assert_eq!(config.resolve().candidates(), &[]);
     }
 
     #[test]
@@ -420,7 +420,7 @@ mod tests {
         .expect("overlay parses");
 
         let merged = SubstituteConfig::merged(&base, &overlay).resolve();
-        assert!(merged.candidates().is_empty());
+        assert_eq!(merged.candidates(), &[]);
         assert!(merged.role_substitute.contains_key("container-author"));
         assert_eq!(
             merged
@@ -453,5 +453,28 @@ overrides:
             serde_yaml::from_str::<Substitute>(&serialized).expect("round-trippable"),
             parsed
         );
+    }
+
+    #[test]
+    fn legacy_template_key_deserializes_and_serializes_as_candidates() {
+        let parsed: Substitute =
+            serde_yaml::from_str("template:\n  - editor\n  - title\n  - translator\n")
+                .expect("the legacy substitute.template key should remain readable");
+
+        assert_eq!(
+            parsed.candidates(),
+            &[
+                SubstituteKey::Editor,
+                SubstituteKey::Title,
+                SubstituteKey::Translator,
+            ]
+        );
+
+        let serialized = serde_yaml::to_value(parsed).expect("substitution should serialize");
+        let mapping = serialized
+            .as_mapping()
+            .expect("serialized substitution should be a mapping");
+        assert!(mapping.contains_key("candidates"));
+        assert!(!mapping.contains_key("template"));
     }
 }

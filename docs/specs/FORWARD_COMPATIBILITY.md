@@ -1,8 +1,8 @@
 # Forward-Compatibility Specification
 
 **Status:** Active (provisional — revisit before 1.0)
-**Version:** 0.3
-**Date:** 2026-05-16
+**Version:** 0.4
+**Date:** 2026-10-05
 **Related:** bean `csl26-2a0b`, bean `csl26-fuw7`, `docs/architecture/DESIGN_PRINCIPLES.md`, `docs/reference/SCHEMA_VERSIONING.md`, `docs/policies/ENUM_VOCABULARY_POLICY.md`, `docs/architecture/EXTENSIBILITY_STRATEGY.md`, `STYLE_EDITIONS_AND_FAMILIES.md`
 
 > **Provisional contract.** The SoftDegrade/HardFail split below is the contract we are shipping pre-1.0 to learn from real-world use. The practical balance between forward-tolerance and producer-side strictness can only be evaluated in practice; treat this spec as load-bearing for engine implementation but reviewable before the 1.0 freeze.
@@ -130,14 +130,21 @@ truth-of-record. End-to-end user-visible outcomes may add a warning via
 | 11 | Template grammar add | hypothetical `loop:` variant | `HardFail` | `HardFail` | — (opt-out by design) |
 | 12 | Malformed template shape | typoed `variable` body | `HardFail` | `HardFail` | — (opt-out by design) |
 
-**Row 10 footnote.** The loader correctly accepts a style whose `version`
-declares a newer minor than the engine knows. The user-visible
+**Row 10 footnote.** The loader accepts an otherwise valid style whose `version`
+declares a newer minor than the engine knows. If a newer-version style cannot
+parse, the error leads with the engine/schema mismatch and retains the
+underlying parse cause. The user-visible
 `SoftDegrade` is delivered by `citum check`
 (`crates/citum-cli/src/commands/check.rs:113`), which compares
 `style.version` against `SchemaVersion::default()` and emits a clean
 warning when minor > supported minor. The snapshot measures the loader
 only; end-to-end the composition is `loader Pass + citum check warning =
 SoftDegrade`.
+
+Backward-compatible field aliases are normalized during raw style loading.
+In particular, the historical `options.substitute.template` spelling is read
+as `options.substitute.candidates`. Serialization and materialization emit only
+the canonical `candidates` spelling.
 
 ## InputReference discriminator
 

@@ -16,6 +16,7 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 WORKFLOW_PATH = REPO_ROOT / ".github/workflows/release.yml"
+CI_WORKFLOW_PATH = REPO_ROOT / ".github/workflows/ci.yml"
 RELEASE_CONFIG_PATH = REPO_ROOT / "release.toml"
 SCHEMA_LIB = REPO_ROOT / "crates/citum-schema-style/src/version.rs"
 INSTALL_SCRIPT = REPO_ROOT / "scripts/install.sh"
@@ -30,6 +31,7 @@ class ReleaseWorkflowTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.workflow = WORKFLOW_PATH.read_text(encoding="utf-8")
+        cls.ci_workflow = CI_WORKFLOW_PATH.read_text(encoding="utf-8")
         cls.release_config = RELEASE_CONFIG_PATH.read_text(encoding="utf-8")
         cls.install_script = INSTALL_SCRIPT.read_text(encoding="utf-8")
         cls.publish_crates_script = PUBLISH_CRATES_SCRIPT.read_text(encoding="utf-8")
@@ -98,6 +100,12 @@ class ReleaseWorkflowTests(unittest.TestCase):
         self.assertNotIn("needs: build", block)
         self.assertIn("id-token: write", block)
         self.assertIn("run: ./scripts/build-jsr-package.sh", block)
+        self.assertIn('node-version: "24"', block)
+        self.assertIn("denoland/setup-deno@22d081ff2d3a40755e97629de92e3bcbfa7cf2ed", block)
+        self.assertIn("node scripts/test-jsr-package.mjs", block)
+        self.assertIn("deno run --allow-read scripts/test-jsr-package.mjs", block)
+        self.assertIn("node scripts/test-jsr-package-browser.mjs", block)
+        self.assertIn("run: ./scripts/validate-registry-catalog.sh", block)
         self.assertIn("working-directory: target/jsr/citum", block)
         self.assertIn("run: npx --yes jsr publish --dry-run", block)
         self.assertRegex(
@@ -109,6 +117,25 @@ class ReleaseWorkflowTests(unittest.TestCase):
     def test_release_workflow_has_manual_publish_recovery_commands(self) -> None:
         self.assertIn("- publish-jsr", self.workflow)
         self.assertIn("- publish-crates", self.workflow)
+
+    def test_release_pr_refreshes_style_versions_and_registry_pins(self) -> None:
+        self.assertIn("python3 scripts/sync-style-versions.py", self.workflow)
+        self.assertIn("python3 scripts/pin-registry-sources.py", self.workflow)
+
+    def test_ci_executes_the_staged_jsr_package_in_all_supported_runtimes(self) -> None:
+        release_dry_runs = re.search(
+            r"\n  release-dry-runs:\n(?P<block>.*?)(?=\n  [a-zA-Z0-9_-]+:|\Z)",
+            self.ci_workflow,
+            flags=re.DOTALL,
+        )
+        self.assertIsNotNone(release_dry_runs)
+        assert release_dry_runs is not None
+        block = release_dry_runs.group("block")
+        self.assertIn('node-version: "24"', block)
+        self.assertIn("node scripts/test-jsr-package.mjs", block)
+        self.assertIn("deno run --allow-read scripts/test-jsr-package.mjs", block)
+        self.assertIn("node scripts/test-jsr-package-browser.mjs", block)
+        self.assertIn("run: ./scripts/validate-registry-catalog.sh", block)
 
     def test_manual_crates_publish_recovery_runs_the_build_gate(self) -> None:
         """Manual crates.io recovery must retain the release build gate."""

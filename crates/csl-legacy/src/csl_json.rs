@@ -1592,7 +1592,7 @@ mod tests {
 
         let diagnostics = reference.parse_note_field_hacks_with_diagnostics();
 
-        assert!(diagnostics.is_empty());
+        assert_eq!(diagnostics, Vec::<NoteFieldDiagnostic>::new());
         assert_eq!(
             reference
                 .extra
@@ -1614,7 +1614,7 @@ mod tests {
 
         let diagnostics = reference.parse_note_field_hacks_with_diagnostics();
 
-        assert!(diagnostics.is_empty());
+        assert_eq!(diagnostics, Vec::<NoteFieldDiagnostic>::new());
         assert_eq!(
             reference
                 .extra

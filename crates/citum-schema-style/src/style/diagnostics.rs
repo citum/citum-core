@@ -57,6 +57,52 @@ const MODIFY_OPERATION_FIELDS: &[&str] = &[
 ];
 const REMOVE_OPERATION_FIELDS: &[&str] = &["match"];
 
+pub(super) fn normalize_legacy_style(value: &mut Value) {
+    let Some(map) = value.as_mapping_mut() else {
+        if let Some(sequence) = value.as_sequence_mut() {
+            for child in sequence {
+                normalize_legacy_style(child);
+            }
+        }
+        return;
+    };
+
+    let substitute_key = Value::String("substitute".to_string());
+    if let Some(substitute) = map.get_mut(&substitute_key).and_then(Value::as_mapping_mut) {
+        normalize_legacy_substitute(substitute);
+    }
+    for child in map.values_mut() {
+        normalize_legacy_style(child);
+    }
+}
+
+fn normalize_legacy_substitute(substitute: &mut serde_yaml::Mapping) {
+    let template_key = Value::String("template".to_string());
+    let candidates_key = Value::String("candidates".to_string());
+    if substitute.contains_key(&candidates_key) {
+        return;
+    }
+    let Some(mut candidates) = substitute.remove(&template_key) else {
+        return;
+    };
+    if candidates.as_sequence().is_some_and(Vec::is_empty) {
+        candidates = Value::String("none".to_string());
+    }
+    substitute.insert(candidates_key, candidates);
+
+    let overrides_key = Value::String("overrides".to_string());
+    if let Some(overrides) = substitute
+        .get_mut(&overrides_key)
+        .and_then(Value::as_mapping_mut)
+    {
+        for value in overrides.values_mut() {
+            if value.as_sequence().is_some_and(Vec::is_empty) {
+                *value = Value::String("none".to_string());
+            }
+        }
+    }
+}
+
 pub(super) fn validate_raw_style(raw: &Value) -> Result<(), String> {
     let Some(root) = raw.as_mapping() else {
         return Ok(());
@@ -143,13 +189,6 @@ fn validate_options(value: &Value, path: &str) -> Result<(), String> {
     if child(map, "date-substitute").is_some() {
         return Err(format!(
             "{path}.date-substitute: `date-substitute` was removed; use `date-fallback`"
-        ));
-    }
-    if let Some(substitute) = child(map, "substitute").and_then(Value::as_mapping)
-        && child(substitute, "template").is_some()
-    {
-        return Err(format!(
-            "{path}.substitute.template: `substitute.template` was removed; use `substitute.candidates`"
         ));
     }
     if let Some(dates) = child(map, "dates").and_then(Value::as_mapping)

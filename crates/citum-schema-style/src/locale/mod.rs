@@ -242,6 +242,34 @@ impl Locale {
         self
     }
 
+    /// Create the British English locale by applying its regional date and
+    /// punctuation rules to the bundled English vocabulary.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the embedded British English overlay fails to parse, which
+    /// indicates a broken build rather than invalid runtime input.
+    #[allow(
+        clippy::expect_used,
+        reason = "Embedded British English locale assets must parse; failure indicates a broken build"
+    )]
+    #[must_use]
+    pub fn en_gb() -> Self {
+        let mut english = Self::en_us();
+        let raw: RawLocale =
+            serde_yaml::from_str(include_str!("../../embedded/locales/en-GB.yaml"))
+                .expect("embedded en-GB.yaml parses");
+        english.locale = raw.locale;
+        english.locale_schema_version = raw.locale_schema_version;
+        english.date_formats.extend(raw.date_formats);
+        if let Some(grammar_options) = raw.grammar_options {
+            english.punctuation_in_quote = grammar_options.punctuation_in_quote;
+            english.grammar_options = grammar_options;
+        }
+        english.punctuation_realization = raw.punctuation_realization;
+        english
+    }
+
     /// Create the Québec French locale by applying its regional typography to
     /// the bundled French lexical locale.
     ///

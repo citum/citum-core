@@ -1,0 +1,14 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Citum JSR package smoke test</title>
+<script type="module">
+  import init, * as api from '/target/jsr/citum/citum_bindings.js';
+  import { runJsrPackageSmoke } from '/scripts/jsr-package-smoke-cases.mjs';
+
+  try {
+    await init();
+    window.smokeResult = { ok: true, result: runJsrPackageSmoke(api) };
+  } catch (error) {
+    window.smokeResult = { ok: false, error: String(error), stack: error?.stack };
+  }
+</script>

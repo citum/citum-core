@@ -1074,7 +1074,7 @@ mod tests {
 
         let report = lint_raw_locale(&raw);
 
-        assert!(report.findings.is_empty());
+        assert_eq!(report.findings, Vec::new());
     }
 
     #[test]

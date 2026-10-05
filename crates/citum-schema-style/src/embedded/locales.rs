@@ -17,6 +17,7 @@ use crate::locale::Locale;
 pub fn get_locale_bytes(id: &str) -> Option<&'static [u8]> {
     match id {
         "en-US" => Some(include_bytes!("../../embedded/locales/en-US.yaml")),
+        "en-GB" => Some(include_bytes!("../../embedded/locales/en-GB.yaml")),
         "ar-AR" => Some(include_bytes!("../../embedded/locales/ar-AR.yaml")),
         "de-DE" => Some(include_bytes!("../../embedded/locales/de-DE.yaml")),
         "es-ES" => Some(include_bytes!("../../embedded/locales/es-ES.yaml")),
@@ -38,6 +39,9 @@ pub fn get_locale_bytes(id: &str) -> Option<&'static [u8]> {
 /// such as Québec French, before returning the locale to callers.
 #[must_use]
 pub fn get_locale(id: &str) -> Option<Locale> {
+    if id == "en-GB" {
+        return Some(Locale::en_gb());
+    }
     if id == "fr-CA" {
         return Some(Locale::fr_ca());
     }
@@ -49,8 +53,8 @@ pub fn get_locale(id: &str) -> Option<Locale> {
 
 /// All available embedded locale IDs.
 pub const EMBEDDED_LOCALE_IDS: &[&str] = &[
-    "en-US", "ar-AR", "de-DE", "es-ES", "eu-ES", "fr-FR", "fr-CA", "tr-TR", "zh-CN", "ja-JP",
-    "ko-KR", "ru-RU",
+    "en-US", "en-GB", "ar-AR", "de-DE", "es-ES", "eu-ES", "fr-FR", "fr-CA", "tr-TR", "zh-CN",
+    "ja-JP", "ko-KR", "ru-RU",
 ];
 
 /// Raw YAML bytes for an embedded locale override by ID.
@@ -96,6 +100,22 @@ mod tests {
                 .as_ref()
                 .and_then(|realization| realization.semicolon.as_deref()),
             Some("; ")
+        );
+    }
+
+    #[test]
+    #[allow(
+        clippy::expect_used,
+        reason = "The test must fail when the compile-time embedded locale is absent."
+    )]
+    fn en_gb_embedded_locale_inherits_terms_and_uses_british_punctuation() {
+        let locale = get_locale("en-GB").expect("en-GB should be embedded");
+
+        assert_eq!(locale.locale, "en-GB");
+        assert!(!locale.grammar_options.punctuation_in_quote);
+        assert_eq!(
+            locale.resolved_role_term(&ContributorRole::Editor, false, &TermForm::Short, None),
+            Some("ed.".to_string())
         );
     }
 

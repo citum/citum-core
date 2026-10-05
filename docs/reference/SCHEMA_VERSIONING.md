@@ -43,9 +43,13 @@ Code and schema releases are prepared by `.github/workflows/release.yml`.
    During the pre-1.0 line, major is capped to minor.
 3. If committed generated schema artifacts in [docs/schemas](../schemas)/*.json changed
    structurally, the release PR bumps `STYLE_SCHEMA_VERSION`, updates this
-   changelog, and regenerates [docs/schemas](../schemas).
+   changelog, regenerates [docs/schemas](../schemas), and runs
+   `scripts/sync-style-versions.py` so every shipped core and embedded style
+   declares the new schema version.
 4. It runs `cargo release <level> --workspace` to bump crate versions and
-   generate the root changelog.
+   generate the root changelog. It then runs `scripts/pin-registry-sources.py`
+   so core style URLs use that release tag and external catalog URLs retain
+   their audited commit pin.
 5. It opens or updates a release PR on the `release/next` branch.
 6. When the release PR is merged, the workflow auto-creates the `v*` tag and,
    when schema changed, the matching `schema-v*` tag.
@@ -55,6 +59,13 @@ Feature PRs must not bump `STYLE_SCHEMA_VERSION`, add schema tags, or add
 when schema output changes, and the release workflow applies the version bump.
 
 Do not use [scripts/bump.sh](../../scripts/bump.sh) for code versions or `v*` tags.
+
+All committed styles under `styles/` and
+`crates/citum-schema-style/embedded/styles/` carry an explicit `version`.
+[scripts/sync-style-versions.py](../../scripts/sync-style-versions.py) `--check`
+verifies that they match
+`STYLE_SCHEMA_VERSION`; the release workflow performs the rewrite after a
+schema bump.
 
 ## Bump Contract
 

@@ -870,7 +870,7 @@ fn given_a_style_without_a_bibliography_when_rendering_a_document_then_citations
 
     assert_eq!(output.trim(), "A claim [1].");
     assert_eq!(processor.render_bibliography(), "");
-    assert!(processor.process_references().bibliography.is_empty());
+    assert_eq!(processor.process_references().bibliography, Vec::new());
 }
 
 fn given_non_note_styles_when_rendering_the_note_flow_example_then_ibid_is_never_emitted() {

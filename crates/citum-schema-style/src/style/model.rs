@@ -190,9 +190,15 @@ impl Style {
     /// regardless of which wire format the raw tree originated from — the
     /// tree is already unified into `serde_yaml::Value` by the time this
     /// runs, so this deserialize step is always a `serde_yaml` operation.
-    fn from_raw_value(raw: serde_yaml::Value) -> Result<Self, StyleDocumentError> {
-        super::diagnostics::validate_raw_style(&raw).map_err(StyleDocumentError::Validation)?;
-        let mut style: Style = serde_yaml::from_value(raw.clone())?;
+    fn from_raw_value(mut raw: serde_yaml::Value) -> Result<Self, StyleDocumentError> {
+        super::diagnostics::normalize_legacy_style(&mut raw);
+        super::diagnostics::validate_raw_style(&raw).map_err(|error| {
+            StyleDocumentError::Validation(with_newer_schema_context(&raw, &error))
+        })?;
+        let mut style: Style = serde_yaml::from_value(raw.clone()).map_err(|error| {
+            let message = with_newer_schema_context(&raw, &error.to_string());
+            serde_yaml::Error::custom(message)
+        })?;
         style.raw_yaml = Some(raw);
         style.scoped_raw_options = crate::options::cascade::ScopedRawOptions::capture(&style);
         style
@@ -200,6 +206,24 @@ impl Style {
             .map_err(StyleDocumentError::Validation)?;
         Ok(style)
     }
+}
+
+fn with_newer_schema_context(raw: &serde_yaml::Value, cause: &str) -> String {
+    let Some(declared) = raw
+        .as_mapping()
+        .and_then(|mapping| mapping.get("version"))
+        .and_then(serde_yaml::Value::as_str)
+        .and_then(|version| SchemaVersion::parse(version).ok())
+    else {
+        return cause.to_string();
+    };
+    let supported = SchemaVersion::default();
+    if declared <= supported {
+        return cause.to_string();
+    }
+    format!(
+        "style targets schema {declared}, but this engine supports schema {supported}; upgrade @citum/engine or use style YAML pinned to a compatible release. Underlying error: {cause}"
+    )
 }
 
 /// Serialization format of a raw style document, used by

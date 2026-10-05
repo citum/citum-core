@@ -30,19 +30,120 @@ use wasm_bindgen::prelude::*;
 
 use citum_engine::processor::Processor;
 use citum_engine::render::html::Html as HtmlRenderer;
-use citum_engine::{Citation, Reference};
+use citum_engine::{Citation, Reference, StyleInput, resolve_embedded_locale};
 #[cfg(feature = "wasm")]
 use citum_engine::{
     CitationOccurrence, CitationOccurrenceItem, DocumentSession, OutputFormatKind, RefsInput,
-    StyleInput,
 };
-use citum_schema::{CitationSpec, Style, TemplatePreset};
+use citum_schema::{BibliographySpec, CitationSpec, Style};
 use indexmap::IndexMap;
 use serde_json::Value;
 
-/// Parse a Citum YAML style string, returning a structured error on failure.
-fn parse_style(style_yaml: &str) -> Result<Style, String> {
-    Style::from_yaml_str(style_yaml).map_err(|e| format!("Style parse error: {e}"))
+/// Load and fully resolve a style from inline YAML or an exact builtin selector.
+fn load_style(style_input: &str) -> Result<Style, String> {
+    let raw: serde_yaml::Value =
+        serde_yaml::from_str(style_input).map_err(|e| format!("Style parse error: {e}"))?;
+    let id_key = serde_yaml::Value::String("id".to_string());
+
+    let style = if let Some(mapping) = raw.as_mapping() {
+        if let Some(id) = mapping.get(&id_key) {
+            if mapping.len() != 1 {
+                return Err(
+                    "Invalid style selector: top-level `id` must be the only field; use `info.id` for style metadata"
+                        .to_string(),
+                );
+            }
+            let id = id.as_str().ok_or_else(|| {
+                "Invalid style selector: top-level `id` must be a string".to_string()
+            })?;
+            load_builtin_style(id)?
+        } else {
+            Style::from_yaml_str(style_input).map_err(|e| format!("Style parse error: {e}"))?
+        }
+    } else {
+        Style::from_yaml_str(style_input).map_err(|e| format!("Style parse error: {e}"))?
+    };
+
+    resolve_style(style)
+}
+
+fn resolve_style(mut style: Style) -> Result<Style, String> {
+    style = style
+        .try_into_resolved()
+        .map_err(|e| format!("Style resolution error: {e}"))?;
+    style.extends = None;
+    style.extends_pin = None;
+    Ok(style)
+}
+
+fn load_builtin_style(id: &str) -> Result<Style, String> {
+    let registry = citum_schema::embedded::default_registry();
+    let entry = registry
+        .resolve(id)
+        .ok_or_else(|| builtin_style_error(id))?;
+    let builtin = entry
+        .builtin
+        .as_deref()
+        .ok_or_else(|| builtin_style_error(id))?;
+    citum_schema::embedded::get_embedded_style(builtin)
+        .ok_or_else(|| builtin_style_error(id))?
+        .map_err(|e| format!("Bundled style '{id}' is invalid: {e}"))
+}
+
+fn builtin_style_error(id: &str) -> String {
+    format!(
+        "Style ID '{id}' is not bundled with @citum/engine; fetch version-pinned style YAML and pass the YAML content instead"
+    )
+}
+
+fn materialize_template_references(style: &mut Style) {
+    if let Some(citation) = style.citation.as_mut() {
+        materialize_citation_template_references(citation);
+    }
+    if let Some(bibliography) = style.bibliography.as_mut() {
+        materialize_bibliography_template_reference(bibliography);
+    }
+}
+
+fn materialize_citation_template_references(citation: &mut CitationSpec) {
+    if citation.template.is_none() {
+        citation.template = citation.resolve_template().map(Into::into);
+    }
+    citation.template_ref = None;
+    for child in [
+        citation.integral.as_deref_mut(),
+        citation.non_integral.as_deref_mut(),
+        citation.subsequent.as_deref_mut(),
+        citation.ibid.as_deref_mut(),
+    ]
+    .into_iter()
+    .flatten()
+    {
+        materialize_citation_template_references(child);
+    }
+}
+
+fn materialize_bibliography_template_reference(bibliography: &mut BibliographySpec) {
+    if bibliography.template.is_none() {
+        bibliography.template = bibliography.resolve_template().map(Into::into);
+    }
+    bibliography.template_ref = None;
+}
+
+fn processor_with_style_locale(
+    style: Style,
+    references: IndexMap<String, Reference>,
+) -> Result<Processor, String> {
+    let (locale, warnings) = resolve_embedded_locale(&style, None);
+    if !warnings.is_empty() {
+        let messages = warnings
+            .into_iter()
+            .map(|warning| warning.message)
+            .collect::<Vec<_>>()
+            .join("; ");
+        return Err(format!("Locale resolution error: {messages}"));
+    }
+    Ok(Processor::with_locale(style, references, locale))
 }
 
 /// Parse a single reference `Value`, upgrading legacy CSL-JSON to the Citum schema when possible.
@@ -123,43 +224,6 @@ fn parse_references(refs_json: &str) -> Result<IndexMap<String, Reference>, Stri
     Ok(mapped)
 }
 
-/// Ensure a style has a materialized citation template suitable for preview rendering.
-///
-/// Supplies the APA citation preset when the citation section is absent and
-/// forces a locator into the citation template when missing. An absent
-/// bibliography remains absent so citation-only styles keep their authored
-/// contract.
-pub fn ensure_style_has_templates(style: &mut Style) {
-    if style.citation.is_none() {
-        style.citation = Some(CitationSpec {
-            template_ref: Some(TemplatePreset::Apa.into()),
-            ..Default::default()
-        });
-    }
-
-    if let Some(ref mut citation) = style.citation {
-        use citum_schema::template::{
-            Rendering, SimpleVariable, TemplateComponent, TemplateVariable,
-        };
-        let mut template = citation.resolve_template().unwrap_or_default();
-        let has_locator = template.iter().any(|c| {
-            matches!(c, TemplateComponent::Variable(v) if v.variable == SimpleVariable::Locator)
-        });
-        if !has_locator {
-            template.push(TemplateComponent::Variable(TemplateVariable {
-                variable: SimpleVariable::Locator,
-                rendering: Rendering {
-                    prefix: Some(", ".into()),
-                    ..Default::default()
-                },
-                ..Default::default()
-            }));
-            citation.template = Some(template.into());
-            citation.template_ref = None;
-        }
-    }
-}
-
 /// Extract the `info` block from a YAML style string as JSON.
 ///
 /// # Errors
@@ -168,7 +232,7 @@ pub fn ensure_style_has_templates(style: &mut Style) {
 /// be serialized to JSON.
 #[cfg_attr(feature = "wasm", wasm_bindgen(js_name = "getStyleMetadata"))]
 pub fn get_style_metadata(style_yaml: &str) -> Result<String, String> {
-    let style = parse_style(style_yaml)?;
+    let style = load_style(style_yaml)?;
     serde_json::to_string(&style.info).map_err(|e| format!("Serialization error: {e}"))
 }
 
@@ -180,8 +244,8 @@ pub fn get_style_metadata(style_yaml: &str) -> Result<String, String> {
 /// style cannot be serialized back to YAML.
 #[cfg_attr(feature = "wasm", wasm_bindgen(js_name = "materializeStyle"))]
 pub fn materialize_style(style_yaml: &str) -> Result<String, String> {
-    let mut style = parse_style(style_yaml)?;
-    ensure_style_has_templates(&mut style);
+    let mut style = load_style(style_yaml)?;
+    materialize_template_references(&mut style);
     use serde_yaml;
     serde_yaml::to_string(&style).map_err(|e| format!("YAML serialization error: {e}"))
 }
@@ -204,8 +268,12 @@ pub fn render_citation(
     citation_json: &str,
     mode: Option<String>,
 ) -> Result<String, String> {
-    let mut style = parse_style(style_yaml)?;
-    ensure_style_has_templates(&mut style);
+    let style = load_style(style_yaml)?;
+    if style.citation.is_none() {
+        return Err(
+            "Style has no citation section; renderCitation cannot produce output".to_string(),
+        );
+    }
     let refs = parse_references(refs_json)?;
     let mut citation: Citation =
         serde_json::from_str(citation_json).map_err(|e| format!("Citation parse error: {e}"))?;
@@ -215,7 +283,7 @@ pub fn render_citation(
                 .map_err(|e| format!("Invalid citation mode '{m}': {e}"))?;
         citation.mode = m_enum;
     }
-    let processor = Processor::new(style, refs);
+    let processor = processor_with_style_locale(style, refs)?;
     let mut run = processor.begin_run();
     processor
         .process_citation_with_format::<HtmlRenderer>(&citation, &mut run)
@@ -232,10 +300,15 @@ pub fn render_citation(
 /// Returns a string error on style or reference parse failure.
 #[cfg_attr(feature = "wasm", wasm_bindgen(js_name = "renderBibliography"))]
 pub fn render_bibliography(style_yaml: &str, refs_json: &str) -> Result<String, String> {
-    let mut style = parse_style(style_yaml)?;
-    ensure_style_has_templates(&mut style);
+    let style = load_style(style_yaml)?;
+    if style.bibliography.is_none() {
+        return Err(
+            "Style has no bibliography section; renderBibliography cannot produce output"
+                .to_string(),
+        );
+    }
     let refs = parse_references(refs_json)?;
-    let processor = Processor::new(style, refs);
+    let processor = processor_with_style_locale(style, refs)?;
     Ok(processor.render_bibliography_with_format_standalone::<HtmlRenderer>())
 }
 
@@ -246,18 +319,15 @@ pub fn render_bibliography(style_yaml: &str, refs_json: &str) -> Result<String, 
 /// Returns a string error describing the parse or schema validation failure.
 #[cfg_attr(feature = "wasm", wasm_bindgen(js_name = "validateStyle"))]
 pub fn validate_style(style_yaml: &str) -> Result<(), String> {
-    Style::from_yaml_str(style_yaml)
-        .map(|_| ())
-        .map_err(|e| format!("Style parse error: {e}"))
+    load_style(style_yaml).map(|_| ())
 }
 
 /// Format a complete document's citations and bibliography in one call.
 ///
 /// Takes a JSON-encoded `FormatDocumentRequest` and returns a JSON-encoded
-/// `FormatDocumentResult`. In WASM, the resolver chain is unavailable —
-/// `StyleInput::Id` and `StyleInput::Uri` variants return an error; use
-/// `StyleInput::Yaml` (preferred) or `StyleInput::Path` (if filesystem
-/// access is available in the host).
+/// `FormatDocumentResult`. Bundled style IDs and aliases resolve offline.
+/// URI and path inputs are unavailable in WASM; callers should fetch or read
+/// version-pinned YAML and pass it as `StyleInput::Yaml`.
 ///
 /// # Errors
 ///
@@ -267,8 +337,22 @@ pub fn validate_style(style_yaml: &str) -> Result<(), String> {
 pub fn format_document(request_json: &str) -> Result<String, String> {
     let request: citum_engine::FormatDocumentRequest =
         serde_json::from_str(request_json).map_err(|e| format!("Invalid request JSON: {}", e))?;
-    let result =
-        citum_engine::format_document(request).map_err(|e| format!("Format error: {}", e))?;
+    let style = match &request.style {
+        StyleInput::Id(id) => resolve_style(load_builtin_style(id)?)?,
+        StyleInput::Yaml(yaml) => load_style(yaml)?,
+        StyleInput::Uri(uri) => {
+            return Err(format!(
+                "Style URI '{uri}' cannot be fetched by @citum/engine; fetch version-pinned YAML and pass it with kind 'yaml'"
+            ));
+        }
+        StyleInput::Path(path) => {
+            return Err(format!(
+                "Style path '{path}' is unavailable in WASM; read the file and pass its contents with kind 'yaml'"
+            ));
+        }
+    };
+    let result = citum_engine::format_document_with_style(style, request)
+        .map_err(|e| format!("Format error: {}", e))?;
     serde_json::to_string(&result).map_err(|e| format!("Result serialization failed: {}", e))
 }
 
@@ -282,15 +366,14 @@ pub struct WasmDocumentSession {
 #[cfg(feature = "wasm")]
 #[wasm_bindgen(js_class = "DocumentSession")]
 impl WasmDocumentSession {
-    /// Create a stateful document session from style YAML and optional refs JSON.
+    /// Create a stateful document session from style YAML or a bundled selector and optional refs JSON.
     ///
     /// # Errors
     ///
     /// Returns an error if the style YAML or refs JSON cannot be parsed.
     #[wasm_bindgen(constructor)]
     pub fn new(style_yaml: &str, refs_json: Option<String>) -> Result<WasmDocumentSession, String> {
-        let mut style = parse_style(style_yaml)?;
-        ensure_style_has_templates(&mut style);
+        let style = load_style(style_yaml)?;
         let mut inner = DocumentSession::new(
             style,
             StyleInput::Yaml(style_yaml.to_string()),

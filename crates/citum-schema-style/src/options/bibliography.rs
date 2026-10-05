@@ -701,8 +701,8 @@ mod tests {
 
         assert_eq!(partitioning.by, BibliographyPartitionKind::Language);
         assert_eq!(partitioning.mode, BibliographyPartitionMode::SortOnly);
-        assert!(partitioning.order.is_empty());
-        assert!(partitioning.headings.is_empty());
+        assert_eq!(partitioning.order, Vec::<String>::new());
+        assert_eq!(partitioning.headings, std::collections::HashMap::new());
     }
 
     #[test]

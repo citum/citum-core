@@ -1022,7 +1022,10 @@ mod tests {
             ["en-US", "en-GB"]
         );
         assert_eq!(style.citation.localized_layouts[1].locales, ["zh-CN"]);
-        assert!(style.citation.localized_layouts[2].locales.is_empty());
+        assert_eq!(
+            style.citation.localized_layouts[2].locales,
+            Vec::<String>::new()
+        );
         match &style.citation.layout.children[0] {
             CslNode::Text(text) => assert_eq!(text.value.as_deref(), Some("Fallback")),
             other => panic!("expected fallback text node, got {other:?}"),
