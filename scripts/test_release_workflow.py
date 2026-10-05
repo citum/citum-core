@@ -122,6 +122,22 @@ class ReleaseWorkflowTests(unittest.TestCase):
         self.assertIn("python3 scripts/sync-style-versions.py", self.workflow)
         self.assertIn("python3 scripts/pin-registry-sources.py", self.workflow)
 
+    def test_release_pr_commits_registry_pins_before_clean_worktree_audits(self) -> None:
+        """Coverage baselines must run after release-only registry edits are committed."""
+        block = re.search(
+            r"- name: Bump workspace version.*?(?=\n      - name:|\Z)",
+            self.workflow,
+            flags=re.DOTALL,
+        )
+        self.assertIsNotNone(block)
+        assert block is not None
+        text = block.group(0)
+        pin = text.index("python3 scripts/pin-registry-sources.py")
+        pin_commit = text.index('chore(release): pin registry sources')
+        audit = text.index("node scripts/refresh-style-coverage-audits.js")
+        self.assertLess(pin, pin_commit)
+        self.assertLess(pin_commit, audit)
+
     def test_ci_executes_the_staged_jsr_package_in_all_supported_runtimes(self) -> None:
         release_dry_runs = re.search(
             r"\n  release-dry-runs:\n(?P<block>.*?)(?=\n  [a-zA-Z0-9_-]+:|\Z)",
