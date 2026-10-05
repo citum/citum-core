@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.82.0] - 2026-10-05
+
+### Bug Fixes
+
+**bindings**
+
+- Resolve bundled style selectors ([`f206d6d`](https://github.com/citum/citum-core/commit/f206d6d02696a5e562e7c59b1be1904f4b8cf962))
+
+
+**ci**
+
+- Order release audit regeneration ([`3cff8d9`](https://github.com/citum/citum-core/commit/3cff8d9948b19feb8c9ce11adfbee6355cf884ed))
+
+
 ## [0.81.0] - 2026-09-21
 
 ### Bug Fixes
