@@ -203,6 +203,12 @@ jobs:
             "${{ steps.resolve.outputs.level }}"
 
           python3 scripts/pin-registry-sources.py
+          git add crates/citum-schema-style/embedded/registry/default.yaml
+          if ! git diff --cached --quiet; then
+            git commit \
+              -m "chore(release): pin registry sources" \
+              -m "Pin release registry URLs before regenerating clean-worktree audit evidence."
+          fi
 
           npm install --prefix scripts
           cargo build --quiet --bin citum
