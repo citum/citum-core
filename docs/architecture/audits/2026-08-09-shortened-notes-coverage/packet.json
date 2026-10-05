@@ -146,7 +146,7 @@
       "coverageMode": "inferred-structural",
       "evidence": "resolved-style",
       "provider": "citum-cli",
-      "providerVersion": "citum 0.81.0"
+      "providerVersion": "citum 0.82.0"
     },
     "schema": "citum.style-coverage-audit-manifest/v1",
     "source": {
