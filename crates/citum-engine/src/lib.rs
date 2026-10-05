@@ -118,7 +118,7 @@ pub use api::{
     FormattedBibliographyBlock, FormattedCitation, OpenSessionResult, OutputFormatKind,
     PreviewCitationResult, RefsInput, SessionMutationResult, StyleInput, Warning, WarningLevel,
     apply_style_overrides, format_document, format_document_with_resolver,
-    format_document_with_style,
+    format_document_with_style, resolve_embedded_locale,
 };
 pub use citum_schema::options::{Config, Processing};
 pub use citum_schema::reference::{

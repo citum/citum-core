@@ -765,8 +765,8 @@ mod tests {
             panic!("rendering-only template changes should emit Template V3 diffs");
         };
         assert_eq!(diff.modify.len(), 1);
-        assert!(diff.remove.is_empty());
-        assert!(diff.add.is_empty());
+        assert_eq!(diff.remove, Vec::new());
+        assert_eq!(diff.add, Vec::new());
     }
 
     #[test]
@@ -804,7 +804,7 @@ mod tests {
         let TemplateVariant::Diff(diff) = variant else {
             panic!("safe structural template changes should emit Template V3 diffs");
         };
-        assert!(diff.modify.is_empty());
+        assert_eq!(diff.modify, Vec::new());
         assert_eq!(diff.remove.len(), 1);
         assert_eq!(diff.add.len(), 1);
     }
@@ -884,7 +884,7 @@ mod tests {
         };
         assert_eq!(diff.extends, Some(parent_selector));
         assert_eq!(diff.modify.len(), 1);
-        assert!(diff.remove.is_empty());
+        assert_eq!(diff.remove, Vec::new());
     }
 
     #[test]

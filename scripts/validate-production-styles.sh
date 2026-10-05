@@ -61,6 +61,9 @@ main() {
   local output
   local lint_status=0
 
+  python3 "$ROOT_DIR/scripts/sync-style-versions.py" --check
+  python3 "$ROOT_DIR/scripts/pin-registry-sources.py" --check
+
   while IFS= read -r style; do
     [[ -n "$style" ]] && styles+=("$style")
   done < <(collect_styles "$@")

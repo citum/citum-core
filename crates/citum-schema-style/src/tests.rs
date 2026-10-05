@@ -378,6 +378,57 @@ custom:
 }
 
 #[test]
+fn newer_schema_parse_failure_explains_the_version_mismatch() {
+    let error = Style::from_yaml_str(
+        r#"version: "99.0.0"
+citation:
+  template:
+    - contributor: future-role
+"#,
+    )
+    .expect_err("unknown future template grammar should fail");
+    let message = error.to_string();
+
+    let expected_prefix = format!(
+        "style targets schema 99.0.0, but this engine supports schema {}; upgrade @citum/engine or use style YAML pinned to a compatible release. Underlying error:",
+        crate::STYLE_SCHEMA_VERSION
+    );
+    assert!(message.starts_with(&expected_prefix));
+    assert!(
+        message.contains("data did not match any variant of untagged enum TemplateVariant"),
+        "the mismatch diagnostic must retain the underlying parse cause: {message}"
+    );
+}
+
+#[test]
+fn legacy_empty_substitute_template_and_overrides_normalize_to_none() {
+    let style = Style::from_yaml_str(
+        r#"options:
+  substitute:
+    template: []
+    overrides:
+      report: []
+citation:
+  template:
+    - title: primary
+"#,
+    )
+    .expect("legacy empty substitution lists should remain readable");
+    let substitute = style
+        .options
+        .as_ref()
+        .and_then(|options| options.substitute.as_ref())
+        .expect("substitution should be present")
+        .resolve();
+
+    assert_eq!(substitute.candidates(), &[]);
+    assert!(matches!(
+        substitute.overrides.get("report"),
+        Some(options::SubstituteCandidates::Disabled(_))
+    ));
+}
+
+#[test]
 fn test_style_with_template_ref() {
     let yaml = r#"
 info:
@@ -876,7 +927,7 @@ options:
     )
     .unwrap();
 
-    assert!(style.validate().is_empty());
+    assert_eq!(style.validate(), Vec::new());
 }
 
 #[test]
@@ -896,7 +947,7 @@ fn style_validate_no_warnings_for_valid_style() {
     };
 
     let warnings = style.validate();
-    assert!(warnings.is_empty());
+    assert_eq!(warnings, Vec::new());
 }
 
 #[test]
@@ -1985,10 +2036,6 @@ bibliography:
 #[case(
     "options:\n  date-substitute: standard",
     "`date-substitute` was removed; use `date-fallback`"
-)]
-#[case(
-    "options:\n  substitute:\n    template: [editor]",
-    "`substitute.template` was removed; use `substitute.candidates`"
 )]
 #[case(
     "options:\n  dates:\n    no-date-form: long",

@@ -1,0 +1,29 @@
+locale-schema-version: "2"
+locale: en-GB
+
+# British English inherits the en-US vocabulary but keeps punctuation outside
+# closing quotation marks unless it belongs to the quoted material.
+grammar-options:
+  punctuation-in-quote: false
+  nbsp-before-colon: false
+  open-quote: “
+  close-quote: ”
+  open-inner-quote: "‘"
+  close-inner-quote: "’"
+  serial-comma: true
+  page-range-delimiter: "–"
+  title-subtitle-delimiter: ": "
+  subtitle-delimiter: "; "
+  strong-terminal-comma-policy: keep-both
+  delimiter-suppressing-terminal-marks: "?!…"
+  note-punctuation: outside
+  note-number: outside
+  note-marker-order: after
+
+date-formats:
+  numeric-short: "d/M/yyyy"
+  textual-long: "MMMM yyyy"
+  textual-full: "d MMMM yyyy"
+  bib-default: "d MMMM yyyy"
+  year-only: "yyyy"
+  iso: "yyyy-MM-dd"

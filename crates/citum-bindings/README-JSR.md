@@ -3,9 +3,8 @@
 WebAssembly and TypeScript bindings for the Citum citation renderer.
 
 This package exposes the browser/JavaScript entry points from
-`citum-bindings`. It is meant for applications that already have a Citum YAML
-style and bibliography data, and need to validate styles, render citations, or
-format a document in JavaScript.
+`citum-bindings`. Applications can use a bundled style selector or supply full
+Citum YAML, then validate styles, render citations, or format a document.
 
 ## Install
 
@@ -29,7 +28,7 @@ await init();
 
 ## Inputs
 
-- Styles are Citum YAML strings.
+- Styles are full Citum YAML strings or exact selectors such as `id: apa-7th`.
 - References are JSON strings containing either an object map keyed by ID or a
   CSL-JSON-style array with `id` fields.
 - `renderCitation` accepts one Citum citation JSON payload.
@@ -37,9 +36,7 @@ await init();
   fails.
 
 ```ts
-const styleYaml = await Deno.readTextFile(
-  "./styles/american-sociological-association.yaml",
-);
+const style = "id: apa-7th";
 
 const refsJson = JSON.stringify({
   smith2020: {
@@ -60,31 +57,32 @@ const citationJson = JSON.stringify({
 Validate a style:
 
 ```ts
-validateStyle(styleYaml);
+validateStyle(style);
 ```
 
 Render one citation to HTML:
 
 ```ts
-const citationHtml = renderCitation(styleYaml, refsJson, citationJson);
+const citationHtml = renderCitation(style, refsJson, citationJson);
 ```
 
 Render a full bibliography to HTML:
 
 ```ts
-const bibliographyHtml = renderBibliography(styleYaml, refsJson);
+const bibliographyHtml = renderBibliography(style, refsJson);
 ```
 
-Materialize template presets in a style:
+Return canonical YAML with inheritance, variants, scoped options, and template
+references resolved:
 
 ```ts
-const expandedStyleYaml = materializeStyle(styleYaml);
+const expandedStyleYaml = materializeStyle(style);
 ```
 
 Read style metadata:
 
 ```ts
-const metadata = JSON.parse(getStyleMetadata(styleYaml));
+const metadata = JSON.parse(getStyleMetadata(style));
 ```
 
 Format a document in one call:
@@ -93,7 +91,7 @@ Format a document in one call:
 const result = JSON.parse(
   formatDocument(
     JSON.stringify({
-      style: { kind: "yaml", value: styleYaml },
+      style: { kind: "id", value: "apa-7th" },
       output_format: "html",
       refs: JSON.parse(refsJson),
       citations: [
@@ -107,20 +105,40 @@ const result = JSON.parse(
 );
 ```
 
-In WASM, Citum does not have the resolver chain used by the CLI and server.
-For `formatDocument`, pass an inline YAML style with
-`{ "kind": "yaml", "value": "..." }`. Style IDs and remote URIs require an
-external resolver before calling this package.
+Selectors resolve bundled IDs and aliases only. For example, `id: apa` and
+`id: mhra` resolve without a network request. An unknown or catalog-only ID
+throws an error that asks for version-pinned YAML. Fetch that YAML in your
+application, then pass its contents directly or use
+`{ "kind": "yaml", "value": "..." }` with `formatDocument`. The package does
+not fetch remote styles, URIs, or paths.
+
+`formatDocument` chooses a locale in this order: the request's `locale`, the
+style's `info.default-locale`, then `en-US`. APA therefore uses `en-US`, while
+the bundled MHRA style uses the embedded `en-GB` locale. Structured document
+and session results report locale fallbacks in `warnings`. Direct render calls
+throw an error because their string return type has no warning channel.
+
+`renderCitation` and `renderBibliography` also throw when the style does not
+define the requested section. They do not synthesize a missing template or
+return an unexplained empty string.
+
+The same selector contract applies to every style-taking function:
+
+```ts
+const mhra = "id: mhra";
+const mhraMetadata = JSON.parse(getStyleMetadata(mhra));
+const mhraCitation = renderCitation(mhra, refsJson, citationJson);
+const mhraBibliography = renderBibliography(mhra, refsJson);
+```
 
 ## Stateful Session API
 
-Use `DocumentSession` when citations evolve incrementally — an editor inserting
-or deleting citations one at a time — rather than re-sending the entire document
-on every change.
+Use `DocumentSession` when citations evolve incrementally, such as when an
+editor inserts or deletes citations one at a time.
 
 ```ts
 // Create a session with a style; optionally pass an initial refs JSON string
-const session = new DocumentSession(styleYaml, refsJson);
+const session = new DocumentSession("id: apa-7th", refsJson);
 
 // Replace the full reference set at any time
 session.put_references(refsJson);
@@ -155,9 +173,11 @@ Mutation methods (`insert_citations_batch`, `insert_citation`,
 
 ```ts
 {
-  formatted_citations: Array<{ id: string; text: string; ref_ids: string[] }>;
+  version: number;
+  affected_citations: Array<{ id: string; text: string; ref_ids: string[] }>;
   bibliography: { format: string; content: string; entries: unknown[] };
-  warnings: string[];
+  renumbering_occurred: boolean;
+  warnings: Array<{ level: string; code: string; message: string }>;
 }
 ```
 

@@ -254,7 +254,7 @@ let result = format_document(FormatDocumentRequest {
 await init();</code></pre>
             </div>
             <div class="workshop-block" style="margin-top: 1rem;">
-                <div class="workshop-label">Node 20+ (ESM)</div>
+                <div class="workshop-label">Node 24 (ESM)</div>
                 <pre><code># In your project
 npx jsr add @citum/engine</code></pre>
                 <pre style="margin-top: 0.5rem;"><code>import init, { renderBibliography, renderCitation } from "@citum/engine";
@@ -282,6 +282,15 @@ const refs = JSON.stringify([
 
 const html = renderBibliography(style, refs);</code></pre>
             </div>
+            <div class="workshop-block" style="margin-top: 1rem;">
+                <div class="workshop-label">MHRA with British locale defaults</div>
+                <pre><code>const mhra = "id: mhra";
+const citation = renderCitation(mhra, refs, JSON.stringify({
+  id: "cite-1",
+  items: [{ id: "darcus2026" }],
+}));
+const bibliography = renderBibliography(mhra, refs);</code></pre>
+            </div>
             <p style="margin-top: 1rem; color: var(--citum-muted); font-size: 0.92rem;">
                 In a browser, use the same call sequence with a bundler that handles
                 <code>wasm-pack --target web</code> output (Vite, esbuild, Webpack 5+,
@@ -291,6 +300,11 @@ const html = renderBibliography(style, refs);</code></pre>
                 <code>validateStyle</code>, <code>materializeStyle</code>, and
                 <code>getStyleMetadata</code>. See the <a href="#interactive">Interactive HTML</a>
                 section below to make the rendered output clickable in a page.
+                Selectors work only for compiled-in IDs and aliases. For any other
+                registry style, fetch YAML from a release tag or immutable commit and
+                pass the YAML string. The browser package does not perform network
+                style resolution. Locale precedence is an explicit request, the style
+                default, then <code>en-US</code>.
             </p>
         </section>
 

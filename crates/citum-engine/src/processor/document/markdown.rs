@@ -570,7 +570,7 @@ mod tests {
             parsed.citations[0].placement,
             CitationPlacement::InlineProse
         );
-        assert!(parsed.manual_note_order.is_empty());
+        assert_eq!(parsed.manual_note_order, Vec::<String>::new());
         assert!(parsed.bibliography_blocks.is_empty());
     }
 

@@ -77,7 +77,10 @@ fn validate_style_valid() {
     let result = dispatch(req).expect("dispatch should succeed");
     assert_eq!(result["id"], 1);
     assert_eq!(result["result"]["valid"], true);
-    assert!(result["result"]["warnings"].as_array().unwrap().is_empty());
+    assert_eq!(
+        result["result"]["warnings"].as_array().unwrap().as_slice(),
+        &[] as &[serde_json::Value]
+    );
 }
 
 #[test]
@@ -90,7 +93,10 @@ fn validate_style_missing_file() {
     let result = dispatch(req).expect("dispatch should succeed");
     assert_eq!(result["id"], 2);
     assert_eq!(result["result"]["valid"], false);
-    assert!(!result["result"]["warnings"].as_array().unwrap().is_empty());
+    assert_ne!(
+        result["result"]["warnings"].as_array().unwrap().as_slice(),
+        &[] as &[serde_json::Value]
+    );
 }
 
 // --- render_bibliography ---

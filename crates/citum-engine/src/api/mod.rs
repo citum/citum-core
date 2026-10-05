@@ -20,6 +20,7 @@ mod warnings;
 pub use document::{
     FormatDocumentError, FormatDocumentRequest, FormatDocumentResult, apply_style_overrides,
     format_document, format_document_with_resolver, format_document_with_style,
+    resolve_embedded_locale,
 };
 pub use forward_compat::{UnknownFieldPath, collect_unknown_field_paths};
 pub use refs_input::RefsInput;

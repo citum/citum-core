@@ -104,22 +104,22 @@ registries:
 this config and constructs the `ChainResolver` with registries ordered by
 `priority` descending, preceded by the local resolvers.
 
-#### Core Registry (embedded; small builtin set only)
+#### Core Registry (embedded index; offline builtins and pinned catalog)
 
-`registry/default.yaml` is the **embedded default registry** — a small,
-versioned index of compiled-in builtin styles plus their aliases. It ships
-inside `citum-schema-data` via `include_bytes!` and powers `EmbeddedResolver`
-without any network access. As of Phase 3 it lists ~12 builtin styles
-(APA 7th, Elsevier Harvard, Chicago Notes 18th, MLA, IEEE, AMA, etc.) and
-their well-known aliases; the keys are `kind: base` / `kind: profile`, not
-URIs. Styles in this index are guaranteed-resolvable offline.
+`registry/default.yaml` is the embedded default index. Entries with a
+`builtin` field point to styles compiled into `citum-schema-style` and are
+guaranteed to resolve offline. This set includes APA 7th, MHRA Notes, Chicago,
+MLA, IEEE, AMA, and other core styles together with their aliases.
 
-The full ~150-style catalog (and the long tail of CSL-derived styles) does
-**not** live in citum-core. Bulk style distribution is the Hub's
-responsibility (`hub.citum.org`); `citum-core`'s embedded registry exists
-solely to keep the zero-config user path working without a network call. A
-publishing organization that wants to distribute its full collection runs
-its own registry — see "Federated Registry Protocol" below.
+The same registry also records the wider catalog as immutable raw URLs. These
+entries are discoverable by network-capable resolvers but are not offline
+guarantees. Core repository URLs use the current `vX.Y.Z` release tag. Catalog
+URLs use the audited `citum-styles` commit recorded in the registry. CI rejects
+`main` and `master` references and validates every pinned catalog entry.
+
+WASM callers may select only entries that have `builtin`. A remote-only ID
+returns an error that directs the caller to fetch pinned YAML and pass the
+content to the binding. WASM never fetches registry URLs.
 
 This split keeps `citum-core` small, makes `EmbeddedResolver` air-gap-safe,
 and lets the broader ecosystem grow without bottlenecking on PRs to this
@@ -192,7 +192,7 @@ the `blocking` feature) to keep WASM and embedded builds lean.
 
 #### GitResolver
 
-URI scheme: `git+https://github.com/org/repo/styles/apa-7th.yaml@main`
+URI scheme: `git+https://github.com/org/repo/styles/apa-7th.yaml@3592af76f7e9ff69e3714f6582b812306ff438f3`
 
 ```rust
 pub struct GitResolver {
@@ -710,14 +710,11 @@ commands construct a `ChainResolver` from `~/.config/citum/config.yaml` and
 pass it through the render pipeline. `http` and `git` features are enabled in
 `citum-cli/Cargo.toml`.
 
-**WASM binding (`crates/citum-bindings`, feature `wasm`)** — the binding crate
-in this repo exposes `renderCitation`, `renderBibliography`, and
-`materializeStyle` to JavaScript via `wasm_bindgen`. Remote resolution
-(`HttpResolver`, `GitResolver`) is gated out with
-`#[cfg(not(target_arch = "wasm32"))]`; the WASM build uses only
-`EmbeddedResolver` and `StoreResolver`. Callers (e.g. citum-hub's wasm-bridge)
-must resolve remote styles server-side and pass the resolved YAML string into
-`materializeStyle` before rendering.
+**WASM binding (`crates/citum-bindings`, feature `wasm`)**: the binding crate
+accepts full YAML or selectors for compiled-in styles. Remote resolution is not
+linked into the WASM build. Callers such as citum-hub's wasm bridge must fetch
+remote styles outside the binding and pass version-pinned YAML for validation,
+materialization, or rendering.
 
 **Server (`crates/citum-server`)** — not yet wired. Phase 3 should add
 `citum_store` as a dependency of `citum-server` (with `http`/`git` features

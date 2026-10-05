@@ -1487,7 +1487,7 @@ date-fallback:
     #[case("processing: label")]
     fn non_author_date_processing_supplies_no_substitute_candidates(#[case] yaml: &str) {
         let config: Config = serde_yaml::from_str(yaml).expect("processing config should parse");
-        assert!(config.effective_substitute().candidates().is_empty());
+        assert_eq!(config.effective_substitute().candidates(), &[]);
     }
 
     #[test]
@@ -1505,7 +1505,7 @@ date-fallback:
 
         let disabled: Config =
             serde_yaml::from_str("substitute: none").expect("whole-policy clear should parse");
-        assert!(disabled.effective_substitute().candidates().is_empty());
+        assert_eq!(disabled.effective_substitute().candidates(), &[]);
     }
 
     #[test]
@@ -1556,7 +1556,7 @@ date-fallback:
     #[test]
     fn test_substitute_default() {
         let sub = Substitute::default();
-        assert!(sub.candidates().is_empty());
+        assert_eq!(sub.candidates(), &[]);
     }
 
     #[test]

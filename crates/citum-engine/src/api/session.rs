@@ -16,7 +16,7 @@ use citum_schema::options::Processing;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-use super::document::{format_bibliography, format_by_kind};
+use super::document::{format_bibliography, format_by_kind, resolve_embedded_locale};
 use super::{
     CitationOccurrence, CitationOccurrenceItem, DocumentOptions, FormatDocumentError,
     FormattedBibliography, FormattedCitation, OutputFormatKind, RefsInput, StyleInput, Warning,
@@ -346,25 +346,12 @@ impl DocumentSession {
         &self,
         citations: &[CitationOccurrence],
     ) -> Result<SessionRenderResult, FormatDocumentError> {
-        let mut warnings = Vec::new();
-        if let Some(tag) = &self.locale
-            && !tag.is_empty()
-            && !tag.eq_ignore_ascii_case("en-us")
-        {
-            warnings.push(Warning {
-                level: WarningLevel::Warning,
-                code: "locale_fallback".to_string(),
-                citation_id: None,
-                ref_id: None,
-                message: format!(
-                    "Requested locale '{tag}' could not be loaded by the engine; falling back to en-US. Adapter-side locale resolution is not yet wired through."
-                ),
-            });
-        }
+        let (locale, mut warnings) = resolve_embedded_locale(&self.style, self.locale.as_deref());
 
         // References were resolved once in `put_references`; each render still
         // clones the style and bibliography into a fresh processor.
-        let mut processor = Processor::new(self.style.clone(), self.bibliography_cache.clone());
+        let mut processor =
+            Processor::with_locale(self.style.clone(), self.bibliography_cache.clone(), locale);
         warnings.extend(self.ref_warnings.iter().cloned());
         warnings.extend(unknown_enum_warnings(&processor));
         warnings.extend(term_locale_fallback_warnings(&processor));
@@ -929,8 +916,8 @@ mod tests {
             .preview_citation(preview_items, Some(CitationMode::Integral), None)
             .expect("integral preview should render");
 
-        assert!(!default_preview.preview.is_empty());
-        assert!(!integral_preview.preview.is_empty());
+        assert_ne!(default_preview.preview, "");
+        assert_ne!(integral_preview.preview, "");
         assert_ne!(default_preview.preview, integral_preview.preview);
         assert_eq!(session.version(), before_version);
         assert_eq!(session.get_citations().len(), before_citations.len());

@@ -107,6 +107,7 @@ fn get_style_bytes(name: &str) -> Option<&'static [u8]> {
         "modern-language-association" => Some(include_bytes!(
             "../../embedded/styles/modern-language-association.yaml"
         )),
+        "mhra-notes" => Some(include_bytes!("../../embedded/styles/mhra-notes.yaml")),
         _ => None,
     }
 }
@@ -115,6 +116,7 @@ fn get_style_bytes(name: &str) -> Option<&'static [u8]> {
 pub const EMBEDDED_STYLE_ALIASES: &[(&str, &str)] = &[
     ("apa", "apa-7th"),
     ("mla", "modern-language-association"),
+    ("mhra", "mhra-notes"),
     ("ieee", "ieee"),
     ("ama", "american-medical-association"),
     ("chicago", "chicago-shortened-notes-bibliography"),
@@ -193,6 +195,7 @@ pub const EMBEDDED_STYLE_NAMES: &[&str] = &[
     "chicago-notes-18th",
     "chicago-author-date-18th",
     "modern-language-association",
+    "mhra-notes",
 ];
 
 #[cfg(test)]

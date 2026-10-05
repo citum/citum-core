@@ -30,7 +30,7 @@ fn make_resolver(format: StoreFormat) -> (TempDir, StoreResolver) {
 fn list_styles_empty_on_fresh_store() {
     let (_dir, resolver) = make_resolver(StoreFormat::Yaml);
     let styles = resolver.list_styles().expect("list_styles");
-    assert!(styles.is_empty());
+    assert_eq!(styles, Vec::<String>::new());
 }
 
 #[test]
@@ -70,7 +70,7 @@ fn remove_installed_style() {
     resolver.remove_style("alpha").expect("remove_style");
 
     let styles = resolver.list_styles().expect("list_styles");
-    assert!(styles.is_empty());
+    assert_eq!(styles, Vec::<String>::new());
 }
 
 #[test]

@@ -415,9 +415,10 @@ mod tests {
         assert_eq!(embedded.builtin.as_deref(), Some("apa-7th"));
 
         let core_http = registry.resolve("alpha").expect("alpha should exist");
-        assert_eq!(
-            core_http.url.as_deref(),
-            Some("https://raw.githubusercontent.com/citum/citum-core/main/styles/alpha.yaml")
-        );
+        let url = core_http.url.as_deref().expect("alpha should have a URL");
+        assert!(url.starts_with("https://raw.githubusercontent.com/citum/citum-core/"));
+        assert!(url.ends_with("/styles/alpha.yaml"));
+        assert!(!url.contains("/main/"));
+        assert!(!url.contains("/master/"));
     }
 }
