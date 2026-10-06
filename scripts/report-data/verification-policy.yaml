@@ -169,6 +169,16 @@ styles:
     secondary:
       - biblatex
     fixture_family: note-humanities
+  mhra-notes:
+    secondary:
+      - biblatex
+    benchmark_runs:
+      - id: mhra-zotero-bibliography
+        label: MHRA 4th edition Zotero bibliography
+        runner: citeproc-oracle
+        refs_fixture: tests/fixtures/test-items-library/mhra-4th.json
+        scope: bibliography
+        count_toward_fidelity: false
   gb-t-7714-2025-numeric:
     authority: citeproc-js
     csl_source: tests/fixtures/csl-m/gb-t-7714-2025-numeric.csl
