@@ -106,7 +106,7 @@ fn mhra_selector_and_alias_return_exact_authored_surfaces() {
         .expect("the bundled MHRA ID should render a citation");
     assert_eq!(
         citation,
-        "<span class=\"citum-citation\" data-ref=\"ITEM-1\">Thomas S. Kuhn, <span class=\"citum-title\">“<em>The Structure of Scientific Revolutions</em>”</span><span class=\"citum-issued\"> (1962)</span></span>."
+        "<span class=\"citum-citation\" data-ref=\"ITEM-1\">Thomas S. Kuhn, <span class=\"citum-title\"><em>The Structure of Scientific Revolutions</em></span> (<span class=\"citum-issued\">1962</span>)</span>."
     );
 
     let bibliography_refs = REFS_JSON.replace(
@@ -117,7 +117,7 @@ fn mhra_selector_and_alias_return_exact_authored_surfaces() {
         .expect("the bundled MHRA alias should render a bibliography");
     assert_eq!(
         bibliography,
-        "<div class=\"citum-bibliography citum-bibliography--hanging-indent\">\n<div class=\"citum-entry\" id=\"ref-ITEM-1\" data-author=\"Kuhn\" data-year=\"1962\" data-title=\"The Structure of Scientific Revolutions\"><span class=\"citum-author\">Kuhn, Thomas S.</span> <span class=\"citum-title\"><em>The Structure of Scientific Revolutions</em></span><span class=\"citum-publisher\"> (Example Press</span><span class=\"citum-issued\">, 1962)</span></div>\n</div>"
+        "<div class=\"citum-bibliography citum-bibliography--hanging-indent\">\n<div class=\"citum-entry\" id=\"ref-ITEM-1\" data-author=\"Kuhn\" data-year=\"1962\" data-title=\"The Structure of Scientific Revolutions\"><span class=\"citum-author\">Kuhn, Thomas S.</span>, <span class=\"citum-title\"><em>The Structure of Scientific Revolutions</em></span><span class=\"citum-publisher\"> (Example Press</span><span class=\"citum-issued\">, 1962)</span></div>\n</div>"
     );
 }
 

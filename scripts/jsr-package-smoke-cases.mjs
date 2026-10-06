@@ -32,9 +32,9 @@ const APA_BIBLIOGRAPHY = `<div class="citum-bibliography citum-bibliography--han
 <div class="citum-entry" id="ref-smith2020" data-author="Smith" data-year="2020" data-title="Sample Work"><span class="citum-author">Smith, J. </span><span class="citum-issued">(2020)</span>. <span class="citum-title"><em>Sample Work</em></span></div>
 </div>`;
 const MHRA_CITATION =
-  '<span class="citum-citation" data-ref="smith2020">Jane Smith, <span class="citum-title">“<em>Sample Work</em>”</span><span class="citum-issued"> (2020)</span></span>.';
+  '<span class="citum-citation" data-ref="smith2020">Jane Smith, <span class="citum-title"><em>Sample Work</em></span> (<span class="citum-issued">2020</span>)</span>.';
 const MHRA_BIBLIOGRAPHY = `<div class="citum-bibliography citum-bibliography--hanging-indent">
-<div class="citum-entry" id="ref-smith2020" data-author="Smith" data-year="2020" data-title="Sample Work"><span class="citum-author">Smith, Jane</span> <span class="citum-title"><em>Sample Work</em></span><span class="citum-publisher"> (Example Press</span><span class="citum-issued">, 2020)</span></div>
+<div class="citum-entry" id="ref-smith2020" data-author="Smith" data-year="2020" data-title="Sample Work"><span class="citum-author">Smith, Jane</span>, <span class="citum-title"><em>Sample Work</em></span><span class="citum-publisher"> (Example Press</span><span class="citum-issued">, 2020)</span></div>
 </div>`;
 
 function equal(actual, expected, label) {

@@ -34,6 +34,7 @@ options:
     periodical:
       emph: true
   range-format: minimal-two
+  punctuation-in-quote: true
 citation:
   options:
     contributors:
@@ -66,6 +67,8 @@ citation:
       - title: parent-serial
         emph: true
       - number: volume
+      - number: issue
+        prefix: "."
       - date: issued
         form: year
         wrap:
@@ -86,6 +89,23 @@ citation:
       remove:
         - match:
             variable: locator
+    book:
+      - contributor: author
+        form: long
+        name-order: given-first
+      - title: primary
+      - contributor: translator
+        form: verb-short
+        prefix: ", "
+      - number: edition
+        prefix: ", "
+      - group:
+          - variable: publisher
+          - date: issued
+            form: year
+        delimiter: ", "
+        prefix: " ("
+        suffix: ")"
     chapter:
       - contributor: author
         form: long
@@ -168,7 +188,7 @@ citation:
         form: long
         name-order: given-first
       - title: primary
-      - number: number
+      - number: patent-number
         prefix: ", Patent "
       - delimiter: ""
         group:
@@ -188,12 +208,110 @@ citation:
       - contributor: author
         form: long
         prefix: ", interview with "
-      - date: issued
-        form: month-day
-        prefix: ", "
-      - variable: medium
+      - delimiter: ""
+        group:
+          - date: issued
+            form: month-day
+            prefix: ", "
+          - date: issued
+            form: year
+            prefix: ", "
+      - variable: genre
         prefix: ", "
       - variable: url
+        prefix: " &#60;"
+        suffix: "&#62;"
+    article-newspaper:
+      - contributor: author
+        form: long
+        name-order: given-first
+      - title: primary
+        wrap:
+          punctuation: quotes
+      - variable: section
+        prefix: ", "
+      - title: parent-serial
+        emph: true
+        prefix: ", "
+      - date: issued
+        form: month-abbr-day-year
+        prefix: ", "
+    broadcast:
+      - contributor: author
+        form: long
+        name-order: given-first
+      - title: primary
+        wrap:
+          punctuation: quotes
+      - title: parent-serial
+        emph: true
+      - date: issued
+        form: month-abbr-day-year
+        wrap:
+          punctuation: parentheses
+        prefix: " "
+      - number: issue
+        prefix: ", episode "
+    motion-picture:
+      - contributor: author
+        form: long
+        name-order: given-first
+      - title: primary
+      - variable: genre
+        prefix: ", "
+      - contributor: director
+        form: long
+        prefix: ", dir. by "
+      - date: issued
+        form: year
+        wrap:
+          punctuation: parentheses
+        prefix: " "
+    report:
+      - contributor: author
+        form: long
+        name-order: given-first
+      - title: primary
+      - group:
+          - variable: publisher
+          - date: issued
+            form: year
+        delimiter: ", "
+        prefix: " ("
+        suffix: ")"
+    thesis:
+      - contributor: author
+        form: long
+        name-order: given-first
+      - title: primary
+        wrap:
+          punctuation: quotes
+      - group:
+          - variable: genre
+            prefix: "unpublished "
+          - variable: publisher
+          - date: issued
+            form: year
+        delimiter: ", "
+        prefix: " ("
+        suffix: ")"
+    webpage:
+      - contributor: author
+        form: long
+        name-order: given-first
+      - title: primary
+        wrap:
+          punctuation: quotes
+      - date: issued
+        form: year
+        prefix: ", "
+      - variable: url
+        prefix: " &#60;"
+        suffix: "&#62;"
+      - date: accessed
+        form: month-abbr-day-year
+        prefix: " [accessed "
+        suffix: "]"
   template:
     - contributor: author
       form: long
@@ -230,6 +348,7 @@ bibliography:
     hanging-indent: true
     separator: " "
     contributors:
+      delimiter-precedes-last: always
       shorten:
         min: 5
         use-first: 1
@@ -259,16 +378,6 @@ bibliography:
             contributor: editor
         - match:
             variable: publisher
-    article-newspaper:
-      remove:
-        - match:
-            title: parent-monograph
-        - match:
-            contributor: editor
-        - match:
-            variable: publisher
-        - match:
-            date: issued
     chapter:
       modify:
         - match:
@@ -295,42 +404,149 @@ bibliography:
           before:
             number: volume
     patent:
-      - contributor: author
-        form: long
-        name-order: family-first
-      - title: primary
-      - number: number
+      - group:
+          - contributor: author
+            form: long
+            name-order: family-first-only
+          - title: primary
+        delimiter: ", "
+      - number: patent-number
         prefix: ", Patent "
-      - delimiter: ""
-        group:
-          - date: issued
-            form: month-day
-            prefix: ", issued "
-          - date: issued
-            form: year
-            prefix: ", "
+      - date: issued
+        form: month-abbr-day-year
+        prefix: ", issued "
     personal-communication: []
     interview:
-      - contributor: interviewer
-        form: long
-        name-order: family-first
-      - title: primary
-        wrap:
-          punctuation: quotes
+      - group:
+          - contributor: interviewer
+            form: long
+            name-order: family-first-only
+          - title: primary
+            wrap:
+              punctuation: quotes
+        delimiter: ", "
       - contributor: author
         form: long
         prefix: ", interview with "
       - date: issued
-        form: month-day
+        form: month-abbr-day-year
         prefix: ", "
-      - variable: medium
+      - variable: genre
         prefix: ", "
       - variable: url
-    book:
+        prefix: " &#60;"
+        suffix: "&#62;"
+    article-newspaper:
+      - group:
+          - contributor: author
+            form: long
+            name-order: family-first-only
+          - title: primary
+            wrap:
+              punctuation: quotes
+        delimiter: ", "
+      - variable: section
+        prefix: ", "
+      - title: parent-serial
+        emph: true
+        prefix: ", "
+      - date: issued
+        form: month-abbr-day-year
+        prefix: ", "
+    broadcast:
       - contributor: author
         form: long
-        name-order: family-first
+        name-order: family-first-only
       - title: primary
+        prefix: ", "
+        wrap:
+          punctuation: quotes
+      - title: parent-serial
+        emph: true
+      - date: issued
+        form: month-abbr-day-year
+        wrap:
+          punctuation: parentheses
+        prefix: " "
+      - number: issue
+        prefix: ", episode "
+    motion-picture:
+      - contributor: author
+        form: long
+        name-order: family-first-only
+      - title: primary
+        prefix: ", "
+      - variable: genre
+        prefix: ", "
+      - contributor: director
+        form: long
+        prefix: ", dir. by "
+      - date: issued
+        form: year
+        wrap:
+          punctuation: parentheses
+        prefix: " "
+    report:
+      - contributor: author
+        form: long
+        name-order: family-first-only
+      - title: primary
+        prefix: ", "
+      - variable: genre
+        prefix: ", "
+      - contributor: editor
+        form: verb
+        name-order: given-first
+        prefix: ", "
+      - group:
+          - variable: publisher
+          - date: issued
+            form: year
+        delimiter: ", "
+        prefix: " ("
+        suffix: ")"
+    thesis:
+      - contributor: author
+        form: long
+        name-order: family-first-only
+      - title: primary
+        prefix: ", "
+        wrap:
+          punctuation: quotes
+      - group:
+          - variable: genre
+            prefix: "unpublished "
+          - variable: publisher
+          - date: issued
+            form: year
+        delimiter: ", "
+        prefix: " ("
+        suffix: ")"
+    webpage:
+      - contributor: author
+        form: long
+        name-order: family-first-only
+      - title: primary
+        prefix: ", "
+        wrap:
+          punctuation: quotes
+      - date: issued
+        form: year
+        prefix: ", "
+      - variable: url
+        prefix: " &#60;"
+        suffix: "&#62;"
+      - date: accessed
+        form: month-abbr-day-year
+        prefix: " [accessed "
+        suffix: "]"
+    book:
+      - group:
+          - contributor: author
+            form: long
+            name-order: family-first-only
+          - title: primary
+        delimiter: ", "
       - contributor: translator
         form: verb-short
         prefix: ", "
@@ -340,44 +556,42 @@ bibliography:
         form: year
         prefix: ", "
         suffix: ")"
-    motion-picture:
-      - contributor: author
-        form: long
-        name-order: family-first
-      - date: issued
-        form: year
-        prefix: " "
-      - title: primary
-        wrap:
-          punctuation: quotes
-      - variable: genre
-      - variable: medium
-      - contributor: director
-        form: long
-        prefix: "Directed by "
   template:
-    - contributor: author
-      form: long
-      name-order: family-first
-    - title: primary
-      wrap:
-        punctuation: quotes
+    - group:
+        - contributor: author
+          form: long
+          name-order: family-first-only
+        - title: primary
+          wrap:
+            punctuation: quotes
+      delimiter: ", "
     - title: parent-monograph
       emph: true
+      prefix: ", "
     - title: parent-serial
       emph: true
+      prefix: ", "
     - contributor: editor
       form: verb
       name-order: given-first
+      prefix: ", "
     - variable: publisher
       prefix: " ("
     - number: volume
+      prefix: ", "
+    - number: issue
+      prefix: "."
     - date: issued
       form: year
+      wrap:
+        punctuation: parentheses
       prefix: " "
     - number: pages
+      prefix: ", "
     - variable: doi
+      prefix: ", doi:"
     - variable: url
+      prefix: " "
   sort:
     template:
       - key: author
