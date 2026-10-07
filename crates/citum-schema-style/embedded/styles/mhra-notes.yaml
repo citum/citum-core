@@ -7,6 +7,7 @@ info:
   short-name: "MHRA"
   edition: "4th edition"
 options:
+  locale-override: en-GB-mhra
   date-fallback: standard
   locators:
     default-label-form: short
@@ -42,7 +43,7 @@ citation:
       shorten:
         min: 4
         use-first: 1
-        and-others: text
+        and-others: et-al
   subsequent:
     options:
       contributors:
@@ -205,9 +206,11 @@ citation:
       - title: primary
         wrap:
           punctuation: quotes
-      - contributor: author
+      - variable: raw-genre
+        prefix: ", "
+      - contributor: interviewee
         form: long
-        prefix: ", interview with "
+        prefix: " with "
       - delimiter: ""
         group:
           - date: issued
@@ -216,8 +219,6 @@ citation:
           - date: issued
             form: year
             prefix: ", "
-      - variable: genre
-        prefix: ", "
       - variable: url
         prefix: " &#60;"
         suffix: "&#62;"
@@ -234,7 +235,7 @@ citation:
         emph: true
         prefix: ", "
       - date: issued
-        form: month-abbr-day-year
+        form: month-day-year
         prefix: ", "
     broadcast:
       - contributor: author
@@ -246,7 +247,7 @@ citation:
       - title: parent-serial
         emph: true
       - date: issued
-        form: month-abbr-day-year
+        form: month-day-year
         wrap:
           punctuation: parentheses
         prefix: " "
@@ -257,7 +258,7 @@ citation:
         form: long
         name-order: given-first
       - title: primary
-      - variable: genre
+      - variable: raw-genre
         prefix: ", "
       - contributor: director
         form: long
@@ -287,7 +288,7 @@ citation:
         wrap:
           punctuation: quotes
       - group:
-          - variable: genre
+          - variable: raw-genre
             prefix: "unpublished "
           - variable: publisher
           - date: issued
@@ -309,7 +310,7 @@ citation:
         prefix: " &#60;"
         suffix: "&#62;"
       - date: accessed
-        form: month-abbr-day-year
+        form: month-day-year
         prefix: " [accessed "
         suffix: "]"
   template:
@@ -350,9 +351,9 @@ bibliography:
     contributors:
       delimiter-precedes-last: always
       shorten:
-        min: 5
+        min: 4
         use-first: 1
-        and-others: text
+        and-others: et-al
   type-variants:
     article-journal:
       modify:
@@ -413,7 +414,7 @@ bibliography:
       - number: patent-number
         prefix: ", Patent "
       - date: issued
-        form: month-abbr-day-year
+        form: month-day-year
         prefix: ", issued "
     personal-communication: []
     interview:
@@ -425,13 +426,13 @@ bibliography:
             wrap:
               punctuation: quotes
         delimiter: ", "
-      - contributor: author
-        form: long
-        prefix: ", interview with "
-      - date: issued
-        form: month-abbr-day-year
+      - variable: raw-genre
         prefix: ", "
-      - variable: genre
+      - contributor: interviewee
+        form: long
+        prefix: " with "
+      - date: issued
+        form: month-day-year
         prefix: ", "
       - variable: url
         prefix: " &#60;"
@@ -451,7 +452,7 @@ bibliography:
         emph: true
         prefix: ", "
       - date: issued
-        form: month-abbr-day-year
+        form: month-day-year
         prefix: ", "
     broadcast:
       - contributor: author
@@ -464,7 +465,7 @@ bibliography:
       - title: parent-serial
         emph: true
       - date: issued
-        form: month-abbr-day-year
+        form: month-day-year
         wrap:
           punctuation: parentheses
         prefix: " "
@@ -476,7 +477,7 @@ bibliography:
         name-order: family-first-only
       - title: primary
         prefix: ", "
-      - variable: genre
+      - variable: raw-genre
         prefix: ", "
       - contributor: director
         form: long
@@ -492,7 +493,7 @@ bibliography:
         name-order: family-first-only
       - title: primary
         prefix: ", "
-      - variable: genre
+      - variable: raw-genre
         prefix: ", "
       - contributor: editor
         form: verb
@@ -514,7 +515,7 @@ bibliography:
         wrap:
           punctuation: quotes
       - group:
-          - variable: genre
+          - variable: raw-genre
             prefix: "unpublished "
           - variable: publisher
           - date: issued
@@ -537,7 +538,7 @@ bibliography:
         prefix: " &#60;"
         suffix: "&#62;"
       - date: accessed
-        form: month-abbr-day-year
+        form: month-day-year
         prefix: " [accessed "
         suffix: "]"
     book:
@@ -549,6 +550,8 @@ bibliography:
         delimiter: ", "
       - contributor: translator
         form: verb-short
+        prefix: ", "
+      - number: edition
         prefix: ", "
       - variable: publisher
         prefix: " ("
