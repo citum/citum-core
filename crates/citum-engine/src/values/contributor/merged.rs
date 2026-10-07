@@ -16,7 +16,7 @@ use citum_schema::template::{
 };
 
 use super::names::{NameDecoration, NamesOverrides};
-use super::{contributor_for_role, contributor_role_to_reference_role};
+use super::{LeadingSubstitution, contributor_for_role, contributor_role_to_reference_role};
 use crate::reference::{FlatName, Reference};
 use crate::render::format::OutputFormat;
 use crate::values::{ProcHints, ProcValues, RenderContext, RenderOptions};
@@ -35,6 +35,7 @@ pub(super) fn values<F: OutputFormat<Output = String>>(
     options: &RenderOptions<'_>,
     effective_rendering: &Rendering,
     fmt: &F,
+    leading: &mut LeadingSubstitution<'_>,
 ) -> Option<ProcValues<F::Output>> {
     let roles = component.contributor.as_slice();
     let primary_role = roles.first()?;
@@ -65,6 +66,7 @@ pub(super) fn values<F: OutputFormat<Output = String>>(
             options,
             effective_rendering,
             fmt,
+            leading,
         );
     }
 
@@ -72,6 +74,7 @@ pub(super) fn values<F: OutputFormat<Output = String>>(
         .iter()
         .map(|entry| entry.name.clone())
         .collect::<Vec<_>>();
+    let leading_substitute = leading.take_for(&names);
     let name_overrides = NamesOverrides {
         name_order: component.name_order.as_ref().or_else(|| {
             options
@@ -106,13 +109,14 @@ pub(super) fn values<F: OutputFormat<Output = String>>(
             fmt,
         },
     );
-    let formatted = super::names::format_names_decorated(
+    let formatted = super::names::format_names_decorated_with_leading_substitute(
         &names,
         &component.form,
         options,
         &name_overrides,
         hints,
         &decorations,
+        leading_substitute,
     );
     let formatted = crate::values::apply_abbreviation(formatted, options.abbreviation_map);
 
@@ -778,6 +782,7 @@ fn resolve_empty_list<F: OutputFormat<Output = String>>(
     options: &RenderOptions<'_>,
     effective_rendering: &Rendering,
     fmt: &F,
+    leading: &mut LeadingSubstitution<'_>,
 ) -> Option<ProcValues<F::Output>> {
     let substitute = options.config.effective_substitute();
     let mut scalar = component.clone();
@@ -792,6 +797,7 @@ fn resolve_empty_list<F: OutputFormat<Output = String>>(
             effective_rendering,
             fmt,
             substitute.as_ref(),
+            leading,
         )
     } else {
         super::substitute::resolve_role_substitute::<F>(
@@ -803,6 +809,7 @@ fn resolve_empty_list<F: OutputFormat<Output = String>>(
             effective_rendering,
             fmt,
             substitute.as_ref(),
+            leading,
         )
     }
 }

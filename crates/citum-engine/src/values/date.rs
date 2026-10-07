@@ -658,6 +658,7 @@ fn date_range_pattern_id(form: &DateForm) -> Option<&'static str> {
         DateForm::Year => Some("pattern.date-range-year"),
         DateForm::Month => Some("pattern.date-range-month"),
         DateForm::MonthDay => Some("pattern.date-range-month-day"),
+        DateForm::MonthDayYear => Some("pattern.date-range-month-day-year"),
         DateForm::YearMonth => Some("pattern.date-range-year-month"),
         DateForm::Full => Some("pattern.date-range-full"),
         DateForm::YearMonthDay => Some("pattern.date-range-year-month-day"),
@@ -678,7 +679,7 @@ fn format_same_year_fragment(
         DateForm::Month | DateForm::YearMonth => {
             format_single_date(date, &DateForm::Month, locale, date_config)
         }
-        DateForm::Full | DateForm::MonthDay | DateForm::YearMonthDay => {
+        DateForm::Full | DateForm::MonthDay | DateForm::MonthDayYear | DateForm::YearMonthDay => {
             format_single_date(date, &DateForm::MonthDay, locale, date_config)
         }
         DateForm::DayMonthAbbrYear | DateForm::MonthAbbrDayYear => {
@@ -852,6 +853,7 @@ fn inline_disamb_suffix(formatted: &str, form: &DateForm, year: &str, suffix: &s
         }
         DateForm::YearMonth
         | DateForm::Full
+        | DateForm::MonthDayYear
         | DateForm::DayMonthAbbrYear
         | DateForm::MonthAbbrDayYear
         | DateForm::DayMonthAbbrYearHyphen => formatted.rfind(year),
@@ -1078,6 +1080,9 @@ fn format_single_date(
                 }
             }
         }
+        DateForm::MonthDayYear => {
+            format_month_day_year(date, locale, zero_pad_day, extract_year(date))
+        }
         DateForm::DayMonthAbbrYear => {
             let year = extract_year(date);
             if year.is_empty() {
@@ -1178,6 +1183,34 @@ fn format_single_date(
             }
         }
         _ => Some(extract_year(date)),
+    }
+}
+
+fn format_month_day_year(
+    date: &DateValue,
+    locale: &citum_schema::locale::Locale,
+    zero_pad_day: bool,
+    year: String,
+) -> Option<String> {
+    if year.is_empty() {
+        return None;
+    }
+    let month = extract_month(date, &locale.dates.months.long, &locale.dates.seasons);
+    let day = date.day();
+    let month_opt = (!month.is_empty()).then_some(month.as_str());
+    if let Some(rendered) = locale.resolve_date_pattern(
+        "pattern.date-month-day-year",
+        Some(&year),
+        month_opt,
+        day,
+        zero_pad_day,
+    ) {
+        return Some(rendered);
+    }
+    match (month.is_empty(), day) {
+        (true, _) => Some(year),
+        (false, None) => Some(format!("{month} {year}")),
+        (false, Some(d)) => Some(format!("{month} {}, {year}", format_day(d, zero_pad_day))),
     }
 }
 
@@ -1368,7 +1401,14 @@ impl ComponentValues for TemplateDate {
         let date_config = options.config.dates.as_ref();
         let effective_form = self.form.clone();
 
-        let formatted = format_date_range(&date, &effective_form, locale, date_config);
+        let formatted =
+            format_date_range(&date, &effective_form, locale, date_config).map(|value| {
+                if crate::values::should_strip_periods(&self.rendering, options) {
+                    crate::values::strip_all_periods(&value)
+                } else {
+                    value
+                }
+            });
 
         // Apply uncertainty and approximation markers
         let formatted = formatted.map(|value| apply_date_markers(value, &date, date_config));
@@ -1973,6 +2013,16 @@ mod locale_pattern_tests {
                 Some(&config)
             ),
             Some("Feb. 07".to_string())
+        );
+    }
+
+    #[test]
+    fn month_day_year_keeps_us_order_with_a_british_locale() {
+        let date = DateValue::new("2024-01-15".to_string());
+
+        assert_eq!(
+            format_single_date(&date, &DateForm::MonthDayYear, &Locale::en_gb(), None),
+            Some("January 15, 2024".to_string())
         );
     }
 

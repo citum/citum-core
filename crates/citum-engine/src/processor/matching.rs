@@ -49,6 +49,28 @@ impl<'a> Matcher<'a> {
     /// (empty names) never matches.
     #[must_use]
     pub fn contributors_match(&self, prev: &Reference, current: &Reference) -> bool {
+        let (prev_names, curr_names) = self.effective_primary_names(prev, current);
+        !prev_names.is_empty() && prev_names == curr_names
+    }
+
+    /// Check whether the leading effective-primary contributors match.
+    #[must_use]
+    pub fn leading_contributors_match(&self, prev: &Reference, current: &Reference) -> bool {
+        let (prev_names, curr_names) = self.effective_primary_names(prev, current);
+        prev_names
+            .first()
+            .zip(curr_names.first())
+            .is_some_and(|(previous, current)| previous == current)
+    }
+
+    fn effective_primary_names(
+        &self,
+        prev: &Reference,
+        current: &Reference,
+    ) -> (
+        Vec<crate::reference::FlatName>,
+        Vec<crate::reference::FlatName>,
+    ) {
         let substitute = self.get_substitute_config();
         let prev_names = crate::values::contributor::substitute::effective_primary_names(
             prev,
@@ -62,7 +84,7 @@ impl<'a> Matcher<'a> {
             self.config,
             self.locale,
         );
-        !prev_names.is_empty() && !curr_names.is_empty() && prev_names == curr_names
+        (prev_names, curr_names)
     }
 
     /// Gets the substitute configuration from the style or falls back to defaults.

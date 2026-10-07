@@ -1532,6 +1532,11 @@
           "const": "month"
         },
         {
+          "description": "Full month + day + year in US order: \"January 15, 2024\".",
+          "type": "string",
+          "const": "month-day-year"
+        },
+        {
           "description": "Abbreviated month + day + year in US order: \"Jan 15, 2024\".",
           "type": "string",
           "const": "month-abbr-day-year"

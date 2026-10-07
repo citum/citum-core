@@ -6,6 +6,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 //! Name-formatting helpers for contributor rendering.
 
 use crate::values::{ProcHints, RenderOptions};
+use citum_schema::locale::{GeneralTerm, TermForm};
 use citum_schema::options::contributors::NameForm;
 use citum_schema::options::{
     AndOptions, AndOtherOptions, ContributorConfig, DemoteNonDroppingParticle, DisplayAsSort,
@@ -308,15 +309,23 @@ fn apply_et_al(
         }
     };
 
-    let and_others_term = match et_al.and_others {
-        AndOtherOptions::EtAl => locale.et_al(),
-        AndOtherOptions::Text => locale.et_al().trim_end_matches('.'),
-    };
+    let and_others_term = and_others_term(locale, et_al.and_others);
 
     if use_delimiter {
         format!("{result}{}{and_others_term}", et_al.delimiter)
     } else {
         format!("{result} {and_others_term}")
+    }
+}
+
+fn and_others_term(locale: &citum_schema::locale::Locale, form: AndOtherOptions) -> &str {
+    let et_al = locale
+        .general_term(&GeneralTerm::EtAl, &TermForm::Long, None)
+        .unwrap_or_else(|| locale.et_al());
+
+    match form {
+        AndOtherOptions::EtAl => et_al,
+        AndOtherOptions::Text => et_al.trim_end_matches('.'),
     }
 }
 
@@ -335,7 +344,26 @@ pub fn format_names(
     overrides: &NamesOverrides<'_>,
     hints: &ProcHints,
 ) -> String {
-    format_names_decorated(names, form, options, overrides, hints, &[])
+    format_names_with_leading_substitute(names, form, options, overrides, hints, None)
+}
+
+pub(super) fn format_names_with_leading_substitute(
+    names: &[crate::reference::FlatName],
+    form: &ContributorForm,
+    options: &RenderOptions<'_>,
+    overrides: &NamesOverrides<'_>,
+    hints: &ProcHints,
+    leading_substitute: Option<&str>,
+) -> String {
+    format_names_decorated_with_leading_substitute(
+        names,
+        form,
+        options,
+        overrides,
+        hints,
+        &[],
+        leading_substitute,
+    )
 }
 
 fn resolve_contributor_delimiter(
@@ -368,13 +396,14 @@ fn resolve_contributor_delimiter(
     clippy::too_many_lines,
     reason = "linear context-building pipeline; no clean split point"
 )]
-pub(super) fn format_names_decorated(
+pub(super) fn format_names_decorated_with_leading_substitute(
     names: &[crate::reference::FlatName],
     form: &ContributorForm,
     options: &RenderOptions<'_>,
     overrides: &NamesOverrides<'_>,
     hints: &ProcHints,
     decorations: &[NameDecoration],
+    leading_substitute: Option<&str>,
 ) -> String {
     if names.is_empty() {
         return String::new();
@@ -453,6 +482,7 @@ pub(super) fn format_names_decorated(
         &ctx,
         hints,
         decorations,
+        leading_substitute,
     );
 
     let and_str = resolve_name_conjunction(
@@ -540,6 +570,10 @@ fn positional_expand(hints: &ProcHints, index: usize) -> (bool, bool) {
     (expand, expand_full)
 }
 
+#[allow(
+    clippy::too_many_arguments,
+    reason = "Selected-name formatting carries list partitions, formatting state, decorations, and an optional first-name override."
+)]
 fn format_selected_names(
     names: &[crate::reference::FlatName],
     first_names: &[&crate::reference::FlatName],
@@ -548,6 +582,7 @@ fn format_selected_names(
     context: &NameFormatContext<'_>,
     hints: &ProcHints,
     decorations: &[NameDecoration],
+    leading_substitute: Option<&str>,
 ) -> (Vec<String>, Vec<String>) {
     let formatted_first = first_names
         .iter()
@@ -555,7 +590,10 @@ fn format_selected_names(
         .map(|(index, name)| {
             let (expand, expand_full) = positional_expand(hints, index);
             decorate_name(
-                format_single_name(name, form, index, context, expand, expand_full),
+                leading_substitute.filter(|_| index == 0).map_or_else(
+                    || format_single_name(name, form, index, context, expand, expand_full),
+                    str::to_string,
+                ),
                 index,
                 decorations,
             )
@@ -1160,6 +1198,27 @@ mod tests {
     use super::*;
     use crate::values::RenderContext;
     use citum_schema::options::DelimiterPrecedesLast;
+
+    #[test]
+    fn et_al_forms_use_the_locale_message_override() {
+        let mut locale = citum_schema::locale::Locale::en_us();
+        locale.apply_override(&citum_schema::locale::LocaleOverride {
+            messages: std::collections::HashMap::from([(
+                "term.et-al".to_string(),
+                "and others".to_string(),
+            )]),
+            ..Default::default()
+        });
+
+        assert_eq!(
+            and_others_term(&locale, AndOtherOptions::EtAl),
+            "and others"
+        );
+        assert_eq!(
+            and_others_term(&locale, AndOtherOptions::Text),
+            "and others"
+        );
+    }
 
     #[test]
     fn configured_delimiter_rule_is_count_and_inversion_aware() {

@@ -24,6 +24,26 @@ use citum_schema::template::{
 pub(crate) use names::{NameFormatContext, format_single_name};
 pub use names::{NamesOverrides, format_contributors_short, format_names};
 
+pub(super) struct LeadingSubstitution<'a> {
+    value: Option<&'a str>,
+    applied: bool,
+}
+
+impl<'a> LeadingSubstitution<'a> {
+    fn new(value: Option<&'a str>) -> Self {
+        Self {
+            value,
+            applied: false,
+        }
+    }
+
+    pub(super) fn take_for(&mut self, names: &[crate::reference::FlatName]) -> Option<&'a str> {
+        let value = self.value.filter(|_| !names.is_empty())?;
+        self.applied = true;
+        Some(value)
+    }
+}
+
 /// Resolve a contributor payload for a template contributor role.
 ///
 /// This preserves the legacy `editor()` / `translator()` accessors for
@@ -73,6 +93,7 @@ pub(crate) fn contributor_role_to_reference_role(
         ContributorRole::Producer => Some(citum_schema::reference::ContributorRole::Producer),
         ContributorRole::Illustrator => Some(citum_schema::reference::ContributorRole::Illustrator),
         ContributorRole::Narrator => Some(citum_schema::reference::ContributorRole::Narrator),
+        ContributorRole::Interviewee => Some(citum_schema::reference::ContributorRole::Interviewee),
         ContributorRole::Inventor => Some(citum_schema::reference::ContributorRole::Unknown(
             "inventor".to_string(),
         )),
@@ -107,7 +128,7 @@ pub(crate) fn contributor_role_to_reference_role(
             "writer" => citum_schema::reference::ContributorRole::Writer,
             _ => citum_schema::reference::ContributorRole::Unknown(role.clone()),
         }),
-        ContributorRole::Interviewee | ContributorRole::Publisher => None,
+        ContributorRole::Publisher => None,
         _ => None,
     }
 }
@@ -245,6 +266,10 @@ fn apply_integral_subsequent_form(
 }
 
 /// Build name overrides and format all names for a contributor component.
+#[allow(
+    clippy::too_many_arguments,
+    reason = "Contributor formatting combines template, reference, render, and one-shot substitution state."
+)]
 fn format_contributor_names(
     component: &TemplateContributor,
     role: &ContributorRole,
@@ -253,6 +278,7 @@ fn format_contributor_names(
     effective_rendering: &citum_schema::template::Rendering,
     options: &RenderOptions<'_>,
     hints: &ProcHints,
+    leading_substitute: Option<&str>,
 ) -> String {
     let effective_name_order = component.name_order.as_ref().or_else(|| {
         options
@@ -283,7 +309,14 @@ fn format_contributor_names(
         strip_periods: effective_rendering.strip_periods,
         item_language: crate::values::effective_item_language(reference),
     };
-    names::format_names(names_vec, &component.form, options, &name_overrides, hints)
+    names::format_names_with_leading_substitute(
+        names_vec,
+        &component.form,
+        options,
+        &name_overrides,
+        hints,
+        leading_substitute,
+    )
 }
 
 /// Render the options-level terminal message after author candidates are exhausted.
@@ -310,148 +343,165 @@ fn resolve_author_fallback<F: crate::render::format::OutputFormat<Output = Strin
     })
 }
 
+#[allow(
+    clippy::too_many_lines,
+    reason = "large match statement for contributor role dispatch"
+)]
+pub(crate) fn values_with_leading_substitute<
+    F: crate::render::format::OutputFormat<Output = String>,
+>(
+    source: &TemplateContributor,
+    reference: &Reference,
+    hints: &ProcHints,
+    options: &RenderOptions<'_>,
+    leading_substitute: Option<&str>,
+) -> Option<(ProcValues<F::Output>, bool)> {
+    let fmt = F::default();
+    let mut leading = LeadingSubstitution::new(leading_substitute);
+
+    let mut component = source.clone();
+    let effective_rendering = source.rendering.clone();
+
+    // Apply integral-citation subsequent-form (FullThenShort rule)
+    apply_integral_subsequent_form(&mut component, hints, options);
+
+    // Respect explicit suppression before either contributor rendering path.
+    if effective_rendering.suppress == Some(true) {
+        return None;
+    }
+
+    let Some(role) = component.contributor.as_single().cloned() else {
+        let values = merged::values::<F>(
+            &component,
+            reference,
+            hints,
+            options,
+            &effective_rendering,
+            &fmt,
+            &mut leading,
+        )?;
+        return Some((values, leading.applied));
+    };
+
+    if merged::is_role_suppressed(reference, &role, &options.config) {
+        return None;
+    }
+
+    // Resolve substitute config once for all substitute/suppression checks below.
+    let substitute = options.config.effective_substitute();
+
+    // The author slot is resolved as one effective-primary value so
+    // rendering, sorting, and disambiguation share type overrides and
+    // semantic-author precedence.
+    if matches!(role, ContributorRole::Author) {
+        if options.suppress_author {
+            return None;
+        }
+        if let Some(values) = substitute::resolve_author_substitute::<F>(
+            &component,
+            hints,
+            options,
+            reference,
+            &effective_rendering,
+            &fmt,
+            substitute.as_ref(),
+            &mut leading,
+        ) {
+            return Some((values, leading.applied));
+        }
+        let values =
+            resolve_author_fallback::<F>(reference, hints, options, &fmt, substitute.as_ref())?;
+        return Some((values, leading.applied));
+    }
+
+    let contributor = contributor_for_role(reference, &role);
+
+    // Check if this secondary role is suppressed by role-substitute
+    // configuration. Primary-slot overrides deliberately promote roles
+    // that may also appear in these secondary fallback chains.
+    if substitute::is_role_suppressed_by_substitute(&role, substitute.as_ref(), reference) {
+        return None;
+    }
+
+    // Resolve multilingual names if configured
+    let names_vec = if let Some(contrib) = contributor {
+        substitute::resolve_multilingual_for_contrib(&contrib, options)
+    } else {
+        Vec::new()
+    };
+
+    // Handle role-substitute if this role is empty.
+    if names_vec.is_empty() {
+        let values = substitute::resolve_role_substitute::<F>(
+            &role,
+            &component,
+            hints,
+            options,
+            reference,
+            &effective_rendering,
+            &fmt,
+            substitute.as_ref(),
+            &mut leading,
+        )?;
+        return Some((values, leading.applied));
+    }
+
+    let leading_substitute = leading.take_for(&names_vec);
+    let formatted = format_contributor_names(
+        &component,
+        &role,
+        &names_vec,
+        reference,
+        &effective_rendering,
+        options,
+        hints,
+        leading_substitute,
+    );
+
+    let role_omitted = is_role_label_omitted(options, &role);
+    let (role_prefix, role_suffix) = labels::resolve_role_labels::<F>(labels::RoleLabelContext {
+        component: &component,
+        role: &role,
+        reference,
+        names_count: names_vec.len(),
+        effective_rendering: &effective_rendering,
+        options,
+        fmt: &fmt,
+        role_omitted,
+    });
+
+    let is_pre_formatted = role_prefix.is_some() || role_suffix.is_some();
+    let formatted = crate::values::apply_abbreviation(formatted, options.abbreviation_map);
+    let final_value = if is_pre_formatted {
+        fmt.text(&formatted)
+    } else {
+        formatted
+    };
+
+    let values = ProcValues {
+        value: final_value,
+        prefix: role_prefix,
+        suffix: role_suffix,
+        url: crate::values::resolve_effective_url(
+            component.links.as_ref(),
+            options.config.links.as_ref(),
+            reference,
+            citum_schema::options::LinkAnchor::Component,
+        ),
+        substituted_key: None,
+        pre_formatted: is_pre_formatted,
+    };
+    Some((values, leading.applied))
+}
+
 impl ComponentValues for TemplateContributor {
-    #[allow(
-        clippy::too_many_lines,
-        reason = "large match statement for contributor role dispatch"
-    )]
     fn values<F: crate::render::format::OutputFormat<Output = String>>(
         &self,
         reference: &Reference,
         hints: &ProcHints,
         options: &RenderOptions<'_>,
     ) -> Option<ProcValues<F::Output>> {
-        let fmt = F::default();
-
-        let mut component = self.clone();
-        let effective_rendering = self.rendering.clone();
-
-        // Apply integral-citation subsequent-form (FullThenShort rule)
-        apply_integral_subsequent_form(&mut component, hints, options);
-
-        // Respect explicit suppression before either contributor rendering path.
-        if effective_rendering.suppress == Some(true) {
-            return None;
-        }
-
-        let Some(role) = component.contributor.as_single().cloned() else {
-            return merged::values::<F>(
-                &component,
-                reference,
-                hints,
-                options,
-                &effective_rendering,
-                &fmt,
-            );
-        };
-
-        if merged::is_role_suppressed(reference, &role, &options.config) {
-            return None;
-        }
-
-        // Resolve substitute config once for all substitute/suppression checks below.
-        let substitute = options.config.effective_substitute();
-
-        // The author slot is resolved as one effective-primary value so
-        // rendering, sorting, and disambiguation share type overrides and
-        // semantic-author precedence.
-        if matches!(role, ContributorRole::Author) {
-            if options.suppress_author {
-                return None;
-            }
-            if let Some(values) = substitute::resolve_author_substitute::<F>(
-                &component,
-                hints,
-                options,
-                reference,
-                &effective_rendering,
-                &fmt,
-                substitute.as_ref(),
-            ) {
-                return Some(values);
-            }
-            return resolve_author_fallback::<F>(
-                reference,
-                hints,
-                options,
-                &fmt,
-                substitute.as_ref(),
-            );
-        }
-
-        let contributor = contributor_for_role(reference, &role);
-
-        // Check if this secondary role is suppressed by role-substitute
-        // configuration. Primary-slot overrides deliberately promote roles
-        // that may also appear in these secondary fallback chains.
-        if substitute::is_role_suppressed_by_substitute(&role, substitute.as_ref(), reference) {
-            return None;
-        }
-
-        // Resolve multilingual names if configured
-        let names_vec = if let Some(contrib) = contributor {
-            substitute::resolve_multilingual_for_contrib(&contrib, options)
-        } else {
-            Vec::new()
-        };
-
-        // Handle role-substitute if this role is empty.
-        if names_vec.is_empty() {
-            return substitute::resolve_role_substitute::<F>(
-                &role,
-                &component,
-                hints,
-                options,
-                reference,
-                &effective_rendering,
-                &fmt,
-                substitute.as_ref(),
-            );
-        }
-
-        let formatted = format_contributor_names(
-            &component,
-            &role,
-            &names_vec,
-            reference,
-            &effective_rendering,
-            options,
-            hints,
-        );
-
-        let role_omitted = is_role_label_omitted(options, &role);
-        let (role_prefix, role_suffix) =
-            labels::resolve_role_labels::<F>(labels::RoleLabelContext {
-                component: &component,
-                role: &role,
-                reference,
-                names_count: names_vec.len(),
-                effective_rendering: &effective_rendering,
-                options,
-                fmt: &fmt,
-                role_omitted,
-            });
-
-        let is_pre_formatted = role_prefix.is_some() || role_suffix.is_some();
-        let formatted = crate::values::apply_abbreviation(formatted, options.abbreviation_map);
-        let final_value = if is_pre_formatted {
-            fmt.text(&formatted)
-        } else {
-            formatted
-        };
-
-        Some(ProcValues {
-            value: final_value,
-            prefix: role_prefix,
-            suffix: role_suffix,
-            url: crate::values::resolve_effective_url(
-                component.links.as_ref(),
-                options.config.links.as_ref(),
-                reference,
-                citum_schema::options::LinkAnchor::Component,
-            ),
-            substituted_key: None,
-            pre_formatted: is_pre_formatted,
-        })
+        values_with_leading_substitute::<F>(self, reference, hints, options, None)
+            .map(|(values, _)| values)
     }
 }

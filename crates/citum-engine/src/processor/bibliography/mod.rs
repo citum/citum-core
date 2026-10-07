@@ -36,7 +36,9 @@ use crate::render::format::OutputFormat;
 use crate::render::{ProcEntry, ProcTemplate};
 use crate::values::ProcHints;
 use citum_schema::grouping::BibliographyGroup;
-use citum_schema::options::{Config, bibliography::BibliographyConfig};
+use citum_schema::options::{
+    Config, SubsequentAuthorSubstituteRule, bibliography::BibliographyConfig,
+};
 use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 
@@ -191,7 +193,7 @@ impl Processor {
         &self,
         numbered_refs: &[(&'a Reference, usize)],
         ctx: &EntryRenderContext<'_>,
-    ) -> Vec<(&'a Reference, Option<ProcTemplate>, Option<String>)>
+    ) -> Vec<(&'a Reference, usize, Option<ProcTemplate>, Option<String>)>
     where
         F: OutputFormat<Output = String>,
     {
@@ -208,7 +210,7 @@ impl Processor {
         &self,
         numbered_refs: &[(&'a Reference, usize)],
         ctx: &EntryRenderContext<'_>,
-    ) -> Vec<(&'a Reference, Option<ProcTemplate>, Option<String>)>
+    ) -> Vec<(&'a Reference, usize, Option<ProcTemplate>, Option<String>)>
     where
         F: OutputFormat<Output = String>,
     {
@@ -218,6 +220,7 @@ impl Processor {
             .map(|&(reference, entry_number)| {
                 (
                     reference,
+                    entry_number,
                     renderer.process_bibliography_entry_with_format::<F>(reference, entry_number),
                     renderer.bibliography_marker_with_format::<F>(reference, entry_number),
                 )
@@ -239,7 +242,7 @@ impl Processor {
         &self,
         numbered_refs: &[(&'a Reference, usize)],
         ctx: &EntryRenderContext<'_>,
-    ) -> Vec<(&'a Reference, Option<ProcTemplate>, Option<String>)>
+    ) -> Vec<(&'a Reference, usize, Option<ProcTemplate>, Option<String>)>
     where
         F: OutputFormat<Output = String>,
     {
@@ -250,6 +253,7 @@ impl Processor {
                 let renderer = self.entry_renderer(ctx);
                 (
                     reference,
+                    entry_number,
                     renderer.process_bibliography_entry_with_format::<F>(reference, entry_number),
                     renderer.bibliography_marker_with_format::<F>(reference, entry_number),
                 )
@@ -331,7 +335,7 @@ impl Processor {
     /// matching.
     fn apply_substitution_post_pass<F>(
         &self,
-        rendered: Vec<(&Reference, Option<ProcTemplate>, Option<String>)>,
+        rendered: Vec<(&Reference, usize, Option<ProcTemplate>, Option<String>)>,
         substitute: Option<&String>,
         ctx: &EntryRenderContext<'_>,
     ) -> Vec<ProcEntry>
@@ -342,18 +346,42 @@ impl Processor {
         let mut bibliography = Vec::with_capacity(rendered.len());
         let mut previous_reference: Option<&Reference> = None;
 
-        for (reference, processed, marker) in rendered {
+        for (reference, entry_number, processed, marker) in rendered {
             let Some(mut processed) = processed else {
                 continue;
             };
 
+            let partial_first = matches!(
+                ctx.bibliography_config
+                    .subsequent_author_substitute_rule
+                    .as_ref(),
+                Some(SubsequentAuthorSubstituteRule::PartialFirst)
+            );
             if let Some(substitute_string) = substitute
                 && let Some(renderer) = renderer.as_ref()
                 && let Some(previous) = previous_reference
-                && self.contributors_match(previous, reference)
+                && if partial_first {
+                    self.leading_contributors_match(previous, reference)
+                } else {
+                    self.contributors_match(previous, reference)
+                }
             {
-                renderer
-                    .apply_author_substitution_with_format::<F>(&mut processed, substitute_string);
+                if partial_first {
+                    if let Some(substituted) = renderer
+                        .process_bibliography_entry_with_leading_substitute::<F>(
+                            reference,
+                            entry_number,
+                            substitute_string,
+                        )
+                    {
+                        processed = substituted;
+                    }
+                } else {
+                    renderer.apply_author_substitution_with_format::<F>(
+                        &mut processed,
+                        substitute_string,
+                    );
+                }
             }
 
             let ref_id = reference.id().unwrap_or_default().to_string();
@@ -476,6 +504,12 @@ impl Processor {
         let config = self.style.options.as_ref().unwrap_or(&self.default_config);
         let matcher = Matcher::new(&self.style, config, &self.locale);
         matcher.contributors_match(prev, current)
+    }
+
+    fn leading_contributors_match(&self, prev: &Reference, current: &Reference) -> bool {
+        let config = self.style.options.as_ref().unwrap_or(&self.default_config);
+        let matcher = Matcher::new(&self.style, config, &self.locale);
+        matcher.leading_contributors_match(prev, current)
     }
 
     /// Render the bibliography to a string using a specific format.

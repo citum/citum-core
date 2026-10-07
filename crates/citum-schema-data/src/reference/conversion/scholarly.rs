@@ -183,6 +183,13 @@ pub(super) fn from_monograph_ref(
         ContributorRole::Author,
         legacy.author.clone(),
     );
+    if r#type == MonographType::Interview {
+        push_legacy_contributor(
+            &mut contributors,
+            ContributorRole::Interviewee,
+            legacy.author.clone(),
+        );
+    }
     push_legacy_contributor(
         &mut contributors,
         ContributorRole::Editor,

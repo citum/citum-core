@@ -3943,6 +3943,11 @@
           ]
         },
         {
+          "description": "Person whose statements are recorded in an interview.",
+          "type": "string",
+          "const": "interviewee"
+        },
+        {
           "description": "Author of annotations accompanying the work (BibLaTeX `annotator`).",
           "type": "string",
           "const": "annotator"

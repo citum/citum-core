@@ -206,6 +206,8 @@ crate::tolerant_enum! {
         Host = "host",
         Guest = "guest",
         Interviewer = "interviewer",
+        /// Person whose statements are recorded in an interview.
+        Interviewee = "interviewee",
         Recipient = "recipient",
         Compiler = "compiler",
         Producer = "producer",

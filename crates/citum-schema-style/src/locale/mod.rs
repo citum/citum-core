@@ -765,6 +765,23 @@ legacy-term-aliases:
         assert_eq!(locale.dates.months.long[&july], "July");
     }
 
+    #[test]
+    fn partial_locale_yaml_inherits_date_names_from_english() {
+        let locale = Locale::from_yaml_str(
+            r#"
+locale: en-GB
+date-formats:
+  textual-full: "d MMMM yyyy"
+"#,
+        )
+        .expect("partial locale should parse");
+        let january = SubYearCode::new(1).expect("valid month code");
+
+        assert_eq!(locale.dates.months.long[&january], "January");
+        assert_eq!(locale.dates.months.short[&january], "Jan.");
+        assert_eq!(locale.date_formats["textual-full"], "d MMMM yyyy");
+    }
+
     /// An out-of-range override key never reaches `apply_override` — it is
     /// rejected at deserialize time (see `sub_year_code_rejects_out_of_range_key`
     /// in `types.rs`), so `apply_override` itself has nothing to validate.
