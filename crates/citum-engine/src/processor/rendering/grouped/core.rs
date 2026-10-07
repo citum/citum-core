@@ -1055,6 +1055,39 @@ impl Renderer<'_> {
     where
         F: crate::render::format::OutputFormat<Output = String>,
     {
+        self.process_bibliography_entry_with_optional_leading_substitute::<F>(
+            reference,
+            entry_number,
+            None,
+        )
+    }
+
+    /// Process a bibliography entry while replacing its first rendered contributor name.
+    pub(crate) fn process_bibliography_entry_with_leading_substitute<F>(
+        &self,
+        reference: &Reference,
+        entry_number: usize,
+        substitute: &str,
+    ) -> Option<ProcTemplate>
+    where
+        F: crate::render::format::OutputFormat<Output = String>,
+    {
+        self.process_bibliography_entry_with_optional_leading_substitute::<F>(
+            reference,
+            entry_number,
+            Some(substitute),
+        )
+    }
+
+    fn process_bibliography_entry_with_optional_leading_substitute<F>(
+        &self,
+        reference: &Reference,
+        entry_number: usize,
+        leading_contributor_substitute: Option<&str>,
+    ) -> Option<ProcTemplate>
+    where
+        F: crate::render::format::OutputFormat<Output = String>,
+    {
         let bib_spec = self.style.bibliography.as_ref()?;
 
         let item_language = crate::values::effective_item_language(reference);
@@ -1080,7 +1113,7 @@ impl Renderer<'_> {
         let template = self.apply_article_journal_bibliography_policy(reference, template);
         let template = self.apply_online_access_bibliography_policy(reference, template);
 
-        self.process_template_request_with_format::<F>(
+        self.process_template_request_with_format_and_leading_substitute::<F>(
             reference,
             TemplateRenderRequest {
                 template: template.as_ref(),
@@ -1095,6 +1128,7 @@ impl Renderer<'_> {
                 org_abbreviation_state: None,
                 first_reference_note_number: None,
             },
+            leading_contributor_substitute,
         )
     }
 
@@ -1153,6 +1187,20 @@ impl Renderer<'_> {
     where
         F: crate::render::format::OutputFormat<Output = String>,
     {
+        self.process_template_request_with_format_and_leading_substitute::<F>(
+            reference, request, None,
+        )
+    }
+
+    fn process_template_request_with_format_and_leading_substitute<F>(
+        &self,
+        reference: &Reference,
+        request: TemplateRenderRequest<'_>,
+        leading_contributor_substitute: Option<&str>,
+    ) -> Option<ProcTemplate>
+    where
+        F: crate::render::format::OutputFormat<Output = String>,
+    {
         let TemplateRenderRequest {
             template,
             context,
@@ -1201,8 +1249,14 @@ impl Renderer<'_> {
             org_abbreviation_state,
             first_reference_note_number: effective_first_ref_note,
         });
-        let mut components =
-            self.render_template_components::<F>(reference, &ref_type, &options, &hint, template);
+        let mut components = self.render_template_components::<F>(
+            reference,
+            &ref_type,
+            &options,
+            &hint,
+            template,
+            leading_contributor_substitute,
+        );
 
         self.apply_sentence_initial_context::<F>(&mut components, context, note_start_text_case);
 
@@ -1219,11 +1273,14 @@ impl Renderer<'_> {
         options: &RenderOptions<'_>,
         hint: &ProcHints,
         template: &[TemplateComponent],
+        leading_contributor_substitute: Option<&str>,
     ) -> Vec<ProcTemplateComponent>
     where
         F: crate::render::format::OutputFormat<Output = String>,
     {
-        let mut tracker = TemplateComponentTracker::default();
+        let mut tracker = TemplateComponentTracker::with_leading_contributor_substitute(
+            leading_contributor_substitute,
+        );
         let mut components = Vec::with_capacity(template.len());
         let mut component_options = options.clone();
         for (template_index, component) in template.iter().enumerate() {
@@ -1317,13 +1374,29 @@ impl Renderer<'_> {
             return None;
         }
 
-        let mut values =
-            resolved_component.values::<F>(ctx.reference, &component_hint, ctx.options)?;
+        let (mut values, leading_contributor_substituted) =
+            if let TemplateComponent::Contributor(contributor) = resolved_component {
+                crate::values::contributor::values_with_leading_substitute::<F>(
+                    contributor,
+                    ctx.reference,
+                    &component_hint,
+                    ctx.options,
+                    tracker.leading_contributor_substitute.as_deref(),
+                )?
+            } else {
+                (
+                    resolved_component.values::<F>(ctx.reference, &component_hint, ctx.options)?,
+                    false,
+                )
+            };
         // Suppress affixes when a component resolves to no meaningful content.
         // A whitespace-only value carries no data, so its prefix/suffix must
         // not leak into output (e.g. a ". In " prefix on an empty editor list).
         if values.value.trim().is_empty() {
             return None;
+        }
+        if leading_contributor_substituted {
+            tracker.leading_contributor_substitute = None;
         }
         self.apply_entry_link_fallback(ctx.reference, ctx.options, &mut values);
 

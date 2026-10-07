@@ -1042,6 +1042,47 @@ fn test_date_values() {
 }
 
 #[test]
+fn date_component_strip_periods_removes_abbreviation_periods() {
+    let config = make_config();
+    let locale = make_locale();
+    let options = RenderOptions {
+        config: Arc::new(config),
+        bibliography_config: None,
+        locale: &locale,
+        context: RenderContext::Bibliography,
+        mode: citum_schema::citation::CitationMode::NonIntegral,
+        suppress_author: false,
+        locator_raw: None,
+        ref_type: None,
+        show_semantics: true,
+        current_template_index: None,
+        abbreviation_map: None,
+        substitute_title_template: None,
+    };
+    let reference = Reference::from(LegacyReference {
+        id: "dated-2024".to_string(),
+        ref_type: "article-newspaper".to_string(),
+        issued: Some(DateVariable::full(2024, 1, 5)),
+        ..Default::default()
+    });
+    let component = TemplateDate {
+        date: TemplateDateVar::Issued,
+        form: DateForm::MonthAbbrDayYear,
+        rendering: Rendering {
+            strip_periods: Some(true),
+            ..Default::default()
+        },
+        ..Default::default()
+    };
+
+    let values = component
+        .values::<PlainText>(&reference, &ProcHints::default(), &options)
+        .expect("full issued date should render");
+
+    assert_eq!(values.value, "Jan 5, 2024");
+}
+
+#[test]
 fn test_message_component_renders_accessed_date_argument() {
     let config = make_config();
     let mut locale = make_locale();

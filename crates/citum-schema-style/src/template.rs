@@ -1209,6 +1209,8 @@ crate::str_enum! {
         Month = "month",
         Full = "full",
         MonthDay = "month-day",
+        /// Full month + day + year in US order: "January 15, 2024".
+        MonthDayYear = "month-day-year",
         YearMonthDay = "year-month-day",
         DayMonthAbbrYear = "day-month-abbr-year",
         /// Abbreviated month + day + year in US order: "Jan 15, 2024".

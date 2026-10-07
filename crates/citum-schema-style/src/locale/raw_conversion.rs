@@ -14,8 +14,8 @@ use super::Locale;
 use super::message::{MessageEvaluator, Mf2MessageEvaluator, NoOpEvaluator};
 use super::raw;
 use super::types::{
-    ContributorTerm, DateTerms, LocaleOverride, LocatorTerm, MaybeGendered, MessageSyntax,
-    MonthNames, SimpleTerm, SingularPlural, SubYearCode, TermForm,
+    ContributorTerm, LocaleOverride, LocatorTerm, MaybeGendered, MessageSyntax, SimpleTerm,
+    SingularPlural, SubYearCode, TermForm,
 };
 use crate::citation::LocatorType;
 use crate::template::ContributorRole;
@@ -136,23 +136,7 @@ impl Locale {
         let mut locale = base;
         locale.locale = raw.locale.clone();
         Self::remove_base_messages_shadowed_by_raw_terms(&raw, &mut locale.messages);
-        locale.dates = DateTerms {
-            months: MonthNames {
-                long: raw.dates.months.long.into_map(SubYearCode::MIN_MONTH),
-                short: raw.dates.months.short.into_map(SubYearCode::MIN_MONTH),
-            },
-            seasons: raw.dates.seasons.into_map(SubYearCode::MIN_SEASON),
-            uncertainty_term: raw.dates.uncertainty_term,
-            open_ended_term: raw.dates.open_ended_term,
-            am: raw.dates.am,
-            pm: raw.dates.pm,
-            timezone_utc: raw.dates.timezone_utc,
-            before_era: raw.dates.before_era,
-            ad: raw.dates.ad,
-            bc: raw.dates.bc,
-            bce: raw.dates.bce,
-            ce: raw.dates.ce,
-        };
+        merge_raw_date_terms(&mut locale, raw.dates);
         locale.punctuation_in_quote = punctuation_in_quote;
         locale.sort_articles = Self::default_articles_for_locale(&raw.locale);
 
@@ -814,6 +798,39 @@ impl Locale {
         for (k, v) in &ov.dates.seasons {
             self.dates.seasons.insert(*k, v.clone());
         }
+    }
+}
+
+fn merge_raw_date_terms(locale: &mut Locale, raw: raw::RawDateTerms) {
+    locale
+        .dates
+        .months
+        .long
+        .extend(raw.months.long.into_map(SubYearCode::MIN_MONTH));
+    locale
+        .dates
+        .months
+        .short
+        .extend(raw.months.short.into_map(SubYearCode::MIN_MONTH));
+    locale
+        .dates
+        .seasons
+        .extend(raw.seasons.into_map(SubYearCode::MIN_SEASON));
+    replace_some(&mut locale.dates.uncertainty_term, raw.uncertainty_term);
+    replace_some(&mut locale.dates.open_ended_term, raw.open_ended_term);
+    replace_some(&mut locale.dates.am, raw.am);
+    replace_some(&mut locale.dates.pm, raw.pm);
+    replace_some(&mut locale.dates.timezone_utc, raw.timezone_utc);
+    replace_some(&mut locale.dates.before_era, raw.before_era);
+    replace_some(&mut locale.dates.ad, raw.ad);
+    replace_some(&mut locale.dates.bc, raw.bc);
+    replace_some(&mut locale.dates.bce, raw.bce);
+    replace_some(&mut locale.dates.ce, raw.ce);
+}
+
+fn replace_some<T>(target: &mut Option<T>, source: Option<T>) {
+    if source.is_some() {
+        *target = source;
     }
 }
 

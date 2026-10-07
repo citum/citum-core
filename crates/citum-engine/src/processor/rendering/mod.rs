@@ -250,9 +250,17 @@ struct TemplateComponentTracker {
     rendered_vars: HashSet<String>,
     substituted_bases: HashSet<String>,
     issued_occurrences: usize,
+    leading_contributor_substitute: Option<String>,
 }
 
 impl TemplateComponentTracker {
+    fn with_leading_contributor_substitute(substitute: Option<&str>) -> Self {
+        Self {
+            leading_contributor_substitute: substitute.map(str::to_string),
+            ..Self::default()
+        }
+    }
+
     fn should_skip(&self, var_key: Option<&str>) -> bool {
         let Some(var_key) = var_key else {
             return false;
@@ -282,6 +290,7 @@ impl TemplateComponentTracker {
         self.rendered_vars.extend(other.rendered_vars);
         self.substituted_bases.extend(other.substituted_bases);
         self.issued_occurrences = self.issued_occurrences.max(other.issued_occurrences);
+        self.leading_contributor_substitute = other.leading_contributor_substitute;
     }
 
     /// Advance the issued-date occurrence counter from a child tracker,

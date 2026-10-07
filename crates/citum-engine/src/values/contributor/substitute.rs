@@ -148,6 +148,7 @@ fn data_role_for_builtin(role: &ContributorRole) -> Option<DataRole> {
         ContributorRole::AfterwordAuthor => DataRole::AfterwordAuthor,
         ContributorRole::Recipient => DataRole::Recipient,
         ContributorRole::Interviewer => DataRole::Interviewer,
+        ContributorRole::Interviewee => DataRole::Interviewee,
         ContributorRole::Guest => DataRole::Guest,
         ContributorRole::Performer => DataRole::Performer,
         ContributorRole::Narrator => DataRole::Narrator,
@@ -166,8 +167,7 @@ fn data_role_for_builtin(role: &ContributorRole) -> Option<DataRole> {
         ContributorRole::Author
         | ContributorRole::Editor
         | ContributorRole::Translator
-        | ContributorRole::Publisher
-        | ContributorRole::Interviewee => return None,
+        | ContributorRole::Publisher => return None,
         _ => return None,
     })
 }
@@ -370,11 +370,13 @@ fn resolve_named_substitute<F: OutputFormat<Output = String>>(
     effective_rendering: &Rendering,
     fmt: &F,
     substitute: &citum_schema::options::Substitute,
+    leading: &mut super::LeadingSubstitution<'_>,
 ) -> Option<ProcValues<F::Output>> {
     let names_vec = resolve_multilingual_for_contrib(contributor, options);
     if names_vec.is_empty() {
         return None;
     }
+    let leading_substitute = leading.take_for(&names_vec);
 
     // Preserve the scalar author fast path. Semantic authors are not
     // substitutes, do not carry role labels, and should avoid constructing a
@@ -388,6 +390,7 @@ fn resolve_named_substitute<F: OutputFormat<Output = String>>(
             effective_rendering,
             options,
             hints,
+            leading_substitute,
         );
         return Some(ProcValues {
             value: crate::values::apply_abbreviation(formatted, options.abbreviation_map),
@@ -431,8 +434,14 @@ fn resolve_named_substitute<F: OutputFormat<Output = String>>(
         strip_periods: effective_rendering.strip_periods,
         item_language: crate::values::effective_item_language(reference),
     };
-    let formatted =
-        super::names::format_names(&names_vec, &component.form, options, &name_overrides, hints);
+    let formatted = super::names::format_names_with_leading_substitute(
+        &names_vec,
+        &component.form,
+        options,
+        &name_overrides,
+        hints,
+        leading_substitute,
+    );
     let (prefix, suffix) = resolve_substitute_role_labels::<F>(&SubstituteRoleLabelContext {
         component,
         role,
@@ -485,6 +494,7 @@ fn resolve_contributor_substitute_for_role<F: OutputFormat<Output = String>>(
     effective_rendering: &Rendering,
     fmt: &F,
     substitute: &citum_schema::options::Substitute,
+    leading: &mut super::LeadingSubstitution<'_>,
 ) -> Option<ProcValues<F::Output>> {
     let contributor = lookup_role_contributor(reference, role)?;
     resolve_named_substitute(
@@ -497,6 +507,7 @@ fn resolve_contributor_substitute_for_role<F: OutputFormat<Output = String>>(
         effective_rendering,
         fmt,
         substitute,
+        leading,
     )
 }
 
@@ -569,6 +580,7 @@ pub(super) fn resolve_role_substitute<F: OutputFormat<Output = String>>(
     effective_rendering: &Rendering,
     fmt: &F,
     substitute: &citum_schema::options::Substitute,
+    leading: &mut super::LeadingSubstitution<'_>,
 ) -> Option<ProcValues<F::Output>> {
     let fallback_chain = find_role_substitute_chain(substitute, primary_role)?;
 
@@ -586,6 +598,7 @@ pub(super) fn resolve_role_substitute<F: OutputFormat<Output = String>>(
             effective_rendering,
             fmt,
             substitute,
+            leading,
         ) {
             return Some(result);
         }
@@ -1087,6 +1100,10 @@ pub(crate) fn effective_primary_names(
 ///
 /// Returns `Some(ProcValues)` if a substitute was found, `None` if the chain
 /// is exhausted with no result (caller should then return `None` from `values()`).
+#[allow(
+    clippy::too_many_arguments,
+    reason = "Author substitution needs template, reference, rendering, formatter, fallback, and one-shot substitution state."
+)]
 pub(super) fn resolve_author_substitute<F: OutputFormat<Output = String>>(
     component: &TemplateContributor,
     hints: &ProcHints,
@@ -1095,6 +1112,7 @@ pub(super) fn resolve_author_substitute<F: OutputFormat<Output = String>>(
     effective_rendering: &Rendering,
     fmt: &F,
     substitute: &citum_schema::options::Substitute,
+    leading: &mut super::LeadingSubstitution<'_>,
 ) -> Option<ProcValues<F::Output>> {
     match effective_primary(reference, substitute, &options.config, options.locale) {
         Some(EffectivePrimary::Contributor { contributor, role }) => resolve_named_substitute(
@@ -1107,6 +1125,7 @@ pub(super) fn resolve_author_substitute<F: OutputFormat<Output = String>>(
             effective_rendering,
             fmt,
             substitute,
+            leading,
         ),
         Some(EffectivePrimary::Merged(roles)) => {
             let mut merged = component.clone();
@@ -1119,6 +1138,7 @@ pub(super) fn resolve_author_substitute<F: OutputFormat<Output = String>>(
                 options,
                 effective_rendering,
                 fmt,
+                leading,
             )?;
             values.substituted_key = Some("contributor:effective-primary".to_string());
             Some(values)

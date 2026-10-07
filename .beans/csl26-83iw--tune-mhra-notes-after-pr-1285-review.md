@@ -2,10 +2,10 @@
 # csl26-83iw
 title: 'Tune mhra-notes after PR #1285 review'
 status: in-progress
-type: task
+type: feature
 priority: high
 created_at: 2026-10-06T20:08:02Z
-updated_at: 2026-10-06T20:53:41Z
+updated_at: 2026-10-07T11:35:33Z
 parent: csl26-w0hf
 ---
 

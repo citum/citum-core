@@ -806,7 +806,7 @@ impl Processor {
                     .collect();
                 let section_rendered = rendered
                     .iter()
-                    .filter(|(reference, _, _)| {
+                    .filter(|(reference, _, _, _)| {
                         reference
                             .id()
                             .as_deref()

@@ -68,12 +68,15 @@ pub fn get_locale_override_bytes(id: &str) -> Option<&'static [u8]> {
         "de-DE-chicago" => Some(include_bytes!(
             "../../embedded/locales/overrides/de-DE-chicago.yaml"
         )),
+        "en-GB-mhra" => Some(include_bytes!(
+            "../../embedded/locales/overrides/en-GB-mhra.yaml"
+        )),
         _ => None,
     }
 }
 
 /// All available embedded locale override IDs.
-pub const EMBEDDED_LOCALE_OVERRIDE_IDS: &[&str] = &["en-US-chicago", "de-DE-chicago"];
+pub const EMBEDDED_LOCALE_OVERRIDE_IDS: &[&str] = &["en-US-chicago", "de-DE-chicago", "en-GB-mhra"];
 
 #[cfg(test)]
 mod tests {

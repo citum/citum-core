@@ -745,6 +745,22 @@ mod tests {
         let (explicit, warnings) = resolve_embedded_locale(&style, Some("en-GB"));
         assert!(!explicit.grammar_options.punctuation_in_quote);
         assert!(warnings.is_empty());
+
+        style
+            .options
+            .as_mut()
+            .expect("test style options")
+            .locale_override = Some("en-GB-mhra".to_string());
+        let (mhra, warnings) = resolve_embedded_locale(&style, None);
+        assert_eq!(
+            mhra.general_term(
+                &citum_schema::locale::GeneralTerm::EtAl,
+                &citum_schema::locale::TermForm::Long,
+                None,
+            ),
+            Some("and others")
+        );
+        assert!(warnings.is_empty());
     }
 
     fn make_test_bibliography() -> RefsInput {

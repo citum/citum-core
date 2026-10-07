@@ -33,7 +33,8 @@ use citum_schema::{
         BibliographySortPartitioning, Config, ContributorConfig, DelimiterPrecedesLast,
         DemoteNonDroppingParticle, DisplayAsSort, LinkAnchor, LinkTarget, LinksConfig,
         MultilingualConfig, MultilingualMode, Processing, ProcessingCustom, SecondFieldAlign, Sort,
-        SortKey, SortSpec, SortingConfig, SortingMultilingualMode, TwoNameDelimiterPolicy,
+        SortKey, SortSpec, SortingConfig, SortingMultilingualMode, SubsequentAuthorSubstituteRule,
+        TwoNameDelimiterPolicy,
     },
     reference::{
         Contributor, ContributorList, DateValue, InputReference, Monograph, MonographType,
@@ -43,10 +44,10 @@ use citum_schema::{
         types::{ArchiveInfo, EprintInfo, MultilingualComplex, MultilingualString},
     },
     template::{
-        ContributorForm, ContributorRole, DateForm, DateVariable, DelimiterPunctuation,
+        ContributorForm, ContributorRole, DateForm, DateVariable, DelimiterPunctuation, NameOrder,
         NumberVariable, Rendering, SimpleVariable, TemplateComponent, TemplateConditionField,
-        TemplateContributor, TemplateDate, TemplateGroup, TemplateGroupCondition, TemplateNumber,
-        TemplateTitle, TemplateVariable, TitleForm, TitleType,
+        TemplateContributor, TemplateDate, TemplateGroup, TemplateGroupCondition,
+        TemplateGroupSelect, TemplateNumber, TemplateTitle, TemplateVariable, TitleForm, TitleType,
     },
 };
 use indexmap::IndexMap;
@@ -2733,6 +2734,243 @@ fn magic_subsequent_author_substitute_reuses_the_full_author_group() {
         result,
         "John Smith, Book C (2002)\n\nJohn Smith and Jane Roe, Book A (2000)\n\n———, Book B (2001)"
     );
+}
+
+#[test]
+fn partial_first_substitution_replaces_only_the_matching_lead_author() {
+    // CSL 1.0.2 § Bibliography Options: `partial-first` substitutes the first
+    // name when it matches, even if the remaining author lists differ.
+    let style = Style {
+        info: StyleInfo {
+            title: Some("Partial First Substitute Test".to_string()),
+            id: Some("partial-first-substitute-test".into()),
+            ..Default::default()
+        },
+        options: Some(Config {
+            processing: Some(Processing::AuthorDate),
+            contributors: Some(ContributorConfig {
+                and: Some(AndOptions::Text),
+                delimiter_precedes_last: Some(DelimiterPrecedesLast::Always),
+                ..Default::default()
+            }),
+            ..Default::default()
+        }),
+        bibliography: Some(BibliographySpec {
+            options: Some(BibliographyOptions {
+                subsequent_author_substitute: Some("——".to_string()),
+                subsequent_author_substitute_rule: Some(
+                    SubsequentAuthorSubstituteRule::PartialFirst,
+                ),
+                ..Default::default()
+            }),
+            template: Some(
+                vec![TemplateComponent::Group(TemplateGroup {
+                    group: vec![
+                        TemplateComponent::Contributor(TemplateContributor {
+                            contributor: ContributorRole::Author.into(),
+                            form: ContributorForm::Long,
+                            name_order: Some(NameOrder::FamilyFirstOnly),
+                            ..Default::default()
+                        }),
+                        citum_schema::tc_title!(Primary),
+                    ],
+                    delimiter: Some(DelimiterPunctuation::Comma),
+                    ..Default::default()
+                })]
+                .into(),
+            ),
+            ..Default::default()
+        }),
+        ..Default::default()
+    };
+    let bibliography = citum_schema::bib_map![
+        "alpha" => make_book_multi_author("alpha", vec![("Smith", "John"), ("Doe", "Jane")], 2020, "Alpha"),
+        "beta" => make_book_multi_author("beta", vec![("Smith", "John"), ("Roe", "Janet")], 2021, "Beta"),
+        "gamma" => make_book_multi_author("gamma", vec![("Smith", "John"), ("Jones", "Mary")], 2022, "Gamma"),
+    ];
+
+    let rendered = Processor::new(style, bibliography).render_bibliography();
+
+    assert_eq!(
+        rendered,
+        "Smith, John, and Jane Doe, Alpha\n\n——, and Mary Jones, Gamma\n\n——, and Janet Roe, Beta"
+    );
+}
+
+fn partial_first_substitution_style(template: Vec<TemplateComponent>, substitute: &str) -> Style {
+    Style {
+        info: StyleInfo {
+            title: Some("Partial First Substitute Test".to_string()),
+            id: Some("partial-first-substitute-test".into()),
+            ..Default::default()
+        },
+        options: Some(Config {
+            processing: Some(Processing::AuthorDate),
+            contributors: Some(ContributorConfig {
+                and: Some(AndOptions::Text),
+                delimiter_precedes_last: Some(DelimiterPrecedesLast::Always),
+                ..Default::default()
+            }),
+            ..Default::default()
+        }),
+        bibliography: Some(BibliographySpec {
+            options: Some(BibliographyOptions {
+                subsequent_author_substitute: Some(substitute.to_string()),
+                subsequent_author_substitute_rule: Some(
+                    SubsequentAuthorSubstituteRule::PartialFirst,
+                ),
+                ..Default::default()
+            }),
+            template: Some(template.into()),
+            ..Default::default()
+        }),
+        ..Default::default()
+    }
+}
+
+fn partial_first_test_bibliography() -> IndexMap<String, InputReference> {
+    citum_schema::bib_map![
+        "alpha" => make_book_multi_author("alpha", vec![("Smith", "John"), ("Doe", "Jane")], 2020, "Alpha"),
+        "beta" => make_book_multi_author("beta", vec![("Smith", "John"), ("Roe", "Janet")], 2021, "Beta"),
+    ]
+}
+
+fn partial_first_author_component(name_order: NameOrder) -> TemplateComponent {
+    TemplateComponent::Contributor(TemplateContributor {
+        contributor: ContributorRole::Author.into(),
+        form: ContributorForm::Long,
+        name_order: Some(name_order),
+        ..Default::default()
+    })
+}
+
+#[test]
+fn partial_first_substitution_changes_the_contributor_instead_of_matching_title_text() {
+    let style = partial_first_substitution_style(
+        vec![TemplateComponent::Group(TemplateGroup {
+            group: vec![
+                citum_schema::tc_title!(Primary),
+                partial_first_author_component(NameOrder::FamilyFirstOnly),
+            ],
+            delimiter: Some(DelimiterPunctuation::Comma),
+            ..Default::default()
+        })],
+        "——",
+    );
+    let bibliography = citum_schema::bib_map![
+        "alpha" => make_book_multi_author(
+            "alpha",
+            vec![("Smith", "John"), ("Doe", "Jane")],
+            2020,
+            "Smith, John, and Jane Doe"
+        ),
+        "beta" => make_book_multi_author(
+            "beta",
+            vec![("Smith", "John"), ("Roe", "Janet")],
+            2021,
+            "Smith, John, and Janet Roe"
+        ),
+    ];
+
+    let rendered = Processor::new(style, bibliography).render_bibliography();
+
+    assert_eq!(
+        rendered,
+        "Smith, John, and Jane Doe, Smith, John, and Jane Doe\n\nSmith, John, and Janet Roe, ——, and Janet Roe"
+    );
+}
+
+#[test]
+fn partial_first_substitution_uses_the_rendered_select_first_contributor() {
+    let losing_contributor = TemplateComponent::Group(TemplateGroup {
+        group: vec![TemplateComponent::Contributor(TemplateContributor {
+            contributor: ContributorRole::Author.into(),
+            form: ContributorForm::FamilyOnly,
+            ..Default::default()
+        })],
+        render_when: Some(TemplateGroupCondition {
+            field_present: Some(TemplateConditionField::Doi),
+            field_absent: None,
+        }),
+        ..Default::default()
+    });
+    let style = partial_first_substitution_style(
+        vec![TemplateComponent::Group(TemplateGroup {
+            group: vec![TemplateComponent::Group(TemplateGroup {
+                group: vec![
+                    losing_contributor,
+                    partial_first_author_component(NameOrder::FamilyFirstOnly),
+                ],
+                select: TemplateGroupSelect::First,
+                ..Default::default()
+            })],
+            ..Default::default()
+        })],
+        "——",
+    );
+
+    let rendered = Processor::new(style, partial_first_test_bibliography()).render_bibliography();
+
+    assert_eq!(rendered, "Smith, John, and Jane Doe\n\n——, and Janet Roe");
+}
+
+#[test]
+fn partial_first_substitution_escapes_the_marker_for_html_output() {
+    let style = partial_first_substitution_style(
+        vec![partial_first_author_component(NameOrder::FamilyFirstOnly)],
+        "<Mark>",
+    );
+
+    let rendered = Processor::new(style, partial_first_test_bibliography())
+        .render_bibliography_with_format_standalone::<Html>();
+
+    assert_eq!(
+        rendered,
+        concat!(
+            "<div class=\"citum-bibliography\">\n",
+            "<div class=\"citum-entry\" id=\"ref-alpha\" data-author=\"Smith, and Doe\" data-year=\"2020\" data-title=\"Alpha\"><span class=\"citum-author\">Smith, John, and Jane Doe</span></div>\n",
+            "<div class=\"citum-entry\" id=\"ref-beta\" data-author=\"Smith, and Roe\" data-year=\"2021\" data-title=\"Beta\"><span class=\"citum-author\">&lt;Mark&gt;, and Janet Roe</span></div>\n",
+            "</div>"
+        )
+    );
+}
+
+#[test]
+fn interviewee_role_renders_the_csl_interview_author_semantics() {
+    let style = Style {
+        info: StyleInfo {
+            title: Some("Interviewee Role Test".to_string()),
+            id: Some("interviewee-role-test".into()),
+            ..Default::default()
+        },
+        bibliography: Some(BibliographySpec {
+            template: Some(
+                vec![TemplateComponent::Contributor(TemplateContributor {
+                    contributor: ContributorRole::Interviewee.into(),
+                    form: ContributorForm::Long,
+                    rendering: Rendering {
+                        prefix: Some(DelimiterPunctuation::Custom("with ".to_string())),
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                })]
+                .into(),
+            ),
+            ..Default::default()
+        }),
+        ..Default::default()
+    };
+    let bibliography = citum_io::load_bibliography(
+        &project_root().join("tests/fixtures/references-expanded.json"),
+    )
+    .expect("expanded bibliography should load");
+
+    let rendered = Processor::new(style, bibliography)
+        .render_selected_bibliography_with_format_standalone::<PlainText, _>([
+            "ITEM-24".to_string()
+        ]);
+
+    assert_eq!(rendered, "with Yoshua Bengio");
 }
 
 fn subsequent_author_substitute_does_not_apply_to_different_authors() {

@@ -1313,6 +1313,7 @@ fn conversion_retains_av_interview_metadata() {
         "title": "The Future of Artificial Intelligence",
         "genre": "video-interview",
         "medium": "television",
+        "author": [{"family": "Bengio", "given": "Yoshua"}],
         "interviewer": [{"family": "Colbert", "given": "Stephen"}],
         "URL": "https://example.com/interview",
         "issued": {"date-parts": [[2023, 11, 10]]}
@@ -1331,6 +1332,13 @@ fn conversion_retains_av_interview_metadata() {
             assert_eq!(name.given.to_string(), "Stephen");
         }
         other => panic!("expected structured interviewer, got {:?}", other),
+    }
+    match reference.contributor(ContributorRole::Interviewee) {
+        Some(Contributor::StructuredName(name)) => {
+            assert_eq!(name.family.to_string(), "Bengio");
+            assert_eq!(name.given.to_string(), "Yoshua");
+        }
+        other => panic!("expected structured interviewee, got {:?}", other),
     }
 }
 

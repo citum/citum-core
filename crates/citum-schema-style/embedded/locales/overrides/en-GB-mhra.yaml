@@ -1,0 +1,3 @@
+# MHRA's CSL source replaces the standard Latin abbreviation with its English expansion.
+messages:
+  term.et-al: "and others"
