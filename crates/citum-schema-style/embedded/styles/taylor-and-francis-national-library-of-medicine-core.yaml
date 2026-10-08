@@ -1,5 +1,5 @@
 # yaml-language-server: $schema=https://docs.citum.org/schemas/style.json
-version: "0.77.0"
+version: "0.78.0"
 info:
   title: Taylor & Francis - National Library of Medicine (citation-sequence, brackets)
   description: 'NLM style as used by T & F : Brackets, no et-al, no issue numbers, locators in text possible as per Version 2.2 from 30 May 2023.'

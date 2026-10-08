@@ -1,5 +1,5 @@
 # yaml-language-server: $schema=https://docs.citum.org/schemas/style.json
-version: "0.77.0"
+version: "0.78.0"
 info:
   title: Oxford University Standard for Citation of Legal Authorities 4th edition
   description: 'Oxford University Standard for Citation of Legal Authorities, notes system. For a Zotero group showing data entry: https://zotero.org/groups/2205533/collections/AC7ETLN4'
