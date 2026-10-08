@@ -166,6 +166,8 @@ class ReleaseWorkflowTests(unittest.TestCase):
         self.assertIsNotNone(audit)
         assert audit is not None
         block = audit.group(0)
+        self.assertIn("npm install --prefix scripts", block)
+        self.assertNotIn("npm ci --prefix scripts", block)
         self.assertIn('if [ "${{ steps.infer.outputs.schema-changed }}" = "true" ]', block)
         self.assertIn("MANIFEST_ARGS+=(--update-manifest)", block)
         self.assertIn('"${MANIFEST_ARGS[@]}"', block)

@@ -247,7 +247,7 @@ jobs:
         id: coverage-audits
         continue-on-error: true
         run: |
-          npm ci --prefix scripts
+          npm install --prefix scripts
           cargo build --quiet --bin citum
 
           MANIFEST_ARGS=()

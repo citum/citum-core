@@ -21,6 +21,7 @@ Release runs 37378298134, 37781717085, and 37781714827 failed before updating re
 - [x] Add workflow and script regression tests
 - [x] Update the release workflow guide
 - [x] Run focused validation and bean hygiene
+- [x] Restore the dependency install supported without a tracked scripts lockfile
 - [ ] After landing, verify the release run updates PR #1289 from current main and reaches green CI
 
 ## Summary of Changes
@@ -29,3 +30,4 @@ Release runs 37378298134, 37781717085, and 37781714827 failed before updating re
 - Made audit refresh fail open for branch push and PR upsert, then fail the job explicitly.
 - Added schema-only manifest repinning, regression coverage, and recovery documentation.
 - Validated the Python and Node suites, shell syntax, and actionlint. Zizmor reports only the pre-existing JSR dependency-install finding in the release workflow.
+- Corrected the audit step to use `npm install` because the scripts lockfile is intentionally untracked in CI.
