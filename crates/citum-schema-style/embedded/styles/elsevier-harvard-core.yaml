@@ -1,5 +1,5 @@
 # yaml-language-server: $schema=https://docs.citum.org/schemas/style.json
-version: "0.77.0"
+version: "0.78.0"
 info:
   title: Elsevier (author-date/Harvard, with titles)
   fields:
