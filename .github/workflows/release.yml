@@ -80,6 +80,9 @@ jobs:
     needs: detect
     if: needs.detect.outputs.should-release == 'true'
     runs-on: ubuntu-latest
+    concurrency:
+      group: release-pr
+      cancel-in-progress: false
     permissions:
       contents: write
       issues: write
@@ -92,6 +95,56 @@ jobs:
           token: ${{ secrets.RELEASE_TOKEN }}
           # persist-credentials: true (default) — needed for git push to release/next
 
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Configure branching and tagging
+        id: config
+        run: |
+          # All releases flow through a release PR on release/next.
+          {
+            echo "branch=release/next"
+            echo "create_pr=true"
+            echo "push_tags=false"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Create release branch from latest main
+        if: steps.config.outputs.create_pr == 'true'
+        run: |
+          git checkout -B "${{ steps.config.outputs.branch }}" origin/main
+          git submodule update --init --recursive
+
+      - name: Refresh release inputs from latest main
+        id: infer
+        run: |
+          LAST_TAG=$(git tag --sort=-version:refname -l 'v*' | head -1)
+          if [ -z "$LAST_TAG" ]; then
+            ROOT=$(git rev-list --max-parents=0 HEAD | tail -1)
+            if [ "$ROOT" = "$(git rev-parse HEAD)" ]; then
+              RANGE="HEAD"
+            else
+              RANGE="${ROOT}..HEAD"
+            fi
+          else
+            RANGE="${LAST_TAG}..HEAD"
+          fi
+          CURRENT=$(python3 - <<'PY'
+          import re, pathlib
+          text = pathlib.Path("Cargo.toml").read_text()
+          pattern = r'^\[workspace\.package\].*?^version\s*=\s*"([^"]+)"'
+          match = re.search(pattern, text, re.DOTALL | re.MULTILINE)
+          if not match:
+              raise SystemExit("workspace package version not found in Cargo.toml")
+          print(match.group(1))
+          PY
+          )
+          python3 scripts/infer-release-bump.py \
+            --range "$RANGE" \
+            --current-version "$CURRENT" \
+            --github-output "$GITHUB_OUTPUT"
+
       - uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8  # stable
 
       - name: Install tools
@@ -99,13 +152,8 @@ jobs:
         with:
           tool: cargo-release,cargo-semver-checks,git-cliff
 
-      - name: Configure git
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-
       - name: Semver safety check
-        if: needs.detect.outputs.code-changed == 'true'
+        if: steps.infer.outputs.code-changed == 'true'
         continue-on-error: true
         id: semver
         run: |
@@ -118,7 +166,7 @@ jobs:
       - name: Resolve final bump level
         id: resolve
         run: |
-          LEVEL="${{ needs.detect.outputs.bump-level }}"
+          LEVEL="${{ steps.infer.outputs.level }}"
           # If semver-checks found breaking changes, escalate
           if [ "${{ steps.semver.outputs.breaking }}" = "true" ]; then
             CURRENT=$(grep -oP 'version = "\K[^"]+' Cargo.toml | head -1)
@@ -126,20 +174,6 @@ jobs:
             if [ "$MAJOR" = "0" ]; then LEVEL="minor"; else LEVEL="major"; fi
           fi
           echo "level=$LEVEL" >> "$GITHUB_OUTPUT"
-
-      - name: Configure branching and tagging
-        id: config
-        run: |
-          # All releases flow through a release PR on release/next.
-          {
-            echo "branch=release/next"
-            echo "create_pr=true"
-            echo "push_tags=false"
-          } >> "$GITHUB_OUTPUT"
-
-      - name: Create release branch
-        if: steps.config.outputs.create_pr == 'true'
-        run: git checkout -B "${{ steps.config.outputs.branch }}"
 
       - name: Generate changelog
         run: |
@@ -174,7 +208,7 @@ jobs:
           fi
 
       - name: Bump schema version (if schema changed)
-        if: needs.detect.outputs.schema-changed == 'true'
+        if: steps.infer.outputs.schema-changed == 'true'
         run: |
           python3 scripts/bump.py schema "${{ steps.resolve.outputs.level }}" \
             --yes --no-commit --no-tag --no-validate
@@ -193,7 +227,6 @@ jobs:
 
       - name: Bump workspace version
         run: |
-          BRANCH="${{ steps.config.outputs.branch }}"
           TAG_FLAG=""
           if [ "${{ steps.config.outputs.push_tags }}" = "false" ]; then
             TAG_FLAG="--no-tag"
@@ -210,26 +243,33 @@ jobs:
               -m "Pin release registry URLs before regenerating clean-worktree audit evidence."
           fi
 
-          npm install --prefix scripts
+      - name: Refresh coverage audit evidence
+        id: coverage-audits
+        continue-on-error: true
+        run: |
+          npm ci --prefix scripts
           cargo build --quiet --bin citum
+
+          MANIFEST_ARGS=()
+          if [ "${{ steps.infer.outputs.schema-changed }}" = "true" ]; then
+            MANIFEST_ARGS+=(--update-manifest)
+          fi
           node scripts/refresh-style-coverage-audits.js \
-            --citum-bin target/debug/citum
-          git add crates/citum-schema-style/embedded/registry/default.yaml \
-            docs/architecture/audits
+            --citum-bin target/debug/citum \
+            "${MANIFEST_ARGS[@]}"
+
+          git add docs/architecture/audits
           if ! git diff --cached --quiet; then
             git commit \
               -m "chore(report): refresh coverage audit packets" \
               -m "Regenerate registered audit evidence for the release binary."
           fi
 
-          git push -f origin "$BRANCH"
-
-          if [ "${{ steps.config.outputs.push_tags }}" = "true" ]; then
-            git push origin --tags
-          fi
+      - name: Push release branch
+        run: git push --force-with-lease origin "${{ steps.config.outputs.branch }}"
 
       - name: Tag schema release when schema changed
-        if: steps.config.outputs.push_tags == 'true' && needs.detect.outputs.schema-changed == 'true'
+        if: steps.config.outputs.push_tags == 'true' && steps.infer.outputs.schema-changed == 'true'
         run: |
           SCHEMA_VERSION=$(sed -n \
             's/.*STYLE_SCHEMA_VERSION: \&str = "\([^"]*\)".*/\1/p' \
@@ -252,25 +292,36 @@ jobs:
           GH_TOKEN: ${{ secrets.RELEASE_TOKEN }}
         run: |
           NEW_VERSION=$(sed -n '/^\[workspace\.package\]/,/^\[/{s/^version[[:space:]]*=[[:space:]]*"\([^"]*\)".*/\1/p;}' Cargo.toml | head -1)
-          BODY="Automated release PR for **v${NEW_VERSION}**.
+          BODY_FILE="$RUNNER_TEMP/release-pr-body.md"
+          cat > "$BODY_FILE" <<EOF
+          Automated release PR for **v${NEW_VERSION}**.
 
           | Detail | Value |
           |--------|-------|
           | Bump level | \`${{ steps.resolve.outputs.level }}\` |
-          | Schema changed | ${{ needs.detect.outputs.schema-changed }} |
-          | Code changed | ${{ needs.detect.outputs.code-changed }} |"
+          | Schema changed | ${{ steps.infer.outputs.schema-changed }} |
+          | Code changed | ${{ steps.infer.outputs.code-changed }} |
+          EOF
 
-          EXISTING=$(gh pr list --head "release/next" --json number --jq '.[0].number' || true)
+          EXISTING=$(gh pr list --state open --head "release/next" --base main \
+            --json number --jq '.[0].number')
           if [ -n "$EXISTING" ]; then
-            gh pr edit "$EXISTING" --title "chore: release v${NEW_VERSION}" --body "$BODY"
+            gh pr edit "$EXISTING" --title "chore: release v${NEW_VERSION}" \
+              --body-file "$BODY_FILE"
           else
             # Ensure the 'release' label exists; --force handles existing labels gracefully by updating them
             gh label create "release" --color "0E8A16" --description "Automated release pull requests" --force
 
             gh pr create --head "release/next" --base main \
-              --title "chore: release v${NEW_VERSION}" --body "$BODY" \
+              --title "chore: release v${NEW_VERSION}" --body-file "$BODY_FILE" \
               --label "release"
           fi
+
+      - name: Report coverage audit failure
+        if: steps.coverage-audits.outcome == 'failure'
+        run: |
+          echo "::error::Coverage audit regeneration failed after the release PR was updated."
+          exit 1
 
 
   # ── Step 3: Auto-tag when release PR merges ───────────────────────

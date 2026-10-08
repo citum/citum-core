@@ -8,7 +8,7 @@ The release workflow is triggered when:
 1. A non-release PR merges to `main` (automatic)
 2. Manual workflow dispatch via GitHub Actions
 
-The workflow does **not** trigger on direct pushes to `main` — all code arrives via merged pull requests.
+The workflow does **not** trigger on direct pushes to `main`. All code arrives via merged pull requests.
 
 ## Conventional Commits and Bump Levels
 
@@ -34,16 +34,24 @@ The repository uses one canonical root `CHANGELOG.md` for the shared workspace v
 When code merges to `main`, the `detect` job:
 1. Reads the commit history since the last tag
 2. Infers the bump level
-3. Sends output to the `release-pr` job
+3. Starts the `release-pr` job when the range contains a release-worthy change
 
 The `release-pr` job then:
-1. Creates a branch named `release/next`
-2. Bumps all crate versions via `cargo-release`
-3. Updates schema versions and regenerates schema files
-4. Creates a pull request against `main` titled `chore: release v<version>`
-5. Updates that PR on subsequent release-triggering merges until it is merged
+1. Waits for any active release-PR update to finish
+2. Recreates `release/next` from the latest `origin/main`
+3. Recalculates the bump level and schema status from that checkout
+4. Bumps all crate versions via `cargo-release`
+5. Updates schema versions and regenerates schema files
+6. Refreshes registered coverage-audit evidence
+7. Pushes `release/next` and creates or updates the pull request titled `chore: release v<version>`
 
 All release levels (`patch`, `minor`, pre-1.0-capped `major`) use this same `release/next` PR flow.
+
+## Coverage audits during release preparation
+
+A schema release changes the `version` field in every shipped style. The release workflow passes `--update-manifest` to `scripts/refresh-style-coverage-audits.js` for that case so registered audit manifests record the new style hashes. Releases without a schema bump retain strict manifest checking.
+
+Coverage-audit generation is not allowed to strand the release PR. If generation fails, the workflow still pushes the release commits and updates the PR. The final workflow step then reports the audit failure and exits with an error. The PR remains visible for diagnosis but cannot be treated as ready until its checks pass.
 
 ## Tag and Publish (Future)
 
@@ -64,7 +72,7 @@ cargo publish -p citum-schema
 cargo publish -p citum-migrate
 cargo publish -p citum-engine
 
-# Schema is not published to crates.io — it's versioned via git tags
+# Schema is not published to crates.io; it is versioned via git tags
 ```
 
 ## Repository Settings
@@ -101,13 +109,13 @@ Each has a descriptive `description` field in its `Cargo.toml` and inherits work
 ### Internal Crates (Not Published)
 
 These crates are marked `publish = false` in their `Cargo.toml`:
-- `csl-legacy` — CSL 1.0 XML parser (internal use only)
-- `citum` (citum-cli) — CLI binary (distributed separately)
-- `citum-server` — JSON-RPC server (distributed separately)
-- `citum-analyze` — Analysis and testing tools (internal use only)
-- `citum-pdf` — Typst PDF rendering (internal; may be published later)
-- `citum_store` — Configuration/cache storage (internal; may be published later)
-- `citum-bindings` — Language bindings (internal; published separately as language-specific packages)
+- `csl-legacy`: CSL 1.0 XML parser (internal use only)
+- `citum` (citum-cli): CLI binary (distributed separately)
+- `citum-server`: JSON-RPC server (distributed separately)
+- `citum-analyze`: Analysis and testing tools (internal use only)
+- `citum-pdf`: Typst PDF rendering (internal; may be published later)
+- `citum_store`: Configuration/cache storage (internal; may be published later)
+- `citum-bindings`: Language bindings (internal; published separately as language-specific packages)
 
 ## Troubleshooting
 
@@ -121,12 +129,17 @@ These crates are marked `publish = false` in their `Cargo.toml`:
 2. Confirm `RELEASE_TOKEN` is available and has repo write permissions
 3. Check whether the release trigger inferred `should-release=false`
 
+**Release PR updates but the release workflow fails:**
+1. Open the `Refresh coverage audit evidence` step and repair the reported audit input or generator error
+2. Push the repair to `main`; the next serialized release run rebuilds the PR from the latest main branch
+3. Use a manual workflow dispatch with `release-pr` selected only when no new merge will trigger a retry
+
 **Tag not created after PR merges:**
 1. Ensure the `auto-tag` job has `contents:write` permission
 2. Check that the release PR was merged from `release/next` branch
 
 ## See Also
 
-- `CLAUDE.md` — Citum project instructions document the versioning signals
-- `release.toml` — cargo-release configuration
-- `scripts/infer-release-bump.py` — bump inference logic
+- `CLAUDE.md`: Citum project instructions document the versioning signals
+- `release.toml`: cargo-release configuration
+- `scripts/infer-release-bump.py`: bump inference logic
