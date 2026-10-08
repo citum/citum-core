@@ -5,6 +5,29 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.83.0] - 2026-10-08
+
+### Bug Fixes
+
+**ci**
+
+- Make release PR updates resilient ([`4cf9b41`](https://github.com/citum/citum-core/commit/4cf9b41a2c7877f82bc1e6df5095e05e4aa208a6))
+
+- Restore release audit install ([`8723f11`](https://github.com/citum/citum-core/commit/8723f116f7562fa7edecc7c01f7d56420f742f99))
+
+
+**engine**
+
+- Improve CSL parity semantics ([`fd62626`](https://github.com/citum/citum-core/commit/fd626265820a844ebb052e1d3cb8f54f36ae8076))
+
+
+**styles**
+
+- Tune mhra bibliography parity ([`d250fc7`](https://github.com/citum/citum-core/commit/d250fc7a72c3e09c0e29b6c0655253b1603056df))
+
+- Improve MHRA parity ([`b4465e9`](https://github.com/citum/citum-core/commit/b4465e9aa14a504918a67898ecebffbd9ca2d94a))
+
+
 ## [0.82.0] - 2026-10-05
 
 ### Bug Fixes
