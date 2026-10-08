@@ -37,6 +37,14 @@ class ReleaseWorkflowTests(unittest.TestCase):
         cls.publish_crates_script = PUBLISH_CRATES_SCRIPT.read_text(encoding="utf-8")
         cls.build_jsr_script = BUILD_JSR_SCRIPT.read_text(encoding="utf-8")
         cls.jsr_readme_source = JSR_README_SOURCE.read_text(encoding="utf-8")
+        release_pr = re.search(
+            r"\n  release-pr:\n(?P<block>.*?)(?=\n  [a-zA-Z0-9_-]+:|\Z)",
+            cls.workflow,
+            flags=re.DOTALL,
+        )
+        if release_pr is None:
+            raise AssertionError("release-pr job not found")
+        cls.release_pr = release_pr.group("block")
 
     def test_release_branch_is_always_release_next(self) -> None:
         self.assertIn('echo "branch=release/next"', self.workflow)
@@ -122,21 +130,69 @@ class ReleaseWorkflowTests(unittest.TestCase):
         self.assertIn("python3 scripts/sync-style-versions.py", self.workflow)
         self.assertIn("python3 scripts/pin-registry-sources.py", self.workflow)
 
+    def test_release_pr_jobs_are_serialized_without_cancelling_active_work(self) -> None:
+        self.assertRegex(
+            self.release_pr,
+            r"concurrency:\s+group: release-pr\s+cancel-in-progress: false",
+        )
+
+    def test_release_pr_regenerates_from_latest_main_and_refreshes_inference(self) -> None:
+        checkout = self.release_pr.index(
+            'git checkout -B "${{ steps.config.outputs.branch }}" origin/main'
+        )
+        infer = self.release_pr.index("- name: Refresh release inputs from latest main")
+        semver = self.release_pr.index("- name: Semver safety check")
+        self.assertLess(checkout, infer)
+        self.assertLess(infer, semver)
+        self.assertIn("if: steps.infer.outputs.code-changed == 'true'", self.release_pr)
+        self.assertIn('LEVEL="${{ steps.infer.outputs.level }}"', self.release_pr)
+        self.assertIn("if: steps.infer.outputs.schema-changed == 'true'", self.release_pr)
+
     def test_release_pr_commits_registry_pins_before_clean_worktree_audits(self) -> None:
         """Coverage baselines must run after release-only registry edits are committed."""
-        block = re.search(
-            r"- name: Bump workspace version.*?(?=\n      - name:|\Z)",
-            self.workflow,
-            flags=re.DOTALL,
-        )
-        self.assertIsNotNone(block)
-        assert block is not None
-        text = block.group(0)
+        text = self.release_pr
         pin = text.index("python3 scripts/pin-registry-sources.py")
         pin_commit = text.index('chore(release): pin registry sources')
         audit = text.index("node scripts/refresh-style-coverage-audits.js")
         self.assertLess(pin, pin_commit)
         self.assertLess(pin_commit, audit)
+
+    def test_schema_release_repins_coverage_manifests(self) -> None:
+        audit = re.search(
+            r"- name: Refresh coverage audit evidence.*?(?=\n      - name:|\Z)",
+            self.release_pr,
+            flags=re.DOTALL,
+        )
+        self.assertIsNotNone(audit)
+        assert audit is not None
+        block = audit.group(0)
+        self.assertIn('if [ "${{ steps.infer.outputs.schema-changed }}" = "true" ]', block)
+        self.assertIn("MANIFEST_ARGS+=(--update-manifest)", block)
+        self.assertIn('"${MANIFEST_ARGS[@]}"', block)
+
+    def test_audit_failure_updates_release_pr_before_failing_job(self) -> None:
+        audit = self.release_pr.index("- name: Refresh coverage audit evidence")
+        push = self.release_pr.index("- name: Push release branch")
+        upsert = self.release_pr.index("- name: Create or update release PR")
+        report = self.release_pr.index("- name: Report coverage audit failure")
+        self.assertLess(audit, push)
+        self.assertLess(push, upsert)
+        self.assertLess(upsert, report)
+        self.assertRegex(
+            self.release_pr,
+            r"- name: Refresh coverage audit evidence\s+id: coverage-audits\s+continue-on-error: true",
+        )
+        self.assertIn("if: steps.coverage-audits.outcome == 'failure'", self.release_pr)
+
+    def test_release_branch_push_and_pr_upsert_are_race_safe(self) -> None:
+        self.assertIn("git push --force-with-lease origin", self.release_pr)
+        self.assertNotIn("git push -f origin", self.release_pr)
+        self.assertIn("BODY_FILE=\"$RUNNER_TEMP/release-pr-body.md\"", self.release_pr)
+        self.assertIn('--body-file "$BODY_FILE"', self.release_pr)
+        pr_list = re.search(r"EXISTING=\$\(gh pr list.*?\)", self.release_pr, flags=re.DOTALL)
+        self.assertIsNotNone(pr_list)
+        assert pr_list is not None
+        self.assertNotIn("|| true", pr_list.group(0))
 
     def test_ci_executes_the_staged_jsr_package_in_all_supported_runtimes(self) -> None:
         release_dry_runs = re.search(
