@@ -196,7 +196,7 @@ styles:
   fields:
   - science
 - id: alpha
-  url: https://raw.githubusercontent.com/citum/citum-core/v0.82.0/styles/alpha.yaml
+  url: https://raw.githubusercontent.com/citum/citum-core/v0.83.0/styles/alpha.yaml
   kind: independent
   title: Alpha (biblatex-alpha)
 - id: american-association-for-cancer-research
@@ -207,7 +207,7 @@ styles:
   fields:
   - medicine
 - id: american-chemical-society
-  url: https://raw.githubusercontent.com/citum/citum-core/v0.82.0/styles/american-chemical-society.yaml
+  url: https://raw.githubusercontent.com/citum/citum-core/v0.83.0/styles/american-chemical-society.yaml
   kind: independent
   title: ACS Guide 2022 revision
   description: The American Chemical Society style
@@ -248,13 +248,13 @@ styles:
   fields:
   - communications
 - id: american-mathematical-society-label
-  url: https://raw.githubusercontent.com/citum/citum-core/v0.82.0/styles/american-mathematical-society-label.yaml
+  url: https://raw.githubusercontent.com/citum/citum-core/v0.83.0/styles/american-mathematical-society-label.yaml
   kind: journal
   title: American Mathematical Society (label)
   fields:
   - math
 - id: american-medical-association-alphabetical
-  url: https://raw.githubusercontent.com/citum/citum-core/v0.82.0/styles/american-medical-association-alphabetical.yaml
+  url: https://raw.githubusercontent.com/citum/citum-core/v0.83.0/styles/american-medical-association-alphabetical.yaml
   kind: journal
   title: AMA Manual of Style 11th edition (sorted alphabetically)
   description: 'AMA Manual of Style: A Guide for Authors and Editors (11th ed.), with alphabetically sorted bibliography.'
@@ -310,7 +310,7 @@ styles:
   fields:
   - engineering
 - id: american-society-of-mechanical-engineers
-  url: https://raw.githubusercontent.com/citum/citum-core/v0.82.0/styles/american-society-of-mechanical-engineers.yaml
+  url: https://raw.githubusercontent.com/citum/citum-core/v0.83.0/styles/american-society-of-mechanical-engineers.yaml
   kind: journal
   title: American Society of Mechanical Engineers
   description: A style for the ASME's 23 journals
@@ -447,7 +447,7 @@ styles:
   - sociology
   - theology
 - id: chicago-notes-bibliography-17th-edition
-  url: https://raw.githubusercontent.com/citum/citum-core/v0.82.0/styles/chicago-notes-bibliography-17th-edition.yaml
+  url: https://raw.githubusercontent.com/citum/citum-core/v0.83.0/styles/chicago-notes-bibliography-17th-edition.yaml
   kind: independent
   title: Chicago Manual of Style 17th edition (notes and bibliography)
   description: Chicago-style source citations (with Bluebook for legal citations), notes and bibliography system, 17th edition
@@ -631,7 +631,7 @@ styles:
   kind: journal
   title: Disability and Rehabilitation
 - id: elsevier-vancouver-author-date
-  url: https://raw.githubusercontent.com/citum/citum-core/v0.82.0/styles/elsevier-vancouver-author-date.yaml
+  url: https://raw.githubusercontent.com/citum/citum-core/v0.83.0/styles/elsevier-vancouver-author-date.yaml
   kind: journal
   title: Elsevier - NLM/Vancouver (name-year)
   description: A style for some Elsevier journals, resembles Vancouver style, but using author-date format
@@ -648,13 +648,13 @@ styles:
   fields:
   - medicine
 - id: entomological-society-of-america
-  url: https://raw.githubusercontent.com/citum/citum-core/v0.82.0/styles/entomological-society-of-america.yaml
+  url: https://raw.githubusercontent.com/citum/citum-core/v0.83.0/styles/entomological-society-of-america.yaml
   kind: journal
   title: Entomological Society of America
   fields:
   - biology
 - id: experimental/bluebook-legal
-  url: https://raw.githubusercontent.com/citum/citum-core/v0.82.0/styles/experimental/bluebook-legal.yaml
+  url: https://raw.githubusercontent.com/citum/citum-core/v0.83.0/styles/experimental/bluebook-legal.yaml
   kind: independent
   title: Bluebook Legal Citation (Simplified)
   description: 'Demonstrates bibliography grouping with legal type hierarchy following Bluebook conventions. Primary sources
@@ -662,18 +662,18 @@ styles:
 
     '
 - id: experimental/chicago-author-date
-  url: https://raw.githubusercontent.com/citum/citum-core/v0.82.0/styles/experimental/chicago-author-date.yaml
+  url: https://raw.githubusercontent.com/citum/citum-core/v0.83.0/styles/experimental/chicago-author-date.yaml
   kind: independent
   title: Chicago Manual of Style 18th edition (author-date)
 - id: experimental/jm-chicago-legal
-  url: https://raw.githubusercontent.com/citum/citum-core/v0.82.0/styles/experimental/jm-chicago-legal.yaml
+  url: https://raw.githubusercontent.com/citum/citum-core/v0.83.0/styles/experimental/jm-chicago-legal.yaml
   kind: independent
   title: Juris-M Chicago Legal (Experimental)
   description: 'Demonstrates legal sectional bibliography groups aligned to Juris-M and Bluebook-oriented workflows.
 
     '
 - id: experimental/jm-turabian-multilingual
-  url: https://raw.githubusercontent.com/citum/citum-core/v0.82.0/styles/experimental/jm-turabian-multilingual.yaml
+  url: https://raw.githubusercontent.com/citum/citum-core/v0.83.0/styles/experimental/jm-turabian-multilingual.yaml
   kind: independent
   title: Turabian Notes (Multilingual)
   description: 'Experimental multilingual variant of Chicago/Turabian notes style. Supports CJK and other complex scripts
@@ -681,7 +681,7 @@ styles:
 
     '
 - id: experimental/locale-specific-bibliography-layouts
-  url: https://raw.githubusercontent.com/citum/citum-core/v0.82.0/styles/experimental/locale-specific-bibliography-layouts.yaml
+  url: https://raw.githubusercontent.com/citum/citum-core/v0.83.0/styles/experimental/locale-specific-bibliography-layouts.yaml
   kind: independent
   title: Locale-Specific Bibliography Layouts
   description: 'Demonstrates bibliography.locales[] selecting a different full-entry layout for CJK items than for the default
@@ -689,7 +689,7 @@ styles:
 
     '
 - id: experimental/multilingual-academic
-  url: https://raw.githubusercontent.com/citum/citum-core/v0.82.0/styles/experimental/multilingual-academic.yaml
+  url: https://raw.githubusercontent.com/citum/citum-core/v0.83.0/styles/experimental/multilingual-academic.yaml
   kind: independent
   title: Multilingual Academic Citation (Juris-M Style)
   description: 'Demonstrates per-group sorting for multilingual bibliographies. Vietnamese references use given-family ordering,
@@ -697,7 +697,7 @@ styles:
 
     '
 - id: experimental/multilingual-partitioned
-  url: https://raw.githubusercontent.com/citum/citum-core/v0.82.0/styles/experimental/multilingual-partitioned.yaml
+  url: https://raw.githubusercontent.com/citum/citum-core/v0.83.0/styles/experimental/multilingual-partitioned.yaml
   kind: journal
   title: Multilingual Script Partitioning Demo
 - id: frontiers-medical-journals
@@ -782,7 +782,7 @@ styles:
   - medicine
   - biology
 - id: harvard-cite-them-right
-  url: https://raw.githubusercontent.com/citum/citum-core/v0.82.0/styles/harvard-cite-them-right.yaml
+  url: https://raw.githubusercontent.com/citum/citum-core/v0.83.0/styles/harvard-cite-them-right.yaml
   kind: independent
   title: Cite Them Right 12th edition (author-date/Harvard)
   description: Harvard according to Cite Them Right, 11th edition.
@@ -819,7 +819,7 @@ styles:
   fields:
   - biology
 - id: international-journal-of-wildland-fire
-  url: https://raw.githubusercontent.com/citum/citum-core/v0.82.0/styles/international-journal-of-wildland-fire.yaml
+  url: https://raw.githubusercontent.com/citum/citum-core/v0.83.0/styles/international-journal-of-wildland-fire.yaml
   kind: journal
   title: International Journal of Wildland Fire
   description: "This style produces the CSIRO style used in the International Journal of Wildland Fire,\n      the Australian\
@@ -964,7 +964,7 @@ styles:
   fields:
   - science
 - id: nature
-  url: https://raw.githubusercontent.com/citum/citum-core/v0.82.0/styles/nature.yaml
+  url: https://raw.githubusercontent.com/citum/citum-core/v0.83.0/styles/nature.yaml
   kind: independent
   title: Nature
   fields:
@@ -1094,7 +1094,7 @@ styles:
   fields:
   - medicine
 - id: numeric-comp
-  url: https://raw.githubusercontent.com/citum/citum-core/v0.82.0/styles/numeric-comp.yaml
+  url: https://raw.githubusercontent.com/citum/citum-core/v0.83.0/styles/numeric-comp.yaml
   kind: independent
   title: Numeric Compound
   description: 'A generic numeric style with compound citation support. Groups related references under a shared citation
@@ -1102,7 +1102,7 @@ styles:
 
     '
 - id: oscola-no-ibid
-  url: https://raw.githubusercontent.com/citum/citum-core/v0.82.0/styles/oscola-no-ibid.yaml
+  url: https://raw.githubusercontent.com/citum/citum-core/v0.83.0/styles/oscola-no-ibid.yaml
   kind: independent
   title: OSCOLA 4th edition (no ibid.)
   description: 'Oxford University Standard for Citation of Legal Authorities, notes system, no ibid. For a Zotero group showing
@@ -1110,7 +1110,7 @@ styles:
   fields:
   - law
 - id: oscola
-  url: https://raw.githubusercontent.com/citum/citum-core/v0.82.0/styles/oscola.yaml
+  url: https://raw.githubusercontent.com/citum/citum-core/v0.83.0/styles/oscola.yaml
   kind: independent
   title: Oxford University Standard for Citation of Legal Authorities 4th edition
   description: 'Oxford University Standard for Citation of Legal Authorities, notes system. For a Zotero group showing data
@@ -1154,7 +1154,7 @@ styles:
   fields:
   - biology
 - id: royal-society-of-chemistry
-  url: https://raw.githubusercontent.com/citum/citum-core/v0.82.0/styles/royal-society-of-chemistry.yaml
+  url: https://raw.githubusercontent.com/citum/citum-core/v0.83.0/styles/royal-society-of-chemistry.yaml
   kind: independent
   title: Royal Society of Chemistry
   description: The Royal Society of Chemistry journal style.
@@ -1314,7 +1314,7 @@ styles:
   kind: independent
   title: Thieme-German (Deutsch)
 - id: thomson-reuters-legal-tax-and-accounting-australia
-  url: https://raw.githubusercontent.com/citum/citum-core/v0.82.0/styles/thomson-reuters-legal-tax-and-accounting-australia.yaml
+  url: https://raw.githubusercontent.com/citum/citum-core/v0.83.0/styles/thomson-reuters-legal-tax-and-accounting-australia.yaml
   kind: independent
   title: Thomson Reuters - Legal, Tax & Accounting Australia
   description: Style for a series of Thomson Reuters law publications for Australia
