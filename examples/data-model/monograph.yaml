@@ -1,15 +1,27 @@
 # Structural class: monograph — a monolithic work published or produced as a
 # complete entity, such as a book or technical report.
 references:
-  - id: kuhn1962
+  - id: peary1985
     class: monograph
     type: book
-    title: The Structure of Scientific Revolutions
+    title: The North Pole
     author:
-      - family: Kuhn
-        given: Thomas S.
-    issued: "1962"
+      - family: Peary
+        given: Robert E.
+    contributors:
+      - roles: [introduction-author]
+        contributor:
+          family: Roosevelt
+          given: Theodore
+    issued: "1985"
+    edition: facsimile repr.
     publisher:
-      name: University of Chicago Press
-      place: Chicago
-    isbn: "9780226458113"
+      name: Time Life
+      place: New York
+    original:
+      class: monograph
+      type: book
+      issued: "1910"
+      publisher:
+        name: Frederick A. Stokes
+        place: New York

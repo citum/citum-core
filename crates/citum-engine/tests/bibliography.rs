@@ -153,6 +153,37 @@ fn chicago_author_date_multivolume_fixture_renders_all_reference_shapes() {
     }
 }
 
+#[test]
+fn mhra_book_regressions_render_original_publication_editors_and_doi() {
+    let style = load_style("styles/embedded/mhra-notes.yaml");
+    let bibliography = citum_io::load_bibliography(
+        &project_root().join("tests/fixtures/style-regressions/mhra-issues-1295-1296.json"),
+    )
+    .expect("MHRA issue regression fixture should load");
+
+    let processor = Processor::new(style, bibliography);
+    let rendered = processor
+        .render_selected_bibliography_with_format_standalone::<PlainText, _>([
+            "mhra-1295".to_string(),
+            "mhra-1296".to_string(),
+        ])
+        .trim()
+        .to_string();
+
+    assert!(
+        rendered.contains(
+            "Peary, Robert E., _The North Pole_, intro. by Theodore Roosevelt (Frederick A. Stokes, 1910; facsimile repr. Time Life, 1985)"
+        ),
+        "MHRA example iii should render the introduction author and original publication: {rendered}"
+    );
+    assert!(
+        rendered.contains(
+            "_Readings in the Anthropocene: The Environmental Humanities, German Studies, and Beyond_, ed. by Sabine Wilke and Japhet Johnstone (Bloomsbury, 2017), doi:10.5040/9781501307782"
+        ),
+        "MHRA example iv should render title-first editors and DOI: {rendered}"
+    );
+}
+
 fn build_sorted_style(sort: Vec<SortSpec>) -> Style {
     Style {
         info: StyleInfo {

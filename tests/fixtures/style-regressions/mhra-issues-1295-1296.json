@@ -1,0 +1,62 @@
+{
+  "references": [
+    {
+    "id": "mhra-1295",
+    "class": "monograph",
+    "type": "book",
+    "title": "The North Pole",
+    "author": [
+      {
+        "family": "Peary",
+        "given": "Robert E."
+      }
+    ],
+    "contributors": [
+      {
+        "roles": ["introduction-author"],
+        "contributor": {
+          "family": "Roosevelt",
+          "given": "Theodore"
+        }
+      }
+    ],
+    "issued": "1985",
+    "edition": "facsimile repr.",
+    "publisher": {
+      "name": "Time Life",
+      "place": "New York"
+    },
+    "original": {
+      "class": "monograph",
+      "type": "book",
+      "issued": "1910",
+      "publisher": {
+        "name": "Frederick A. Stokes",
+        "place": "New York"
+      }
+    }
+    },
+    {
+    "id": "mhra-1296",
+    "class": "monograph",
+    "type": "book",
+    "title": "Readings in the Anthropocene: The Environmental Humanities, German Studies, and Beyond",
+    "editor": [
+      {
+        "family": "Wilke",
+        "given": "Sabine"
+      },
+      {
+        "family": "Johnstone",
+        "given": "Japhet"
+      }
+    ],
+    "issued": "2017",
+    "publisher": {
+      "name": "Bloomsbury",
+      "place": "New York"
+    },
+    "doi": "10.5040/9781501307782"
+    }
+  ]
+}

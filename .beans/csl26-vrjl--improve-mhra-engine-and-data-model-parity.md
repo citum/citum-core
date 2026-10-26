@@ -10,7 +10,7 @@ tags:
     - fidelity
     - dates
 created_at: 2026-10-07T11:35:33Z
-updated_at: 2026-10-08T12:44:35Z
+updated_at: 2026-10-26T20:59:28Z
 parent: csl26-83iw
 ---
 
@@ -32,3 +32,9 @@ Investigate and implement general engine/data-model behavior behind MHRA exact-p
 ## PR #1290 review resolution
 
 Replaced partial-first post-render substring mutation with render-time contributor substitution. Added exact regressions for unrelated leading text collisions, select-first/render-when winner selection, and HTML escaping. Focused bibliography suite: 121/121 passed. Required Rust gate: 2,831/2,831 passed after clean formatting and clippy. Stacked MHRA report: citations 33/34, bibliography 43/46, exact parity 44/79, SQI 0.897. Diagnostic MHRA Zotero benchmark remains non-gating at 52/127. PRs #1290 and #1291 remain draft; review threads pending CI evidence.
+
+
+
+## Issues #1295/#1296 style follow-up
+
+The two new GitHub issues were resolved as style/documentation work, not an engine bug. The MHRA book regressions now cover original publication data, introduction authors, title-first editors, DOI rendering, and reprint edition placement; focused and full bibliography tests pass.
