@@ -18,4 +18,5 @@ ignore = [
     "RUSTSEC-2026-0194",  # quick-xml quadratic attr check (transitive via Typst stack; fix needs quick-xml >=0.41 upstream — removal tracked in bean csl26-blyb)
     "RUSTSEC-2026-0195",  # quick-xml NsReader memory-exhaustion DoS (same transitive paths and fix version as 0194 — bean csl26-blyb)
     "RUSTSEC-2026-0206",  # rustybuzz unmaintained (transitive via krilla/typst-layout/typst-library/usvg)
+    "RUSTSEC-2024-0449",  # unsafe-libyaml unmaintained (transitive via serde_yaml_ng and Typst; no maintained upstream replacement is available)
 ]
