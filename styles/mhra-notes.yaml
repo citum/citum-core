@@ -350,6 +350,7 @@ bibliography:
     separator: " "
     contributors:
       delimiter-precedes-last: always
+      two-name-delimiter-policy: suppress-in-citation-or-given-first
       shorten:
         min: 4
         use-first: 1
@@ -548,17 +549,50 @@ bibliography:
             name-order: family-first-only
           - title: primary
         delimiter: ", "
+      - contributor: editor
+        form: verb-short
+        name-order: given-first
+        prefix: ", "
+      - contributor: introduction-author
+        form: long
+        name-order: given-first
+        prefix: ", intro. by "
       - contributor: translator
         form: verb-short
         prefix: ", "
-      - number: edition
-        prefix: ", "
-      - variable: publisher
+      - group:
+          - group:
+              - variable: original-publisher
+              - date: original-published
+                form: year
+            delimiter: ", "
+          - group:
+              - number: edition
+              - group:
+                  - variable: publisher
+                  - date: issued
+                    form: year
+                delimiter: ", "
+            delimiter: " "
+        delimiter: "; "
         prefix: " ("
-      - date: issued
-        form: year
-        prefix: ", "
         suffix: ")"
+        render-when:
+          field-present: original-published
+      - group:
+          - number: edition
+            prefix: ", "
+          - variable: publisher
+            prefix: " ("
+          - date: issued
+            form: year
+            prefix: ", "
+            suffix: ")"
+        delimiter: ""
+        render-when:
+          field-absent: original-published
+      - variable: doi
+        prefix: ", doi:"
   template:
     - group:
         - contributor: author

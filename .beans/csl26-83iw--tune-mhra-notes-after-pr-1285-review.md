@@ -5,10 +5,16 @@ status: in-progress
 type: feature
 priority: high
 created_at: 2026-10-06T20:08:02Z
-updated_at: 2026-10-07T11:35:33Z
+updated_at: 2026-10-26T21:20:23Z
 parent: csl26-w0hf
 ---
 
 Resolve review comment pullrequestreview-5433601774 by restoring MHRA bibliography author/title punctuation, then run a bounded style-improvement wave using fidelity, exact-parity, rich-input, and SQI evidence. Update regression coverage, benchmarks/baselines as appropriate, and prepare a review PR.
 
 \n\nEvidence: review regression passes; headline fidelity is 33/34 citations and 43/46 bibliography entries in the current local oracle comparison; SQI baseline remains 0.917; exact parity improved 9/79 -> 27/79. The wave adds journal issue/date structure, monograph/report/thesis/web/broadcast/film/newspaper variants, patent identifiers, URL brackets, and preserves the diagnostic-only MHRA Zotero benchmark (59/127); the embedded parity baseline is ratcheted to 27/79. Remaining exact misses cluster in full-date propagation, localized genre/role wording, repeated-author substitution, and legal/archive field mapping.
+
+
+
+## Issues #1295/#1296 follow-up
+
+Implemented the MHRA `mhra-notes` style follow-up in both authored and embedded copies: introduction-author output, original publication history, reprint edition placement, title-first editor rendering, and book DOI output. Added focused engine regressions and a native `original:` documentation example. Final evidence: core fidelity 0.950, exact parity 44/79 unchanged, supplemental MHRA bibliography 59/127 (up from 52/127), and SQI 0.896.
