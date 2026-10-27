@@ -55,6 +55,7 @@
             <a class="doc-sidebar-link active" href="../schemas/">JSON Schemas</a>
             <a class="doc-sidebar-link" href="../reference.html">All reference</a>
             <a class="doc-sidebar-link" href="../guides/bibliography-data.html">Bibliography authoring</a>
+            <a class="doc-sidebar-link" href="../guides/registry-and-auxiliary-schemas.html">Registry &amp; auxiliary data</a>
             <div class="doc-sidebar-title doc-sidebar-title--spaced">Reference</div>
             <a class="doc-sidebar-link" href="../reference/SCHEMA_VERSIONING.md">Schema versioning</a>
             <a class="doc-sidebar-link" href="../reference/biblatex-mapping.html">BibLaTeX mapping</a>
@@ -111,6 +112,10 @@
                     <code>abbrev-map.json</code>
                 </a>
             </div>
+            <p class="citum-note" style="margin-top: 0.75rem;">
+                See the <a href="../guides/registry-and-auxiliary-schemas.html">registry and auxiliary data guide</a>
+                for complete configuration examples and the generated <a href="type-map.json">type map</a>.
+            </p>
         </section>
 
         <section class="doc-section">
@@ -140,6 +145,17 @@
                 <a href="../reference/generated/data-model-fields.html">field reference</a>, and
                 <a href="../reference/data-model.html">data-model overview</a>.
             </p>
+        </section>
+
+        <section class="doc-section">
+            <div class="doc-section-header">
+                <h2>Generated conversion metadata</h2>
+                <p>
+                    <code>type-map.json</code> is generated mapping data for migration and tooling,
+                    not an authoring schema. Read the <a href="type-map.json">machine-readable map</a>
+                    or the <a href="../reference/generated/csl-json-mapping.html">generated CSL-JSON reference</a>.
+                </p>
+            </div>
         </section>
 
         <section class="doc-section">
@@ -174,6 +190,16 @@
                 <div class="workshop-label">Bibliography YAML</div>
                 <pre><code># yaml-language-server: $schema=https://docs.citum.org/schemas/bib.json</code></pre>
                 <button class="citum-copy-btn" onclick="navigator.clipboard.writeText('# yaml-language-server: $schema=https://docs.citum.org/schemas/bib.json')" title="Copy to clipboard">Copy</button>
+            </div>
+            <div class="workshop-block" style="margin-top: 0.75rem;">
+                <div class="workshop-label">Registry YAML</div>
+                <pre><code># yaml-language-server: $schema=https://docs.citum.org/schemas/registry.json</code></pre>
+                <button class="citum-copy-btn" onclick="navigator.clipboard.writeText('# yaml-language-server: $schema=https://docs.citum.org/schemas/registry.json')" title="Copy to clipboard">Copy</button>
+            </div>
+            <div class="workshop-block" style="margin-top: 0.75rem;">
+                <div class="workshop-label">Abbreviation map YAML</div>
+                <pre><code># yaml-language-server: $schema=https://docs.citum.org/schemas/abbrev-map.json</code></pre>
+                <button class="citum-copy-btn" onclick="navigator.clipboard.writeText('# yaml-language-server: $schema=https://docs.citum.org/schemas/abbrev-map.json')" title="Copy to clipboard">Copy</button>
             </div>
         </section>
         </div>

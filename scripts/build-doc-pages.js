@@ -14,6 +14,14 @@ const DOCS_DIR = path.join(__dirname, '../docs');
 
 const PAGES = [
     {
+        src: 'guides/REGISTRY_AND_AUXILIARY_SCHEMAS.md',
+        out: 'guides/registry-and-auxiliary-schemas.html',
+        title: 'Using registry and auxiliary schemas',
+        kicker: 'Guide',
+        description:
+            'Authoring and integration guidance for Citum style registries, document-level abbreviation maps, and generated type mappings.',
+    },
+    {
         src: 'guides/BIBLIOGRAPHY_DATA.md',
         out: 'guides/bibliography-data.html',
         title: 'Authoring bibliography data',
