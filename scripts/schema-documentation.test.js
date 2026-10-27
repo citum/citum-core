@@ -9,9 +9,15 @@ const addFormats = require('ajv-formats');
 
 const ROOT = path.join(__dirname, '..');
 const BIB_SCHEMA_PATH = path.join(ROOT, 'docs/schemas/bib.json');
+const CITATION_SCHEMA_PATH = path.join(ROOT, 'docs/schemas/citation.json');
+const SERVER_SCHEMA_PATH = path.join(ROOT, 'docs/schemas/server.json');
 const REGISTRY_SCHEMA_PATH = path.join(ROOT, 'docs/schemas/registry.json');
 const ABBREV_SCHEMA_PATH = path.join(ROOT, 'docs/schemas/abbrev-map.json');
 const GUIDE_PATH = path.join(ROOT, 'docs/guides/BIBLIOGRAPHY_DATA.md');
+const CITATION_SERVER_GUIDE_PATH = path.join(
+    ROOT,
+    'docs/guides/CITATION_AND_SERVER.md'
+);
 const AUXILIARY_GUIDE_PATH = path.join(
     ROOT,
     'docs/guides/REGISTRY_AND_AUXILIARY_SCHEMAS.md'
@@ -47,6 +53,38 @@ function referencedDefinition(fieldSchema, definitions) {
 function hasEffectiveDescription(fieldSchema, definitions) {
     if (fieldSchema.description?.trim()) return true;
     return Boolean(referencedDefinition(fieldSchema, definitions)?.description?.trim());
+}
+
+function undocumentedProperties(schema) {
+    const definitions = schema.$defs || {};
+    const missing = [];
+
+    function visit(node, path) {
+        if (!node || typeof node !== 'object') return;
+
+        for (const [fieldName, fieldSchema] of Object.entries(node.properties || {})) {
+            const fieldPath = `${path}.${fieldName}`;
+            if (!hasEffectiveDescription(fieldSchema, definitions)) {
+                missing.push(fieldPath);
+            }
+            for (const unionKey of ['oneOf', 'anyOf', 'allOf']) {
+                (fieldSchema[unionKey] || []).forEach((branch, index) => {
+                    if (branch.properties) visit(branch, `${fieldPath}.${unionKey}[${index}]`);
+                });
+            }
+        }
+
+        for (const unionKey of ['oneOf', 'anyOf', 'allOf']) {
+            (node[unionKey] || []).forEach((branch, index) => {
+                if (branch.properties) visit(branch, `${path}.${unionKey}[${index}]`);
+            });
+        }
+    }
+
+    for (const [definitionName, definition] of Object.entries(definitions)) {
+        visit(definition, `$defs.${definitionName}`);
+    }
+    return missing;
 }
 
 function bibliographyValidator() {
@@ -136,6 +174,69 @@ test('generated data-model field tables contain no undocumented fields', () => {
         .filter((line) => /^\| `[^`]+` \|/.test(line) && line.endsWith('| — |'));
 
     assert.deepEqual(undocumented, []);
+});
+
+test('citation and server integration examples validate against published schemas', () => {
+    const markdown = fs.readFileSync(CITATION_SERVER_GUIDE_PATH, 'utf8');
+    const citationBlocks = [...markdown.matchAll(/```yaml\n([\s\S]*?)```/g)]
+        .map((match) => match[1])
+        .filter((block) => block.includes('# schema: citation'));
+    const requestBlocks = [...markdown.matchAll(/```json server:([a-z_]+)\n([\s\S]*?)```/g)];
+    const responseBlocks = [...markdown.matchAll(/```json response\n([\s\S]*?)```/g)].map(
+        (match) => match[1]
+    );
+
+    assert.equal(citationBlocks.length, 1, 'expected one complete citation example');
+    assert.deepEqual(requestBlocks.map(([, method]) => method).sort(), [
+        'format_document',
+        'render_citation',
+    ]);
+    assert.equal(responseBlocks.length, 2, 'expected one response for each RPC example');
+
+    const validateCitation = schemaValidator(loadSchema(CITATION_SCHEMA_PATH));
+    assertValidBibliography(
+        validateCitation,
+        yaml.load(citationBlocks[0]),
+        'citation guide YAML block'
+    );
+
+    const server = loadSchema(SERVER_SCHEMA_PATH);
+    for (const [, method, block] of requestBlocks) {
+        const request = JSON.parse(block);
+        assert.equal(request.method, method);
+        assert.ok(request.params, `${method} example must include params`);
+        const methodSchema = {
+            $schema: server.$schema,
+            $defs: server.$defs,
+            ...server[method],
+        };
+        assertValidBibliography(
+            schemaValidator(methodSchema),
+            request.params,
+            `${method} params example`
+        );
+    }
+
+    for (const [index, block] of responseBlocks.entries()) {
+        const response = JSON.parse(block);
+        assert.ok(Object.hasOwn(response, 'id'), `response ${index + 1} must echo id`);
+        assert.ok(Object.hasOwn(response, 'result'), `response ${index + 1} must include result`);
+    }
+});
+
+test('citation and server schemas expose effective public descriptions', () => {
+    assert.deepEqual(undocumentedProperties(loadSchema(CITATION_SCHEMA_PATH)), []);
+    assert.deepEqual(undocumentedProperties(loadSchema(SERVER_SCHEMA_PATH)), []);
+});
+
+test('citation and server guide links generated schemas and references', () => {
+    const markdown = fs.readFileSync(CITATION_SERVER_GUIDE_PATH, 'utf8');
+    assert.match(markdown, /\.\.\/schemas\/citation\.json/);
+    assert.match(markdown, /\.\.\/schemas\/server\.json/);
+    assert.match(markdown, /DATA_MODEL_FIELDS\.md/);
+    assert.match(markdown, /NATIVE_FORMAT\.md/);
+    assert.match(markdown, /format_document/);
+    assert.match(markdown, /render_citation/);
 });
 
 test('registry and abbreviation-map guide examples validate against published schemas', () => {

@@ -165,7 +165,152 @@ fn build_server_schema() -> Result<serde_json::Value, serde_json::Error> {
             obj.insert(name.to_string(), schema);
         }
     }
+    annotate_server_schema(&mut doc);
     Ok(doc)
+}
+
+/// Add descriptions for inline properties that `schemars` cannot infer from
+/// tagged or custom-serialized Rust types.
+fn annotate_server_schema(schema: &mut serde_json::Value) {
+    let Some(definitions) = schema
+        .as_object_mut()
+        .and_then(|object| object.get_mut("$defs"))
+        .and_then(serde_json::Value::as_object_mut)
+    else {
+        return;
+    };
+
+    annotate_style_input(definitions);
+    annotate_sort_key(definitions);
+    annotate_wrap_config(definitions);
+    annotate_delimiter(definitions);
+    annotate_message_arg_source(definitions);
+}
+
+fn set_property_description(object: &mut serde_json::Value, property: &str, description: &str) {
+    if let Some(properties) = object
+        .as_object_mut()
+        .and_then(|object| object.get_mut("properties"))
+        .and_then(serde_json::Value::as_object_mut)
+        && let Some(field) = properties
+            .get_mut(property)
+            .and_then(serde_json::Value::as_object_mut)
+    {
+        field.insert(
+            "description".to_string(),
+            serde_json::Value::String(description.to_string()),
+        );
+    }
+}
+
+fn annotate_style_input(definitions: &mut serde_json::Map<String, serde_json::Value>) {
+    if let Some(style_input) = definitions
+        .get_mut("StyleInput")
+        .and_then(serde_json::Value::as_object_mut)
+        .and_then(|definition| definition.get_mut("oneOf"))
+        .and_then(serde_json::Value::as_array_mut)
+    {
+        for variant in style_input {
+            let kind = variant
+                .as_object()
+                .and_then(|variant| variant.get("properties"))
+                .and_then(serde_json::Value::as_object)
+                .and_then(|properties| properties.get("kind"))
+                .and_then(serde_json::Value::as_object)
+                .and_then(|kind| kind.get("const"))
+                .and_then(serde_json::Value::as_str);
+            let (kind_description, value_description) = match kind {
+                Some("id") => (
+                    "Style source selector; `id` resolves through the server's style registry chain.",
+                    "Style identifier to resolve, such as `apa-7th`.",
+                ),
+                Some("uri") => (
+                    "Style source selector; `uri` resolves a remote style through the server's resolver chain.",
+                    "HTTP(S) URI for the remote YAML style.",
+                ),
+                Some("path") => (
+                    "Style source selector; `path` reads a local YAML style file.",
+                    "Filesystem path to the YAML style, resolved by the server.",
+                ),
+                Some("yaml") => (
+                    "Style source selector; `yaml` parses an inline YAML style definition.",
+                    "Inline YAML style definition.",
+                ),
+                _ => continue,
+            };
+            set_property_description(variant, "kind", kind_description);
+            set_property_description(variant, "value", value_description);
+        }
+    }
+}
+
+fn annotate_sort_key(definitions: &mut serde_json::Map<String, serde_json::Value>) {
+    if let Some(sort_key) = definitions
+        .get_mut("SortKey")
+        .and_then(serde_json::Value::as_object_mut)
+        .and_then(|definition| definition.get_mut("oneOf"))
+        .and_then(serde_json::Value::as_array_mut)
+        .and_then(|variants| variants.last_mut())
+    {
+        set_property_description(
+            sort_key,
+            "field",
+            "Custom reference field name used as a bibliography sort key.",
+        );
+    }
+}
+
+fn annotate_wrap_config(definitions: &mut serde_json::Map<String, serde_json::Value>) {
+    if let Some(wrap_config) = definitions
+        .get_mut("WrapConfig")
+        .and_then(serde_json::Value::as_object_mut)
+        .and_then(|definition| definition.get_mut("oneOf"))
+        .and_then(serde_json::Value::as_array_mut)
+        .and_then(|variants| variants.get_mut(1))
+    {
+        set_property_description(
+            wrap_config,
+            "inner-prefix",
+            "Optional text inserted after the opening punctuation and before the rendered content.",
+        );
+        set_property_description(
+            wrap_config,
+            "inner-suffix",
+            "Optional text inserted after the rendered content and before the closing punctuation.",
+        );
+    }
+}
+
+fn annotate_delimiter(definitions: &mut serde_json::Map<String, serde_json::Value>) {
+    if let Some(delimiter) = definitions
+        .get_mut("DelimiterPunctuation")
+        .and_then(serde_json::Value::as_object_mut)
+        .and_then(|definition| definition.get_mut("oneOf"))
+        .and_then(serde_json::Value::as_array_mut)
+        .and_then(|variants| variants.get_mut(1))
+    {
+        set_property_description(
+            delimiter,
+            "mark",
+            "Semantic punctuation mark to render with locale-aware punctuation rules.",
+        );
+    }
+}
+
+fn annotate_message_arg_source(definitions: &mut serde_json::Map<String, serde_json::Value>) {
+    if let Some(literal) = definitions
+        .get_mut("MessageArgSource")
+        .and_then(serde_json::Value::as_object_mut)
+        .and_then(|definition| definition.get_mut("anyOf"))
+        .and_then(serde_json::Value::as_array_mut)
+        .and_then(|variants| variants.first_mut())
+    {
+        set_property_description(
+            literal,
+            "literal",
+            "Literal string passed unchanged to the locale message argument.",
+        );
+    }
 }
 
 /// Build the declarative BibLaTeX/CSL-JSON ↔ Citum mapping data dump.

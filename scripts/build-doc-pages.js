@@ -14,6 +14,14 @@ const DOCS_DIR = path.join(__dirname, '../docs');
 
 const PAGES = [
     {
+        src: 'guides/CITATION_AND_SERVER.md',
+        out: 'guides/citation-and-server.html',
+        title: 'Citations and JSON-RPC integration',
+        kicker: 'Guide',
+        description:
+            'Task-oriented guidance for citation data, JSON-RPC rendering requests, transports, and structured responses.',
+    },
+    {
         src: 'guides/REGISTRY_AND_AUXILIARY_SCHEMAS.md',
         out: 'guides/registry-and-auxiliary-schemas.html',
         title: 'Using registry and auxiliary schemas',

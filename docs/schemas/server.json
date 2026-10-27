@@ -42,10 +42,12 @@
           "properties": {
             "kind": {
               "type": "string",
-              "const": "id"
+              "const": "id",
+              "description": "Style source selector; `id` resolves through the server's style registry chain."
             },
             "value": {
-              "type": "string"
+              "type": "string",
+              "description": "Style identifier to resolve, such as `apa-7th`."
             }
           },
           "required": [
@@ -59,10 +61,12 @@
           "properties": {
             "kind": {
               "type": "string",
-              "const": "uri"
+              "const": "uri",
+              "description": "Style source selector; `uri` resolves a remote style through the server's resolver chain."
             },
             "value": {
-              "type": "string"
+              "type": "string",
+              "description": "HTTP(S) URI for the remote YAML style."
             }
           },
           "required": [
@@ -76,10 +80,12 @@
           "properties": {
             "kind": {
               "type": "string",
-              "const": "path"
+              "const": "path",
+              "description": "Style source selector; `path` reads a local YAML style file."
             },
             "value": {
-              "type": "string"
+              "type": "string",
+              "description": "Filesystem path to the YAML style, resolved by the server."
             }
           },
           "required": [
@@ -93,10 +99,12 @@
           "properties": {
             "kind": {
               "type": "string",
-              "const": "yaml"
+              "const": "yaml",
+              "description": "Style source selector; `yaml` parses an inline YAML style definition."
             },
             "value": {
-              "type": "string"
+              "type": "string",
+              "description": "Inline YAML style definition."
             }
           },
           "required": [
@@ -711,7 +719,8 @@
           "type": "object",
           "properties": {
             "field": {
-              "type": "string"
+              "type": "string",
+              "description": "Custom reference field name used as a bibliography sort key."
             }
           },
           "required": [
@@ -1244,13 +1253,15 @@
               "type": [
                 "string",
                 "null"
-              ]
+              ],
+              "description": "Optional text inserted after the opening punctuation and before the rendered content."
             },
             "inner-suffix": {
               "type": [
                 "string",
                 "null"
-              ]
+              ],
+              "description": "Optional text inserted after the rendered content and before the closing punctuation."
             }
           },
           "required": [
@@ -1288,7 +1299,8 @@
                 "period",
                 "parentheses",
                 "brackets"
-              ]
+              ],
+              "description": "Semantic punctuation mark to render with locale-aware punctuation rules."
             }
           },
           "additionalProperties": false,
@@ -2858,7 +2870,8 @@
           "type": "object",
           "properties": {
             "literal": {
-              "type": "string"
+              "type": "string",
+              "description": "Literal string passed unchanged to the locale message argument."
             }
           },
           "required": [
