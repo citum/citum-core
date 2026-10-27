@@ -9,7 +9,13 @@ const addFormats = require('ajv-formats');
 
 const ROOT = path.join(__dirname, '..');
 const BIB_SCHEMA_PATH = path.join(ROOT, 'docs/schemas/bib.json');
+const REGISTRY_SCHEMA_PATH = path.join(ROOT, 'docs/schemas/registry.json');
+const ABBREV_SCHEMA_PATH = path.join(ROOT, 'docs/schemas/abbrev-map.json');
 const GUIDE_PATH = path.join(ROOT, 'docs/guides/BIBLIOGRAPHY_DATA.md');
+const AUXILIARY_GUIDE_PATH = path.join(
+    ROOT,
+    'docs/guides/REGISTRY_AND_AUXILIARY_SCHEMAS.md'
+);
 const FIELD_REFERENCE_PATH = path.join(
     ROOT,
     'docs/reference/generated/DATA_MODEL_FIELDS.md'
@@ -17,6 +23,10 @@ const FIELD_REFERENCE_PATH = path.join(
 
 function loadBibSchema() {
     return JSON.parse(fs.readFileSync(BIB_SCHEMA_PATH, 'utf8'));
+}
+
+function loadSchema(schemaPath) {
+    return JSON.parse(fs.readFileSync(schemaPath, 'utf8'));
 }
 
 function referencedDefinition(fieldSchema, definitions) {
@@ -40,11 +50,15 @@ function hasEffectiveDescription(fieldSchema, definitions) {
 }
 
 function bibliographyValidator() {
+    return schemaValidator(loadBibSchema());
+}
+
+function schemaValidator(schema) {
     const ajv = new Ajv2020({ allErrors: true, strict: false });
     addFormats(ajv);
     ajv.addFormat('uint8', true);
     ajv.addFormat('uint32', true);
-    return ajv.compile(loadBibSchema());
+    return ajv.compile(schema);
 }
 
 function assertValidBibliography(validate, value, label) {
@@ -122,4 +136,68 @@ test('generated data-model field tables contain no undocumented fields', () => {
         .filter((line) => /^\| `[^`]+` \|/.test(line) && line.endsWith('| — |'));
 
     assert.deepEqual(undocumented, []);
+});
+
+test('registry and abbreviation-map guide examples validate against published schemas', () => {
+    const markdown = fs.readFileSync(AUXILIARY_GUIDE_PATH, 'utf8');
+    const blocks = [...markdown.matchAll(/```yaml\n([\s\S]*?)```/g)].map(
+        (match) => match[1]
+    );
+    const registryBlocks = blocks.filter((block) => block.includes('# schema: registry'));
+    const abbreviationBlocks = blocks.filter((block) => block.includes('# schema: abbrev-map'));
+
+    assert.equal(registryBlocks.length, 1, 'expected one complete registry example');
+    assert.equal(abbreviationBlocks.length, 1, 'expected one complete abbreviation-map example');
+
+    const validateRegistry = schemaValidator(loadSchema(REGISTRY_SCHEMA_PATH));
+    const validateAbbreviations = schemaValidator(loadSchema(ABBREV_SCHEMA_PATH));
+
+    assertValidBibliography(
+        validateRegistry,
+        yaml.load(registryBlocks[0]),
+        'registry guide YAML block'
+    );
+    assertValidBibliography(
+        validateAbbreviations,
+        yaml.load(abbreviationBlocks[0]),
+        'abbreviation-map guide YAML block'
+    );
+});
+
+test('registry and abbreviation-map schemas expose effective public descriptions', () => {
+    const registry = loadSchema(REGISTRY_SCHEMA_PATH);
+    const registryFields = [
+        ...Object.entries(registry.properties),
+        ...Object.entries(registry.$defs.RegistryEntry.properties),
+    ];
+    const missingRegistryDescriptions = registryFields
+        .filter(([, field]) => !field.description?.trim())
+        .map(([name]) => name);
+
+    assert.deepEqual(missingRegistryDescriptions, []);
+    assert.equal(typeof registry.$defs.StyleKind.description, 'string');
+    assert.ok(registry.$defs.StyleKind.description.trim());
+    for (const variant of registry.$defs.StyleKind.oneOf) {
+        assert.ok(variant.description?.trim(), 'every StyleKind value needs a description');
+    }
+
+    const abbreviationMap = loadSchema(ABBREV_SCHEMA_PATH);
+    assert.ok(abbreviationMap.description?.trim());
+    assert.match(abbreviationMap.description, /exact, case-sensitive/);
+});
+
+test('auxiliary guide identifies type-map as generated data and links its references', () => {
+    const markdown = fs.readFileSync(AUXILIARY_GUIDE_PATH, 'utf8');
+    const typeMap = loadSchema(path.join(ROOT, 'docs/schemas/type-map.json'));
+
+    assert.equal(Object.hasOwn(typeMap, '$schema'), false);
+    assert.deepEqual(Object.keys(typeMap).sort(), [
+        'biblatex_entry_types',
+        'biblatex_fields',
+        'csl_type_map',
+    ]);
+    assert.match(markdown, /not a JSON Schema/);
+    assert.match(markdown, /BIBLATEX_MAPPING\.md/);
+    assert.match(markdown, /CSL_JSON_MAPPING\.md/);
+    assert.match(markdown, /just schema-gen/);
 });
