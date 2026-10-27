@@ -132,7 +132,8 @@ function buildDataModelFields(schema) {
     lines.push(
         'One section per `InputReference` class (see the `class` discriminator), each with',
         'its field table. Narrative context lives in [DATA_MODEL.md](../DATA_MODEL.md);',
-        'this page is the generated field-level detail it links out to.',
+        'this page is the generated field-level detail it links out to. For a practical',
+        'introduction, start with [Authoring bibliography data](../../guides/BIBLIOGRAPHY_DATA.md).',
         ''
     );
 
@@ -276,7 +277,8 @@ function buildNativeFormat() {
         'under `examples/data-model/`. Each fixture round-trips through',
         '`InputReference` in `crates/citum-refs`\' example-verification test, so a stale',
         'example fails CI rather than silently drifting from the schema. See',
-        '[DATA_MODEL.md](DATA_MODEL.md) for the concepts these examples illustrate.',
+        '[Authoring bibliography data](../guides/BIBLIOGRAPHY_DATA.md) for a practical',
+        'introduction and [DATA_MODEL.md](DATA_MODEL.md) for the concepts these examples illustrate.',
         '',
     ];
 

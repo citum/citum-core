@@ -1,5 +1,5 @@
-# Structural class: monograph — a monolithic work published or produced as a
-# complete entity, such as a book or technical report.
+# Structural class: monograph, shown here as a facsimile reprint. The current
+# edition stays on the main reference; `original` embeds the first publication.
 references:
   - id: peary1985
     class: monograph

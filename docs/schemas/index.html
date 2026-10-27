@@ -54,6 +54,7 @@
             <div class="doc-sidebar-title">Schemas</div>
             <a class="doc-sidebar-link active" href="../schemas/">JSON Schemas</a>
             <a class="doc-sidebar-link" href="../reference.html">All reference</a>
+            <a class="doc-sidebar-link" href="../guides/bibliography-data.html">Bibliography authoring</a>
             <div class="doc-sidebar-title doc-sidebar-title--spaced">Reference</div>
             <a class="doc-sidebar-link" href="../reference/SCHEMA_VERSIONING.md">Schema versioning</a>
             <a class="doc-sidebar-link" href="../reference/biblatex-mapping.html">BibLaTeX mapping</a>
@@ -115,6 +116,11 @@
         <section class="doc-section">
             <div class="doc-section-header">
                 <h2>Reference and citation data</h2>
+                <p>
+                    New to Citum bibliography data? Start with
+                    <a href="../guides/bibliography-data.html">Authoring bibliography data</a>,
+                    then use the schema for editor completion and validation.
+                </p>
             </div>
             <div class="doc-grid">
                 <a class="doc-card" href="bib.json">
@@ -128,6 +134,12 @@
                     <code>citation.json</code>
                 </a>
             </div>
+            <p class="citum-note" style="margin-top: 0.75rem;">
+                Bibliography resources:
+                <a href="../reference/native-format.html">worked examples</a>,
+                <a href="../reference/generated/data-model-fields.html">field reference</a>, and
+                <a href="../reference/data-model.html">data-model overview</a>.
+            </p>
         </section>
 
         <section class="doc-section">
@@ -147,20 +159,22 @@
             <div class="doc-section-header">
                 <h2>Editor integration</h2>
                 <p>
-                    Add this comment as the first line of any YAML style file to get real-time
+                    Add the matching comment as the first line of a YAML file to get real-time
                     validation and autocomplete in editors with
                     <a href="https://github.com/redhat-developer/yaml-language-server#clients">YAML language server support</a>
                     (VS Code, Helix, Zed, and others).
                 </p>
             </div>
             <div class="workshop-block">
-                <div class="workshop-label">yaml-language-server hint</div>
+                <div class="workshop-label">Style YAML</div>
                 <pre><code># yaml-language-server: $schema=https://docs.citum.org/schemas/style.json</code></pre>
                 <button class="citum-copy-btn" onclick="navigator.clipboard.writeText('# yaml-language-server: $schema=https://docs.citum.org/schemas/style.json')" title="Copy to clipboard">Copy</button>
             </div>
-            <p class="citum-note" style="margin-top: 0.75rem;">
-                Replace <code>style.json</code> with the appropriate schema filename for your file type.
-            </p>
+            <div class="workshop-block" style="margin-top: 0.75rem;">
+                <div class="workshop-label">Bibliography YAML</div>
+                <pre><code># yaml-language-server: $schema=https://docs.citum.org/schemas/bib.json</code></pre>
+                <button class="citum-copy-btn" onclick="navigator.clipboard.writeText('# yaml-language-server: $schema=https://docs.citum.org/schemas/bib.json')" title="Copy to clipboard">Copy</button>
+            </div>
         </section>
         </div>
     </main>

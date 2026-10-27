@@ -6,15 +6,16 @@ One worked example per reference class, inlined from the test-backed fixtures
 under `examples/data-model/`. Each fixture round-trips through
 `InputReference` in `crates/citum-refs`' example-verification test, so a stale
 example fails CI rather than silently drifting from the schema. See
-[DATA_MODEL.md](DATA_MODEL.md) for the concepts these examples illustrate.
+[Authoring bibliography data](../guides/BIBLIOGRAPHY_DATA.md) for a practical
+introduction and [DATA_MODEL.md](DATA_MODEL.md) for the concepts these examples illustrate.
 
 ## Monograph
 
-Structural class: monograph — a monolithic work published or produced as a complete entity, such as a book or technical report.
+Structural class: monograph, shown here as a facsimile reprint. The current edition stays on the main reference; `original` embeds the first publication.
 
 ```yaml
-# Structural class: monograph — a monolithic work published or produced as a
-# complete entity, such as a book or technical report.
+# Structural class: monograph, shown here as a facsimile reprint. The current
+# edition stays on the main reference; `original` embeds the first publication.
 references:
   - id: peary1985
     class: monograph
@@ -129,12 +130,12 @@ references:
         given: Francis H. C.
     issued: "1953-04-25"
     pages: "737-738"
+    volume: "171"
+    issue: "4356"
     container:
       class: serial
       type: academic-journal
       title: Nature
-      volume: "171"
-      issue: "4356"
 ```
 
 ## Patent

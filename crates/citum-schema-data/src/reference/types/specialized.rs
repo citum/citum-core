@@ -188,44 +188,68 @@ pub struct Classic {
 #[cfg_attr(feature = "bindings", derive(Type))]
 #[serde(rename_all = "kebab-case")]
 struct ClassicDeser {
+    /// Unique identifier for this reference.
     id: Option<RefID>,
+    /// Title of the classic work.
     title: Option<Title>,
+    /// Parent work or collection, supplied as a reference ID or embedded reference.
     container: Option<WorkRelation>,
+    /// Original work or edition, supplied as a reference ID or embedded reference.
     original: Option<WorkRelation>,
+    /// Author or authors of the work.
     author: Option<Contributor>,
+    /// Editor or editors of this edition.
     editor: Option<Contributor>,
+    /// Translator or translators of this edition.
     translator: Option<Contributor>,
+    /// Volume number shorthand.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     volume: Option<String>,
+    /// Issue number shorthand.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     issue: Option<String>,
+    /// Edition statement.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     edition: Option<String>,
+    /// Generic document number shorthand.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     number: Option<String>,
+    /// Part number shorthand.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     part_number: Option<String>,
+    /// Supplement number shorthand.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     supplement_number: Option<String>,
+    /// Printing or impression number shorthand.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     printing_number: Option<String>,
+    /// Typed numbering identifiers for the work.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     numbering: Vec<Numbering>,
+    /// Date the work was created or originated.
     #[cfg_attr(feature = "bindings", specta(type = String))]
     #[serde(default)]
     created: DateValue,
+    /// Publication date of this edition.
     #[cfg_attr(feature = "bindings", specta(type = String))]
     #[serde(default)]
     issued: DateValue,
+    /// Publisher of this edition.
     publisher: Option<Publisher>,
+    /// URL where the work can be accessed.
     #[serde(alias = "URL")]
     url: Option<Url>,
+    /// Date the URL was last accessed.
     #[cfg_attr(feature = "bindings", specta(type = Option<String>))]
     accessed: Option<DateValue>,
+    /// BCP 47 language tag for this edition.
     language: Option<LangID>,
+    /// Per-field BCP 47 language overrides.
     #[serde(default, skip_serializing_if = "HashMap::is_empty")]
     field_languages: FieldLanguageMap,
+    /// Freeform note about the work.
     note: Option<RichText>,
+    /// Keywords or subject tags.
     keywords: Option<Vec<String>>,
     #[serde(flatten, default)]
     unknown_fields: std::collections::BTreeMap<String, serde_json::Value>,
@@ -740,41 +764,62 @@ pub struct AudioVisualWork {
 #[cfg_attr(feature = "bindings", derive(Type))]
 #[serde(rename_all = "kebab-case")]
 struct AudioVisualDeser {
+    /// Unique identifier for this reference.
     id: Option<RefID>,
+    /// Audiovisual subtype used by styles to select formatting.
     #[serde(default)]
     r#type: AudioVisualType,
     // WorkCore fields (flattened in canonical but explicit here for deser)
+    /// Title of the audiovisual work.
     title: Option<Title>,
+    /// Short title used when a style requests an abbreviated form.
     short_title: Option<String>,
+    /// Contributors with explicit roles, such as director or performer.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     contributors: Vec<ContributorEntry>,
+    /// Date the work was created or produced.
     #[cfg_attr(feature = "bindings", specta(type = String))]
     #[serde(default)]
     created: DateValue,
+    /// Release or publication date.
     #[cfg_attr(feature = "bindings", specta(type = String))]
     #[serde(default)]
     issued: DateValue,
+    /// Original work adapted by this production, supplied as an ID or embedded reference.
     original: Option<WorkRelation>,
+    /// BCP 47 language tag for the work.
     language: Option<LangID>,
+    /// Free-text genre descriptor, preferably in canonical kebab-case form.
     genre: Option<String>,
     // AudioVisualWork-specific fields
+    /// Parent series or collection, supplied as a reference ID or embedded reference.
     container: Option<WorkRelation>,
+    /// Event or performance associated with the work, supplied as an ID or embedded reference.
     event: Option<WorkRelation>,
+    /// Typed numbering identifiers, such as season or episode numbers.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     numbering: Vec<Numbering>,
     /// Catalog or episode number shorthand (normalized into `numbering`).
     #[serde(skip_serializing_if = "Option::is_none")]
     number: Option<String>,
+    /// Publisher, studio, network, or production company.
     publisher: Option<Publisher>,
+    /// Medium or delivery format.
     medium: Option<String>,
+    /// Physical dimensions or format.
     dimensions: Option<String>,
+    /// Platform or service where the work was distributed.
     platform: Option<String>,
+    /// URL where the work can be accessed.
     #[serde(alias = "URL")]
     url: Option<Url>,
+    /// Date the URL was last accessed.
     #[cfg_attr(feature = "bindings", specta(type = Option<String>))]
     accessed: Option<DateValue>,
+    /// Per-field BCP 47 language overrides.
     #[serde(default, skip_serializing_if = "HashMap::is_empty")]
     field_languages: FieldLanguageMap,
+    /// Freeform note about the work.
     note: Option<RichText>,
     #[serde(flatten, default)]
     unknown_fields: std::collections::BTreeMap<String, serde_json::Value>,

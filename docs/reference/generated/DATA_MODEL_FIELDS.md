@@ -4,7 +4,8 @@
 
 One section per `InputReference` class (see the `class` discriminator), each with
 its field table. Narrative context lives in [DATA_MODEL.md](../DATA_MODEL.md);
-this page is the generated field-level detail it links out to.
+this page is the generated field-level detail it links out to. For a practical
+introduction, start with [Authoring bibliography data](../../guides/BIBLIOGRAPHY_DATA.md).
 
 ## `monograph`
 
@@ -12,55 +13,55 @@ A monograph, such as a book or a report, is a monolithic work published or produ
 
 | Field | Type | Required | Description |
 |---|---|---|---|
-| `id` | RefID |  | Unique identifier for a reference item. |
-| `type` | MonographType | yes | Discriminates monograph subtypes for style-directed formatting. |
-| `title` | Title |  | A title can be a single string, a structured title, or a multilingual title. |
-| `short-title` | string |  | — |
-| `volume-title` | string |  | — |
-| `container` | WorkRelation |  | A relation to another bibliographic entity. |
-| `author` | Contributor |  | A contributor can be a single string, a structured name, or a list of contributors. |
-| `editor` | Contributor |  | A contributor can be a single string, a structured name, or a list of contributors. |
-| `translator` | Contributor |  | A contributor can be a single string, a structured name, or a list of contributors. |
-| `contributors` | ContributorEntry[] |  | A single entry in a reference's contributors list. |
-| `created` | DateValue |  | — |
-| `issued` | DateValue |  | — |
-| `publisher` | Publisher |  | A publisher or production company. |
-| `url` | string |  | — |
-| `accessed` | DateValue |  | — |
-| `language` | LangID |  | BCP 47 language tag (e.g., `"en"`, `"de"`, `"ja"`). |
-| `field-languages` | map<string, LangID> |  | — |
-| `note` | RichText |  | Inline markup for freeform text fields (note, abstract). |
-| `abstract-text` | RichText |  | Inline markup for freeform text fields (note, abstract). |
-| `isbn` | string |  | — |
-| `doi` | string |  | — |
-| `ads-bibcode` | string |  | — |
-| `version` | string |  | — |
-| `volume` | string |  | — |
-| `issue` | string |  | — |
-| `edition` | string |  | — |
-| `number` | string |  | — |
-| `part-number` | string |  | — |
-| `supplement-number` | string |  | — |
-| `printing-number` | string |  | — |
-| `numbering` | Numbering[] |  | A numbering identifier for a work (e.g., volume, issue, number). |
-| `genre` | string |  | — |
-| `medium` | string |  | — |
-| `archive` | string |  | — |
-| `archive-location` | string |  | — |
-| `archive-info` | ArchiveInfo |  | Structured archival location metadata for unpublished and archival material. |
-| `eprint` | EprintInfo |  | Preprint server identifier following the biblatex eprint model. |
-| `keywords` | string[] |  | — |
-| `original` | WorkRelation |  | A relation to another bibliographic entity. |
-| `event` | WorkRelation |  | A relation to another bibliographic entity. |
-| `status` | string |  | — |
-| `available-date` | DateValue |  | — |
-| `copyright` | DateValue |  | — |
-| `printing` | DateValue |  | — |
-| `size` | string |  | — |
-| `duration` | string |  | — |
-| `references` | string |  | — |
-| `scale` | string |  | — |
-| `pages` | NumOrStr |  | A value that could be either a number or a string. |
+| `id` | RefID |  | Unique identifier for this reference. |
+| `type` | MonographType | yes | Monograph subtype used by styles to select formatting. |
+| `title` | Title |  | Title of the monographic work. |
+| `short-title` | string |  | Short title used when a style requests an abbreviated form. |
+| `volume-title` | string |  | Title of an individual volume within the work. |
+| `container` | WorkRelation |  | Parent work or series, supplied as a reference ID or embedded reference. |
+| `author` | Contributor |  | Author or authors of the work. |
+| `editor` | Contributor |  | Editor or editors of the work. |
+| `translator` | Contributor |  | Translator or translators of the work. |
+| `contributors` | ContributorEntry[] |  | Contributors with explicit roles, used for roles beyond the shorthand fields. |
+| `created` | DateValue |  | Date the work was created or originated. |
+| `issued` | DateValue |  | Date this edition or manifestation was published. |
+| `publisher` | Publisher |  | Publisher or production company for this edition. |
+| `url` | string |  | URL where the work can be accessed. |
+| `accessed` | DateValue |  | Date the URL was last accessed. |
+| `language` | LangID |  | BCP 47 language tag for the work. |
+| `field-languages` | map<string, LangID> |  | Per-field BCP 47 language overrides. |
+| `note` | RichText |  | Freeform note about the work. |
+| `abstract-text` | RichText |  | Abstract or summary of the work. |
+| `isbn` | string |  | ISBN identifier. |
+| `doi` | string |  | DOI identifier without a URL prefix. |
+| `ads-bibcode` | string |  | NASA ADS bibliographic identifier. |
+| `version` | string |  | Version or revision identifier. |
+| `volume` | string |  | Volume number shorthand. |
+| `issue` | string |  | Issue number shorthand. |
+| `edition` | string |  | Edition statement, such as `2nd` or `facsimile repr.`. |
+| `number` | string |  | Generic document number shorthand. |
+| `part-number` | string |  | Part number shorthand. |
+| `supplement-number` | string |  | Supplement number shorthand. |
+| `printing-number` | string |  | Printing or impression number shorthand. |
+| `numbering` | Numbering[] |  | Typed numbering identifiers for the work. |
+| `genre` | string |  | Free-text genre descriptor, preferably in canonical kebab-case form. |
+| `medium` | string |  | Free-text medium descriptor, preferably in canonical kebab-case form. |
+| `archive` | string |  | Archive or repository name. |
+| `archive-location` | string |  | Shelfmark, call number, or other archive location. |
+| `archive-info` | ArchiveInfo |  | Structured archive and location metadata. |
+| `eprint` | EprintInfo |  | Structured preprint-server identifier. |
+| `keywords` | string[] |  | Keywords or subject tags. |
+| `original` | WorkRelation |  | Original publication for a reprint or translation, supplied as an ID or embedded reference. |
+| `event` | WorkRelation |  | Event or performance associated with the work, supplied as an ID or embedded reference. |
+| `status` | string |  | Publication status, such as `forthcoming` or `in press`. |
+| `available-date` | DateValue |  | Date the work became or will become publicly available. |
+| `copyright` | DateValue |  | Copyright year when it differs from the publication date. |
+| `printing` | DateValue |  | Printing or impression date. |
+| `size` | string |  | Physical dimensions or format. |
+| `duration` | string |  | Duration or running time. |
+| `references` | string |  | Reference-list count or citation string. |
+| `scale` | string |  | Cartographic scale for maps and globes. |
+| `pages` | NumOrStr |  | Page or page range rendered as part of the entry. |
 | `identifiers` | SupplementaryIdentifiers |  | Extensible standardized identifiers without dedicated Citum fields. |
 
 ## `collection-component`
@@ -69,38 +70,38 @@ A component of a larger monograph, such as a chapter in a book.
 
 | Field | Type | Required | Description |
 |---|---|---|---|
-| `id` | RefID |  | Unique identifier for a reference item. |
-| `type` | MonographComponentType | yes | Discriminates monograph-component subtypes for style-directed formatting. |
-| `title` | Title |  | A title can be a single string, a structured title, or a multilingual title. |
-| `author` | Contributor |  | A contributor can be a single string, a structured name, or a list of contributors. |
-| `translator` | Contributor |  | A contributor can be a single string, a structured name, or a list of contributors. |
-| `contributors` | ContributorEntry[] |  | A single entry in a reference's contributors list. |
-| `created` | DateValue |  | — |
-| `issued` | DateValue |  | — |
-| `container` | WorkRelation |  | A relation to another bibliographic entity. |
-| `volume` | string |  | — |
-| `issue` | string |  | — |
-| `edition` | string |  | — |
-| `number` | string |  | — |
-| `part-number` | string |  | — |
-| `supplement-number` | string |  | — |
-| `printing-number` | string |  | — |
-| `numbering` | Numbering[] |  | A numbering identifier for a work (e.g., volume, issue, number). |
-| `pages` | NumOrStr |  | A value that could be either a number or a string. |
-| `url` | string |  | — |
-| `accessed` | DateValue |  | — |
-| `language` | LangID |  | BCP 47 language tag (e.g., `"en"`, `"de"`, `"ja"`). |
-| `field-languages` | map<string, LangID> |  | — |
-| `note` | RichText |  | Inline markup for freeform text fields (note, abstract). |
-| `abstract-text` | RichText |  | Inline markup for freeform text fields (note, abstract). |
-| `doi` | string |  | — |
-| `genre` | string |  | — |
-| `medium` | string |  | — |
-| `status` | string |  | — |
-| `archive-info` | ArchiveInfo |  | Structured archival location metadata for unpublished and archival material. |
-| `eprint` | EprintInfo |  | Preprint server identifier following the biblatex eprint model. |
-| `keywords` | string[] |  | — |
-| `original` | WorkRelation |  | A relation to another bibliographic entity. |
+| `id` | RefID |  | Unique identifier for this reference. |
+| `type` | MonographComponentType | yes | Component subtype used by styles to select formatting. |
+| `title` | Title |  | Title of the component. |
+| `author` | Contributor |  | Author or authors of the component. |
+| `translator` | Contributor |  | Translator or translators of the component. |
+| `contributors` | ContributorEntry[] |  | Contributors with explicit roles, used for roles beyond the shorthand fields. |
+| `created` | DateValue |  | Date the component was created or originated. |
+| `issued` | DateValue |  | Publication date of the component. |
+| `container` | WorkRelation |  | Parent collection, supplied as a reference ID or embedded reference. |
+| `volume` | string |  | Volume number shorthand. |
+| `issue` | string |  | Issue number shorthand. |
+| `edition` | string |  | Edition statement. |
+| `number` | string |  | Generic document number shorthand. |
+| `part-number` | string |  | Part number shorthand. |
+| `supplement-number` | string |  | Supplement number shorthand. |
+| `printing-number` | string |  | Printing or impression number shorthand. |
+| `numbering` | Numbering[] |  | Typed numbering identifiers for the component. |
+| `pages` | NumOrStr |  | Page or page range within the parent collection. |
+| `url` | string |  | URL where the component can be accessed. |
+| `accessed` | DateValue |  | Date the URL was last accessed. |
+| `language` | LangID |  | BCP 47 language tag for the component. |
+| `field-languages` | map<string, LangID> |  | Per-field BCP 47 language overrides. |
+| `note` | RichText |  | Freeform note about the component. |
+| `abstract-text` | RichText |  | Abstract or summary of the component. |
+| `doi` | string |  | DOI identifier without a URL prefix. |
+| `genre` | string |  | Free-text genre descriptor, preferably in canonical kebab-case form. |
+| `medium` | string |  | Free-text medium descriptor, preferably in canonical kebab-case form. |
+| `status` | string |  | Publication status, such as `forthcoming` or `in press`. |
+| `archive-info` | ArchiveInfo |  | Structured archive and location metadata. |
+| `eprint` | EprintInfo |  | Structured preprint-server identifier. |
+| `keywords` | string[] |  | Keywords or subject tags. |
+| `original` | WorkRelation |  | Original publication for a reprint or translation, supplied as an ID or embedded reference. |
 | `identifiers` | SupplementaryIdentifiers |  | Extensible standardized identifiers without dedicated Citum fields. |
 
 ## `serial-component`
@@ -110,44 +111,44 @@ The parent serial is referenced by its ID.
 
 | Field | Type | Required | Description |
 |---|---|---|---|
-| `id` | RefID |  | Unique identifier for a reference item. |
-| `type` | SerialComponentType | yes | Discriminates serial-component subtypes for style-directed formatting. |
-| `title` | Title |  | A title can be a single string, a structured title, or a multilingual title. |
-| `author` | Contributor |  | A contributor can be a single string, a structured name, or a list of contributors. |
-| `translator` | Contributor |  | A contributor can be a single string, a structured name, or a list of contributors. |
-| `contributors` | ContributorEntry[] |  | A single entry in a reference's contributors list. |
-| `created` | DateValue |  | — |
-| `issued` | DateValue |  | — |
-| `container` | WorkRelation |  | A relation to another bibliographic entity. |
-| `volume` | string |  | — |
-| `issue` | string |  | — |
-| `edition` | string |  | — |
-| `number` | string |  | — |
-| `part-number` | string |  | — |
-| `supplement-number` | string |  | — |
-| `printing-number` | string |  | — |
-| `numbering` | Numbering[] |  | A numbering identifier for a work (e.g., volume, issue, number). |
-| `url` | string |  | — |
-| `accessed` | DateValue |  | — |
-| `language` | LangID |  | BCP 47 language tag (e.g., `"en"`, `"de"`, `"ja"`). |
-| `field-languages` | map<string, LangID> |  | — |
-| `note` | RichText |  | Inline markup for freeform text fields (note, abstract). |
-| `abstract-text` | RichText |  | Inline markup for freeform text fields (note, abstract). |
-| `doi` | string |  | — |
-| `ads-bibcode` | string |  | — |
-| `pages` | string |  | — |
-| `genre` | string |  | — |
-| `medium` | string |  | — |
-| `archive-info` | ArchiveInfo |  | Structured archival location metadata for unpublished and archival material. |
-| `eprint` | EprintInfo |  | Preprint server identifier following the biblatex eprint model. |
-| `keywords` | string[] |  | — |
-| `section` | string |  | — |
-| `status` | string |  | — |
-| `available-date` | DateValue |  | — |
-| `event` | WorkRelation |  | A relation to another bibliographic entity. |
-| `duration` | string |  | — |
-| `reviewed` | WorkRelation |  | A relation to another bibliographic entity. |
-| `original` | WorkRelation |  | A relation to another bibliographic entity. |
+| `id` | RefID |  | Unique identifier for this reference. |
+| `type` | SerialComponentType | yes | Serial-component subtype used by styles to select formatting. |
+| `title` | Title |  | Title of the component. |
+| `author` | Contributor |  | Author or authors of the component. |
+| `translator` | Contributor |  | Translator or translators of the component. |
+| `contributors` | ContributorEntry[] |  | Contributors with explicit roles, used for roles beyond the shorthand fields. |
+| `created` | DateValue |  | Date the component was created or originated. |
+| `issued` | DateValue |  | Publication date of the component. |
+| `container` | WorkRelation |  | Parent serial, supplied as a reference ID or embedded reference. |
+| `volume` | string |  | Volume number shorthand. |
+| `issue` | string |  | Issue number shorthand. |
+| `edition` | string |  | Edition statement. |
+| `number` | string |  | Generic document number shorthand. |
+| `part-number` | string |  | Part number shorthand. |
+| `supplement-number` | string |  | Supplement number shorthand. |
+| `printing-number` | string |  | Printing or impression number shorthand. |
+| `numbering` | Numbering[] |  | Typed numbering identifiers for the component. |
+| `url` | string |  | URL where the component can be accessed. |
+| `accessed` | DateValue |  | Date the URL was last accessed. |
+| `language` | LangID |  | BCP 47 language tag for the component. |
+| `field-languages` | map<string, LangID> |  | Per-field BCP 47 language overrides. |
+| `note` | RichText |  | Freeform note about the component. |
+| `abstract-text` | RichText |  | Abstract or summary of the component. |
+| `doi` | string |  | DOI identifier without a URL prefix. |
+| `ads-bibcode` | string |  | NASA ADS bibliographic identifier. |
+| `pages` | string |  | Page or page range within the parent serial. |
+| `genre` | string |  | Free-text genre descriptor, preferably in canonical kebab-case form. |
+| `medium` | string |  | Free-text medium descriptor, preferably in canonical kebab-case form. |
+| `archive-info` | ArchiveInfo |  | Structured archive and location metadata. |
+| `eprint` | EprintInfo |  | Structured preprint-server identifier. |
+| `keywords` | string[] |  | Keywords or subject tags. |
+| `section` | string |  | Section identifier within the serial. |
+| `status` | string |  | Publication status, such as `forthcoming` or `in press`. |
+| `available-date` | DateValue |  | Date the component became or will become publicly available. |
+| `event` | WorkRelation |  | Event associated with the component, supplied as an ID or embedded reference. |
+| `duration` | string |  | Duration or running time. |
+| `reviewed` | WorkRelation |  | Work being reviewed, supplied as a reference ID or embedded reference. |
+| `original` | WorkRelation |  | Original publication for a reprint or translation, supplied as an ID or embedded reference. |
 | `identifiers` | SupplementaryIdentifiers |  | Extensible standardized identifiers without dedicated Citum fields. |
 
 ## `collection`
@@ -156,33 +157,33 @@ A collection of works, such as an anthology or proceedings.
 
 | Field | Type | Required | Description |
 |---|---|---|---|
-| `id` | RefID |  | Unique identifier for a reference item. |
-| `type` | CollectionType | yes | Discriminates collection subtypes for style-directed formatting. |
-| `title` | Title |  | A title can be a single string, a structured title, or a multilingual title. |
-| `short-title` | string |  | — |
-| `container` | WorkRelation |  | A relation to another bibliographic entity. |
-| `editor` | Contributor |  | A contributor can be a single string, a structured name, or a list of contributors. |
-| `translator` | Contributor |  | A contributor can be a single string, a structured name, or a list of contributors. |
-| `contributors` | ContributorEntry[] |  | A single entry in a reference's contributors list. |
-| `created` | DateValue |  | — |
-| `issued` | DateValue |  | — |
-| `publisher` | Publisher |  | A publisher or production company. |
-| `volume` | string |  | — |
-| `issue` | string |  | — |
-| `edition` | string |  | — |
-| `number` | string |  | — |
-| `part-number` | string |  | — |
-| `supplement-number` | string |  | — |
-| `printing-number` | string |  | — |
-| `numbering` | Numbering[] |  | A numbering identifier for a work (e.g., volume, issue, number). |
-| `url` | string |  | — |
-| `accessed` | DateValue |  | — |
-| `language` | LangID |  | BCP 47 language tag (e.g., `"en"`, `"de"`, `"ja"`). |
-| `field-languages` | map<string, LangID> |  | — |
-| `note` | RichText |  | Inline markup for freeform text fields (note, abstract). |
-| `isbn` | string |  | — |
-| `event` | WorkRelation |  | A relation to another bibliographic entity. |
-| `keywords` | string[] |  | — |
+| `id` | RefID |  | Unique identifier for this reference. |
+| `type` | CollectionType | yes | Collection subtype used by styles to select formatting. |
+| `title` | Title |  | Title of the collection. |
+| `short-title` | string |  | Short title used when a style requests an abbreviated form. |
+| `container` | WorkRelation |  | Parent work or series, supplied as a reference ID or embedded reference. |
+| `editor` | Contributor |  | Editor or editors of the collection. |
+| `translator` | Contributor |  | Translator or translators of the collection. |
+| `contributors` | ContributorEntry[] |  | Contributors with explicit roles, used for roles beyond the shorthand fields. |
+| `created` | DateValue |  | Date the collection was created or originated. |
+| `issued` | DateValue |  | Publication date of the collection. |
+| `publisher` | Publisher |  | Publisher of the collection. |
+| `volume` | string |  | Volume number shorthand. |
+| `issue` | string |  | Issue number shorthand. |
+| `edition` | string |  | Edition statement. |
+| `number` | string |  | Generic document number shorthand. |
+| `part-number` | string |  | Part number shorthand. |
+| `supplement-number` | string |  | Supplement number shorthand. |
+| `printing-number` | string |  | Printing or impression number shorthand. |
+| `numbering` | Numbering[] |  | Typed numbering identifiers for the collection. |
+| `url` | string |  | URL where the collection can be accessed. |
+| `accessed` | DateValue |  | Date the URL was last accessed. |
+| `language` | LangID |  | BCP 47 language tag for the collection. |
+| `field-languages` | map<string, LangID> |  | Per-field BCP 47 language overrides. |
+| `note` | RichText |  | Freeform note about the collection. |
+| `isbn` | string |  | ISBN identifier. |
+| `event` | WorkRelation |  | Event associated with the collection, supplied as an ID or embedded reference. |
+| `keywords` | string[] |  | Keywords or subject tags. |
 | `identifiers` | SupplementaryIdentifiers |  | Extensible standardized identifiers without dedicated Citum fields. |
 
 ## `serial`
@@ -191,20 +192,20 @@ A serial publication (journal, magazine, etc.).
 
 | Field | Type | Required | Description |
 |---|---|---|---|
-| `id` | RefID |  | Unique identifier for a reference item. |
-| `type` | SerialType | yes | Types of serial publications. |
-| `title` | Title |  | A title can be a single string, a structured title, or a multilingual title. |
-| `short-title` | string |  | — |
-| `container` | WorkRelation |  | A relation to another bibliographic entity. |
-| `editor` | Contributor |  | A contributor can be a single string, a structured name, or a list of contributors. |
-| `contributors` | ContributorEntry[] |  | A single entry in a reference's contributors list. |
-| `publisher` | Publisher |  | A publisher or production company. |
-| `url` | string |  | — |
-| `accessed` | DateValue |  | — |
-| `language` | LangID |  | BCP 47 language tag (e.g., `"en"`, `"de"`, `"ja"`). |
-| `field-languages` | map<string, LangID> |  | — |
-| `note` | RichText |  | Inline markup for freeform text fields (note, abstract). |
-| `issn` | string |  | — |
+| `id` | RefID |  | Unique identifier for this reference. |
+| `type` | SerialType | yes | Serial subtype used by styles to select formatting. |
+| `title` | Title |  | Title of the serial. |
+| `short-title` | string |  | Short title used when a style requests an abbreviated form. |
+| `container` | WorkRelation |  | Parent work or series, supplied as a reference ID or embedded reference. |
+| `editor` | Contributor |  | Editor or editors of the serial. |
+| `contributors` | ContributorEntry[] |  | Contributors with explicit roles, used for roles beyond the shorthand field. |
+| `publisher` | Publisher |  | Publisher of the serial. |
+| `url` | string |  | URL where the serial can be accessed. |
+| `accessed` | DateValue |  | Date the URL was last accessed. |
+| `language` | LangID |  | BCP 47 language tag for the serial. |
+| `field-languages` | map<string, LangID> |  | Per-field BCP 47 language overrides. |
+| `note` | RichText |  | Freeform note about the serial. |
+| `issn` | string |  | ISSN identifier. |
 | `identifiers` | SupplementaryIdentifiers |  | Extensible standardized identifiers without dedicated Citum fields. |
 
 ## `legal-case`
@@ -352,30 +353,30 @@ A classic work (Aristotle, Bible, etc.) with standard citation forms.
 
 | Field | Type | Required | Description |
 |---|---|---|---|
-| `id` | RefID |  | Unique identifier for a reference item. |
-| `title` | Title |  | A title can be a single string, a structured title, or a multilingual title. |
-| `container` | WorkRelation |  | A relation to another bibliographic entity. |
-| `original` | WorkRelation |  | A relation to another bibliographic entity. |
-| `author` | Contributor |  | A contributor can be a single string, a structured name, or a list of contributors. |
-| `editor` | Contributor |  | A contributor can be a single string, a structured name, or a list of contributors. |
-| `translator` | Contributor |  | A contributor can be a single string, a structured name, or a list of contributors. |
-| `volume` | string |  | — |
-| `issue` | string |  | — |
-| `edition` | string |  | — |
-| `number` | string |  | — |
-| `part-number` | string |  | — |
-| `supplement-number` | string |  | — |
-| `printing-number` | string |  | — |
-| `numbering` | Numbering[] |  | A numbering identifier for a work (e.g., volume, issue, number). |
-| `created` | DateValue |  | — |
-| `issued` | DateValue |  | — |
-| `publisher` | Publisher |  | A publisher or production company. |
-| `url` | string |  | — |
-| `accessed` | DateValue |  | — |
-| `language` | LangID |  | BCP 47 language tag (e.g., `"en"`, `"de"`, `"ja"`). |
-| `field-languages` | map<string, LangID> |  | — |
-| `note` | RichText |  | Inline markup for freeform text fields (note, abstract). |
-| `keywords` | string[] |  | — |
+| `id` | RefID |  | Unique identifier for this reference. |
+| `title` | Title |  | Title of the classic work. |
+| `container` | WorkRelation |  | Parent work or collection, supplied as a reference ID or embedded reference. |
+| `original` | WorkRelation |  | Original work or edition, supplied as a reference ID or embedded reference. |
+| `author` | Contributor |  | Author or authors of the work. |
+| `editor` | Contributor |  | Editor or editors of this edition. |
+| `translator` | Contributor |  | Translator or translators of this edition. |
+| `volume` | string |  | Volume number shorthand. |
+| `issue` | string |  | Issue number shorthand. |
+| `edition` | string |  | Edition statement. |
+| `number` | string |  | Generic document number shorthand. |
+| `part-number` | string |  | Part number shorthand. |
+| `supplement-number` | string |  | Supplement number shorthand. |
+| `printing-number` | string |  | Printing or impression number shorthand. |
+| `numbering` | Numbering[] |  | Typed numbering identifiers for the work. |
+| `created` | DateValue |  | Date the work was created or originated. |
+| `issued` | DateValue |  | Publication date of this edition. |
+| `publisher` | Publisher |  | Publisher of this edition. |
+| `url` | string |  | URL where the work can be accessed. |
+| `accessed` | DateValue |  | Date the URL was last accessed. |
+| `language` | LangID |  | BCP 47 language tag for this edition. |
+| `field-languages` | map<string, LangID> |  | Per-field BCP 47 language overrides. |
+| `note` | RichText |  | Freeform note about the work. |
+| `keywords` | string[] |  | Keywords or subject tags. |
 | `identifiers` | SupplementaryIdentifiers |  | Extensible standardized identifiers without dedicated Citum fields. |
 
 ## `patent`
@@ -515,28 +516,28 @@ when that work is the citee, not a fully modeled release hierarchy.
 
 | Field | Type | Required | Description |
 |---|---|---|---|
-| `id` | RefID |  | Unique identifier for a reference item. |
-| `type` | AudioVisualType |  | Discriminates audio-visual subtypes for style-directed formatting. |
-| `title` | Title |  | A title can be a single string, a structured title, or a multilingual title. |
-| `short-title` | string |  | — |
-| `contributors` | ContributorEntry[] |  | A single entry in a reference's contributors list. |
-| `created` | DateValue |  | — |
-| `issued` | DateValue |  | — |
-| `original` | WorkRelation |  | A relation to another bibliographic entity. |
-| `language` | LangID |  | BCP 47 language tag (e.g., `"en"`, `"de"`, `"ja"`). |
-| `genre` | string |  | — |
-| `container` | WorkRelation |  | A relation to another bibliographic entity. |
-| `event` | WorkRelation |  | A relation to another bibliographic entity. |
-| `numbering` | Numbering[] |  | A numbering identifier for a work (e.g., volume, issue, number). |
+| `id` | RefID |  | Unique identifier for this reference. |
+| `type` | AudioVisualType |  | Audiovisual subtype used by styles to select formatting. |
+| `title` | Title |  | Title of the audiovisual work. |
+| `short-title` | string |  | Short title used when a style requests an abbreviated form. |
+| `contributors` | ContributorEntry[] |  | Contributors with explicit roles, such as director or performer. |
+| `created` | DateValue |  | Date the work was created or produced. |
+| `issued` | DateValue |  | Release or publication date. |
+| `original` | WorkRelation |  | Original work adapted by this production, supplied as an ID or embedded reference. |
+| `language` | LangID |  | BCP 47 language tag for the work. |
+| `genre` | string |  | Free-text genre descriptor, preferably in canonical kebab-case form. |
+| `container` | WorkRelation |  | Parent series or collection, supplied as a reference ID or embedded reference. |
+| `event` | WorkRelation |  | Event or performance associated with the work, supplied as an ID or embedded reference. |
+| `numbering` | Numbering[] |  | Typed numbering identifiers, such as season or episode numbers. |
 | `number` | string |  | Catalog or episode number shorthand (normalized into `numbering`). |
-| `publisher` | Publisher |  | A publisher or production company. |
-| `medium` | string |  | — |
-| `dimensions` | string |  | — |
-| `platform` | string |  | — |
-| `url` | string |  | — |
-| `accessed` | DateValue |  | — |
-| `field-languages` | map<string, LangID> |  | — |
-| `note` | RichText |  | Inline markup for freeform text fields (note, abstract). |
+| `publisher` | Publisher |  | Publisher, studio, network, or production company. |
+| `medium` | string |  | Medium or delivery format. |
+| `dimensions` | string |  | Physical dimensions or format. |
+| `platform` | string |  | Platform or service where the work was distributed. |
+| `url` | string |  | URL where the work can be accessed. |
+| `accessed` | DateValue |  | Date the URL was last accessed. |
+| `field-languages` | map<string, LangID> |  | Per-field BCP 47 language overrides. |
+| `note` | RichText |  | Freeform note about the work. |
 | `identifiers` | SupplementaryIdentifiers |  | Extensible standardized identifiers without dedicated Citum fields. |
 
 ## Closed Vocabularies
