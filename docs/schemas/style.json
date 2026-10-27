@@ -883,12 +883,14 @@
               "$ref": "#/$defs/WrapPunctuation"
             },
             "inner-prefix": {
+              "description": "Optional text inserted after the opening punctuation and before the rendered content.",
               "type": [
                 "string",
                 "null"
               ]
             },
             "inner-suffix": {
+              "description": "Optional text inserted after the rendered content and before the closing punctuation.",
               "type": [
                 "string",
                 "null"
@@ -922,6 +924,7 @@
           "type": "object",
           "properties": {
             "mark": {
+              "description": "Semantic punctuation mark to render with locale-aware punctuation rules.",
               "type": "string",
               "enum": [
                 "comma",
@@ -2530,6 +2533,7 @@
           "type": "object",
           "properties": {
             "literal": {
+              "description": "Literal string passed unchanged to the locale message argument.",
               "type": "string"
             }
           },
@@ -5924,36 +5928,42 @@
           ]
         },
         "prefix": {
+          "description": "Text placed before the rendered role label.",
           "type": [
             "string",
             "null"
           ]
         },
         "suffix": {
+          "description": "Text placed after the rendered role label.",
           "type": [
             "string",
             "null"
           ]
         },
         "emph": {
+          "description": "Whether the rendered role label is emphasized.",
           "type": [
             "boolean",
             "null"
           ]
         },
         "strong": {
+          "description": "Whether the rendered role label uses strong emphasis.",
           "type": [
             "boolean",
             "null"
           ]
         },
         "small-caps": {
+          "description": "Whether the rendered role label uses small capitals.",
           "type": [
             "boolean",
             "null"
           ]
         },
         "name-order": {
+          "description": "Name order applied to contributors rendered for this role.",
           "anyOf": [
             {
               "$ref": "#/$defs/NameOrder"
@@ -6516,6 +6526,7 @@
           "type": "object",
           "properties": {
             "text-case": {
+              "description": "Text-case transform to apply to this title category.",
               "anyOf": [
                 {
                   "$ref": "#/$defs/TextCase"
@@ -6526,54 +6537,63 @@
               ]
             },
             "primary-delimiter": {
+              "description": "Delimiter between the main title and the first subtitle.",
               "type": [
                 "string",
                 "null"
               ]
             },
             "subtitle-delimiter": {
+              "description": "Delimiter between subtitle parts when a title has multiple subtitles.",
               "type": [
                 "string",
                 "null"
               ]
             },
             "emph": {
+              "description": "Whether the title is emphasized.",
               "type": [
                 "boolean",
                 "null"
               ]
             },
             "quote": {
+              "description": "Whether the title is enclosed in locale-appropriate quotation marks.",
               "type": [
                 "boolean",
                 "null"
               ]
             },
             "strong": {
+              "description": "Whether the title uses strong emphasis.",
               "type": [
                 "boolean",
                 "null"
               ]
             },
             "small-caps": {
+              "description": "Whether the title is rendered in small capitals.",
               "type": [
                 "boolean",
                 "null"
               ]
             },
             "prefix": {
+              "description": "Text placed before the rendered title.",
               "type": [
                 "string",
                 "null"
               ]
             },
             "suffix": {
+              "description": "Text placed after the rendered title.",
               "type": [
                 "string",
                 "null"
               ]
             },
             "locale-overrides": {
+              "description": "Locale-specific title-rendering overrides keyed by locale identifier.",
               "type": [
                 "object",
                 "null"
@@ -8370,6 +8390,7 @@
           "type": "object",
           "properties": {
             "field": {
+              "description": "Custom reference field name used as a bibliography sort key.",
               "type": "string"
             }
           },

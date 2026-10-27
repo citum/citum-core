@@ -334,6 +334,14 @@ impl JsonSchema for TitleRendering {
     }
 
     fn json_schema(generator: &mut schemars::SchemaGenerator) -> schemars::Schema {
+        fn described(mut schema: schemars::Schema, description: &'static str) -> schemars::Schema {
+            schema.ensure_object().insert(
+                "description".to_string(),
+                serde_json::Value::String(description.to_string()),
+            );
+            schema
+        }
+
         schemars::json_schema!({
             "description": "Rendering options for one title category. Use `plain` to select explicit unformatted rendering.",
             "oneOf": [
@@ -344,16 +352,16 @@ impl JsonSchema for TitleRendering {
                 {
                     "type": "object",
                     "properties": {
-                        "text-case": generator.subschema_for::<Option<TextCase>>(),
-                        "primary-delimiter": generator.subschema_for::<Option<String>>(),
-                        "subtitle-delimiter": generator.subschema_for::<Option<String>>(),
-                        "emph": generator.subschema_for::<Option<bool>>(),
-                        "quote": generator.subschema_for::<Option<bool>>(),
-                        "strong": generator.subschema_for::<Option<bool>>(),
-                        "small-caps": generator.subschema_for::<Option<bool>>(),
-                        "prefix": generator.subschema_for::<Option<String>>(),
-                        "suffix": generator.subschema_for::<Option<String>>(),
-                        "locale-overrides": generator.subschema_for::<Option<HashMap<String, TitleRendering>>>()
+                        "text-case": described(generator.subschema_for::<Option<TextCase>>(), "Text-case transform to apply to this title category."),
+                        "primary-delimiter": described(generator.subschema_for::<Option<String>>(), "Delimiter between the main title and the first subtitle."),
+                        "subtitle-delimiter": described(generator.subschema_for::<Option<String>>(), "Delimiter between subtitle parts when a title has multiple subtitles."),
+                        "emph": described(generator.subschema_for::<Option<bool>>(), "Whether the title is emphasized."),
+                        "quote": described(generator.subschema_for::<Option<bool>>(), "Whether the title is enclosed in locale-appropriate quotation marks."),
+                        "strong": described(generator.subschema_for::<Option<bool>>(), "Whether the title uses strong emphasis."),
+                        "small-caps": described(generator.subschema_for::<Option<bool>>(), "Whether the title is rendered in small capitals."),
+                        "prefix": described(generator.subschema_for::<Option<String>>(), "Text placed before the rendered title."),
+                        "suffix": described(generator.subschema_for::<Option<String>>(), "Text placed after the rendered title."),
+                        "locale-overrides": described(generator.subschema_for::<Option<HashMap<String, TitleRendering>>>(), "Locale-specific title-rendering overrides keyed by locale identifier.")
                     },
                     "additionalProperties": false
                 }

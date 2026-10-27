@@ -514,16 +514,22 @@ pub struct RoleRendering {
     /// Structural label presentation for this role without repeating its term.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub label: Option<RoleLabelPresentation>,
+    /// Text placed before the rendered role label.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub prefix: Option<String>,
+    /// Text placed after the rendered role label.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub suffix: Option<String>,
+    /// Whether the rendered role label is emphasized.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub emph: Option<bool>,
+    /// Whether the rendered role label uses strong emphasis.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub strong: Option<bool>,
+    /// Whether the rendered role label uses small capitals.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub small_caps: Option<bool>,
+    /// Name order applied to contributors rendered for this role.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub name_order: Option<crate::template::NameOrder>,
 }

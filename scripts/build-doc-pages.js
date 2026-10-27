@@ -14,6 +14,14 @@ const DOCS_DIR = path.join(__dirname, '../docs');
 
 const PAGES = [
     {
+        src: 'guides/STYLE_AND_LOCALE_SCHEMAS.md',
+        out: 'guides/style-and-locale-schemas.html',
+        title: 'Authoring styles and locales',
+        kicker: 'Guide',
+        description:
+            'Task-oriented guidance for writing, validating, and extending Citum style and locale documents.',
+    },
+    {
         src: 'guides/CITATION_AND_SERVER.md',
         out: 'guides/citation-and-server.html',
         title: 'Citations and JSON-RPC integration',

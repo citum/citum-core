@@ -236,7 +236,10 @@ pub enum SortKey {
     /// Sort by issued date.
     Issued,
     /// Sort by custom field.
-    Field(String),
+    Field(
+        /// Custom reference field name used as a bibliography sort key.
+        String,
+    ),
 }
 
 /// Name sorting order for culturally appropriate collation.
