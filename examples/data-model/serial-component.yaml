@@ -13,9 +13,9 @@ references:
         given: Francis H. C.
     issued: "1953-04-25"
     pages: "737-738"
+    volume: "171"
+    issue: "4356"
     container:
       class: serial
       type: academic-journal
       title: Nature
-      volume: "171"
-      issue: "4356"

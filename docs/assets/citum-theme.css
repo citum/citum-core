@@ -477,6 +477,7 @@ a {
 .doc-main {
   display: grid;
   gap: 1.5rem;
+  grid-template-columns: minmax(0, 1fr);
   min-width: 0;
 }
 
@@ -1097,9 +1098,12 @@ a {
     display: flex;
     flex-wrap: nowrap;
     gap: 0.25rem;
+    max-width: 100%;
+    min-width: 0;
     overflow-x: auto;
     padding-bottom: 0.5rem;
     position: static;
+    width: 100%;
   }
 
   .doc-sidebar-title {

@@ -14,6 +14,14 @@ const DOCS_DIR = path.join(__dirname, '../docs');
 
 const PAGES = [
     {
+        src: 'guides/BIBLIOGRAPHY_DATA.md',
+        out: 'guides/bibliography-data.html',
+        title: 'Authoring bibliography data',
+        kicker: 'Guide',
+        description:
+            'A practical guide to native Citum bibliography data, including classes, contributors, related works, identifiers, and validation.',
+    },
+    {
         src: 'reference/DATA_MODEL.md',
         out: 'reference/data-model.html',
         title: 'Data model',

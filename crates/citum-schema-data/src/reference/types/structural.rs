@@ -305,76 +305,125 @@ impl Monograph {
 #[cfg_attr(feature = "bindings", derive(Type))]
 #[serde(rename_all = "kebab-case")]
 struct MonographDeser {
+    /// Unique identifier for this reference.
     id: Option<RefID>,
+    /// Monograph subtype used by styles to select formatting.
     r#type: MonographType,
+    /// Title of the monographic work.
     title: Option<Title>,
+    /// Short title used when a style requests an abbreviated form.
     short_title: Option<String>,
+    /// Title of an individual volume within the work.
     volume_title: Option<String>,
+    /// Parent work or series, supplied as a reference ID or embedded reference.
     container: Option<WorkRelation>,
+    /// Author or authors of the work.
     author: Option<Contributor>,
+    /// Editor or editors of the work.
     editor: Option<Contributor>,
+    /// Translator or translators of the work.
     translator: Option<Contributor>,
+    /// Contributors with explicit roles, used for roles beyond the shorthand fields.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     contributors: Vec<ContributorEntry>,
+    /// Date the work was created or originated.
     #[cfg_attr(feature = "bindings", specta(type = String))]
     #[serde(default)]
     created: DateValue,
+    /// Date this edition or manifestation was published.
     #[cfg_attr(feature = "bindings", specta(type = String))]
     #[serde(default)]
     issued: DateValue,
+    /// Publisher or production company for this edition.
     publisher: Option<Publisher>,
+    /// URL where the work can be accessed.
     #[serde(alias = "URL")]
     url: Option<Url>,
+    /// Date the URL was last accessed.
     #[cfg_attr(feature = "bindings", specta(type = Option<String>))]
     accessed: Option<DateValue>,
+    /// BCP 47 language tag for the work.
     language: Option<LangID>,
+    /// Per-field BCP 47 language overrides.
     #[serde(default, skip_serializing_if = "HashMap::is_empty")]
     field_languages: FieldLanguageMap,
+    /// Freeform note about the work.
     note: Option<RichText>,
+    /// Abstract or summary of the work.
     abstract_text: Option<RichText>,
+    /// ISBN identifier.
     #[serde(alias = "ISBN")]
     isbn: Option<String>,
+    /// DOI identifier without a URL prefix.
     #[serde(alias = "DOI")]
     doi: Option<String>,
+    /// NASA ADS bibliographic identifier.
     ads_bibcode: Option<String>,
+    /// Version or revision identifier.
     version: Option<String>,
+    /// Volume number shorthand.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     volume: Option<String>,
+    /// Issue number shorthand.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     issue: Option<String>,
+    /// Edition statement, such as `2nd` or `facsimile repr.`.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     edition: Option<String>,
+    /// Generic document number shorthand.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     number: Option<String>,
+    /// Part number shorthand.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     part_number: Option<String>,
+    /// Supplement number shorthand.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     supplement_number: Option<String>,
+    /// Printing or impression number shorthand.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     printing_number: Option<String>,
+    /// Typed numbering identifiers for the work.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     numbering: Vec<Numbering>,
+    /// Free-text genre descriptor, preferably in canonical kebab-case form.
     genre: Option<String>,
+    /// Free-text medium descriptor, preferably in canonical kebab-case form.
     medium: Option<String>,
+    /// Archive or repository name.
     archive: Option<String>,
+    /// Shelfmark, call number, or other archive location.
     #[serde(alias = "archive_location")]
     archive_location: Option<String>,
+    /// Structured archive and location metadata.
     archive_info: Option<ArchiveInfo>,
+    /// Structured preprint-server identifier.
     eprint: Option<EprintInfo>,
+    /// Keywords or subject tags.
     keywords: Option<Vec<String>>,
+    /// Original publication for a reprint or translation, supplied as an ID or embedded reference.
     original: Option<WorkRelation>,
+    /// Event or performance associated with the work, supplied as an ID or embedded reference.
     event: Option<WorkRelation>,
+    /// Publication status, such as `forthcoming` or `in press`.
     status: Option<String>,
+    /// Date the work became or will become publicly available.
     #[cfg_attr(feature = "bindings", specta(type = Option<String>))]
     available_date: Option<DateValue>,
+    /// Copyright year when it differs from the publication date.
     #[cfg_attr(feature = "bindings", specta(type = Option<String>))]
     copyright: Option<DateValue>,
+    /// Printing or impression date.
     #[cfg_attr(feature = "bindings", specta(type = Option<String>))]
     printing: Option<DateValue>,
+    /// Physical dimensions or format.
     size: Option<String>,
+    /// Duration or running time.
     duration: Option<String>,
+    /// Reference-list count or citation string.
     references: Option<String>,
+    /// Cartographic scale for maps and globes.
     scale: Option<String>,
+    /// Page or page range rendered as part of the entry.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pages: Option<NumOrStr>,
     #[serde(flatten, default)]
@@ -600,49 +649,76 @@ impl Collection {
 #[cfg_attr(feature = "bindings", derive(Type))]
 #[serde(rename_all = "kebab-case")]
 struct CollectionDeser {
+    /// Unique identifier for this reference.
     id: Option<RefID>,
+    /// Collection subtype used by styles to select formatting.
     r#type: CollectionType,
+    /// Title of the collection.
     title: Option<Title>,
+    /// Short title used when a style requests an abbreviated form.
     short_title: Option<String>,
+    /// Parent work or series, supplied as a reference ID or embedded reference.
     container: Option<WorkRelation>,
+    /// Editor or editors of the collection.
     editor: Option<Contributor>,
+    /// Translator or translators of the collection.
     translator: Option<Contributor>,
+    /// Contributors with explicit roles, used for roles beyond the shorthand fields.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     contributors: Vec<ContributorEntry>,
+    /// Date the collection was created or originated.
     #[cfg_attr(feature = "bindings", specta(type = String))]
     #[serde(default)]
     created: DateValue,
+    /// Publication date of the collection.
     #[cfg_attr(feature = "bindings", specta(type = String))]
     #[serde(default)]
     issued: DateValue,
+    /// Publisher of the collection.
     publisher: Option<Publisher>,
+    /// Volume number shorthand.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     volume: Option<String>,
+    /// Issue number shorthand.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     issue: Option<String>,
+    /// Edition statement.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     edition: Option<String>,
+    /// Generic document number shorthand.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     number: Option<String>,
+    /// Part number shorthand.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     part_number: Option<String>,
+    /// Supplement number shorthand.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     supplement_number: Option<String>,
+    /// Printing or impression number shorthand.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     printing_number: Option<String>,
+    /// Typed numbering identifiers for the collection.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     numbering: Vec<Numbering>,
+    /// URL where the collection can be accessed.
     #[serde(alias = "URL")]
     url: Option<Url>,
+    /// Date the URL was last accessed.
     #[cfg_attr(feature = "bindings", specta(type = Option<String>))]
     accessed: Option<DateValue>,
+    /// BCP 47 language tag for the collection.
     language: Option<LangID>,
+    /// Per-field BCP 47 language overrides.
     #[serde(default, skip_serializing_if = "HashMap::is_empty")]
     field_languages: FieldLanguageMap,
+    /// Freeform note about the collection.
     note: Option<RichText>,
+    /// ISBN identifier.
     #[serde(alias = "ISBN")]
     isbn: Option<String>,
+    /// Event associated with the collection, supplied as an ID or embedded reference.
     event: Option<WorkRelation>,
+    /// Keywords or subject tags.
     keywords: Option<Vec<String>>,
     #[serde(flatten, default)]
     unknown_fields: std::collections::BTreeMap<String, serde_json::Value>,
@@ -842,54 +918,86 @@ impl CollectionComponent {
 #[cfg_attr(feature = "bindings", derive(Type))]
 #[serde(rename_all = "kebab-case")]
 struct CollectionComponentDeser {
+    /// Unique identifier for this reference.
     id: Option<RefID>,
+    /// Component subtype used by styles to select formatting.
     r#type: MonographComponentType,
+    /// Title of the component.
     title: Option<Title>,
+    /// Author or authors of the component.
     author: Option<Contributor>,
+    /// Translator or translators of the component.
     translator: Option<Contributor>,
+    /// Contributors with explicit roles, used for roles beyond the shorthand fields.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     contributors: Vec<ContributorEntry>,
+    /// Date the component was created or originated.
     #[cfg_attr(feature = "bindings", specta(type = String))]
     #[serde(default)]
     created: DateValue,
+    /// Publication date of the component.
     #[cfg_attr(feature = "bindings", specta(type = String))]
     #[serde(default)]
     issued: DateValue,
+    /// Parent collection, supplied as a reference ID or embedded reference.
     container: Option<WorkRelation>,
+    /// Volume number shorthand.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     volume: Option<String>,
+    /// Issue number shorthand.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     issue: Option<String>,
+    /// Edition statement.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     edition: Option<String>,
+    /// Generic document number shorthand.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     number: Option<String>,
+    /// Part number shorthand.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     part_number: Option<String>,
+    /// Supplement number shorthand.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     supplement_number: Option<String>,
+    /// Printing or impression number shorthand.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     printing_number: Option<String>,
+    /// Typed numbering identifiers for the component.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     numbering: Vec<Numbering>,
+    /// Page or page range within the parent collection.
     pages: Option<NumOrStr>,
+    /// URL where the component can be accessed.
     #[serde(alias = "URL")]
     url: Option<Url>,
+    /// Date the URL was last accessed.
     #[cfg_attr(feature = "bindings", specta(type = Option<String>))]
     accessed: Option<DateValue>,
+    /// BCP 47 language tag for the component.
     language: Option<LangID>,
+    /// Per-field BCP 47 language overrides.
     #[serde(default, skip_serializing_if = "HashMap::is_empty")]
     field_languages: FieldLanguageMap,
+    /// Freeform note about the component.
     note: Option<RichText>,
+    /// Abstract or summary of the component.
     abstract_text: Option<RichText>,
+    /// DOI identifier without a URL prefix.
     #[serde(alias = "DOI")]
     doi: Option<String>,
+    /// Free-text genre descriptor, preferably in canonical kebab-case form.
     genre: Option<String>,
+    /// Free-text medium descriptor, preferably in canonical kebab-case form.
     medium: Option<String>,
+    /// Publication status, such as `forthcoming` or `in press`.
     status: Option<String>,
+    /// Structured archive and location metadata.
     archive_info: Option<ArchiveInfo>,
+    /// Structured preprint-server identifier.
     eprint: Option<EprintInfo>,
+    /// Keywords or subject tags.
     keywords: Option<Vec<String>>,
+    /// Original publication for a reprint or translation, supplied as an ID or embedded reference.
     original: Option<WorkRelation>,
     #[serde(flatten, default)]
     unknown_fields: std::collections::BTreeMap<String, serde_json::Value>,
@@ -1110,61 +1218,99 @@ impl SerialComponent {
 #[cfg_attr(feature = "bindings", derive(Type))]
 #[serde(rename_all = "kebab-case")]
 struct SerialComponentDeser {
+    /// Unique identifier for this reference.
     id: Option<RefID>,
+    /// Serial-component subtype used by styles to select formatting.
     r#type: SerialComponentType,
+    /// Title of the component.
     title: Option<Title>,
+    /// Author or authors of the component.
     author: Option<Contributor>,
+    /// Translator or translators of the component.
     translator: Option<Contributor>,
+    /// Contributors with explicit roles, used for roles beyond the shorthand fields.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     contributors: Vec<ContributorEntry>,
+    /// Date the component was created or originated.
     #[cfg_attr(feature = "bindings", specta(type = String))]
     #[serde(default)]
     created: DateValue,
+    /// Publication date of the component.
     #[cfg_attr(feature = "bindings", specta(type = String))]
     #[serde(default)]
     issued: DateValue,
+    /// Parent serial, supplied as a reference ID or embedded reference.
     container: Option<WorkRelation>,
+    /// Volume number shorthand.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     volume: Option<String>,
+    /// Issue number shorthand.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     issue: Option<String>,
+    /// Edition statement.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     edition: Option<String>,
+    /// Generic document number shorthand.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     number: Option<String>,
+    /// Part number shorthand.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     part_number: Option<String>,
+    /// Supplement number shorthand.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     supplement_number: Option<String>,
+    /// Printing or impression number shorthand.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     printing_number: Option<String>,
+    /// Typed numbering identifiers for the component.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     numbering: Vec<Numbering>,
+    /// URL where the component can be accessed.
     #[serde(alias = "URL")]
     url: Option<Url>,
+    /// Date the URL was last accessed.
     #[cfg_attr(feature = "bindings", specta(type = Option<String>))]
     accessed: Option<DateValue>,
+    /// BCP 47 language tag for the component.
     language: Option<LangID>,
+    /// Per-field BCP 47 language overrides.
     #[serde(default, skip_serializing_if = "HashMap::is_empty")]
     field_languages: FieldLanguageMap,
+    /// Freeform note about the component.
     note: Option<RichText>,
+    /// Abstract or summary of the component.
     abstract_text: Option<RichText>,
+    /// DOI identifier without a URL prefix.
     #[serde(alias = "DOI")]
     doi: Option<String>,
+    /// NASA ADS bibliographic identifier.
     ads_bibcode: Option<String>,
+    /// Page or page range within the parent serial.
     pages: Option<String>,
+    /// Free-text genre descriptor, preferably in canonical kebab-case form.
     genre: Option<String>,
+    /// Free-text medium descriptor, preferably in canonical kebab-case form.
     medium: Option<String>,
+    /// Structured archive and location metadata.
     archive_info: Option<ArchiveInfo>,
+    /// Structured preprint-server identifier.
     eprint: Option<EprintInfo>,
+    /// Keywords or subject tags.
     keywords: Option<Vec<String>>,
+    /// Section identifier within the serial.
     section: Option<String>,
+    /// Publication status, such as `forthcoming` or `in press`.
     status: Option<String>,
+    /// Date the component became or will become publicly available.
     #[cfg_attr(feature = "bindings", specta(type = Option<String>))]
     available_date: Option<DateValue>,
+    /// Event associated with the component, supplied as an ID or embedded reference.
     event: Option<WorkRelation>,
+    /// Duration or running time.
     duration: Option<String>,
+    /// Work being reviewed, supplied as a reference ID or embedded reference.
     reviewed: Option<WorkRelation>,
+    /// Original publication for a reprint or translation, supplied as an ID or embedded reference.
     original: Option<WorkRelation>,
     #[serde(flatten, default)]
     unknown_fields: std::collections::BTreeMap<String, serde_json::Value>,
@@ -1314,23 +1460,37 @@ impl Serial {
 #[cfg_attr(feature = "bindings", derive(Type))]
 #[serde(rename_all = "kebab-case")]
 struct SerialDeser {
+    /// Unique identifier for this reference.
     id: Option<RefID>,
+    /// Serial subtype used by styles to select formatting.
     r#type: SerialType,
+    /// Title of the serial.
     title: Option<Title>,
+    /// Short title used when a style requests an abbreviated form.
     short_title: Option<String>,
+    /// Parent work or series, supplied as a reference ID or embedded reference.
     container: Option<WorkRelation>,
+    /// Editor or editors of the serial.
     editor: Option<Contributor>,
+    /// Contributors with explicit roles, used for roles beyond the shorthand field.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     contributors: Vec<ContributorEntry>,
+    /// Publisher of the serial.
     publisher: Option<Publisher>,
+    /// URL where the serial can be accessed.
     #[serde(alias = "URL")]
     url: Option<Url>,
+    /// Date the URL was last accessed.
     #[cfg_attr(feature = "bindings", specta(type = Option<String>))]
     accessed: Option<DateValue>,
+    /// BCP 47 language tag for the serial.
     language: Option<LangID>,
+    /// Per-field BCP 47 language overrides.
     #[serde(default, skip_serializing_if = "HashMap::is_empty")]
     field_languages: FieldLanguageMap,
+    /// Freeform note about the serial.
     note: Option<RichText>,
+    /// ISSN identifier.
     #[serde(alias = "ISSN")]
     issn: Option<String>,
     #[serde(flatten, default)]

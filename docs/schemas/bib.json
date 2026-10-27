@@ -82,6 +82,7 @@
           "type": "object",
           "properties": {
             "id": {
+              "description": "Unique identifier for this reference.",
               "anyOf": [
                 {
                   "$ref": "#/$defs/RefID"
@@ -92,9 +93,11 @@
               ]
             },
             "type": {
+              "description": "Monograph subtype used by styles to select formatting.",
               "$ref": "#/$defs/MonographType"
             },
             "title": {
+              "description": "Title of the monographic work.",
               "anyOf": [
                 {
                   "$ref": "#/$defs/Title"
@@ -105,18 +108,21 @@
               ]
             },
             "short-title": {
+              "description": "Short title used when a style requests an abbreviated form.",
               "type": [
                 "string",
                 "null"
               ]
             },
             "volume-title": {
+              "description": "Title of an individual volume within the work.",
               "type": [
                 "string",
                 "null"
               ]
             },
             "container": {
+              "description": "Parent work or series, supplied as a reference ID or embedded reference.",
               "anyOf": [
                 {
                   "$ref": "#/$defs/WorkRelation"
@@ -127,6 +133,7 @@
               ]
             },
             "author": {
+              "description": "Author or authors of the work.",
               "anyOf": [
                 {
                   "$ref": "#/$defs/Contributor"
@@ -137,6 +144,7 @@
               ]
             },
             "editor": {
+              "description": "Editor or editors of the work.",
               "anyOf": [
                 {
                   "$ref": "#/$defs/Contributor"
@@ -147,6 +155,7 @@
               ]
             },
             "translator": {
+              "description": "Translator or translators of the work.",
               "anyOf": [
                 {
                   "$ref": "#/$defs/Contributor"
@@ -157,20 +166,24 @@
               ]
             },
             "contributors": {
+              "description": "Contributors with explicit roles, used for roles beyond the shorthand fields.",
               "type": "array",
               "items": {
                 "$ref": "#/$defs/ContributorEntry"
               }
             },
             "created": {
+              "description": "Date the work was created or originated.",
               "$ref": "#/$defs/DateValue",
               "default": ""
             },
             "issued": {
+              "description": "Date this edition or manifestation was published.",
               "$ref": "#/$defs/DateValue",
               "default": ""
             },
             "publisher": {
+              "description": "Publisher or production company for this edition.",
               "anyOf": [
                 {
                   "$ref": "#/$defs/Publisher"
@@ -181,6 +194,7 @@
               ]
             },
             "url": {
+              "description": "URL where the work can be accessed.",
               "type": [
                 "string",
                 "null"
@@ -188,6 +202,7 @@
               "format": "uri"
             },
             "accessed": {
+              "description": "Date the URL was last accessed.",
               "anyOf": [
                 {
                   "$ref": "#/$defs/DateValue"
@@ -198,6 +213,7 @@
               ]
             },
             "language": {
+              "description": "BCP 47 language tag for the work.",
               "anyOf": [
                 {
                   "$ref": "#/$defs/LangID"
@@ -208,12 +224,14 @@
               ]
             },
             "field-languages": {
+              "description": "Per-field BCP 47 language overrides.",
               "type": "object",
               "additionalProperties": {
                 "$ref": "#/$defs/LangID"
               }
             },
             "note": {
+              "description": "Freeform note about the work.",
               "anyOf": [
                 {
                   "$ref": "#/$defs/RichText"
@@ -224,6 +242,7 @@
               ]
             },
             "abstract-text": {
+              "description": "Abstract or summary of the work.",
               "anyOf": [
                 {
                   "$ref": "#/$defs/RichText"
@@ -234,102 +253,119 @@
               ]
             },
             "isbn": {
+              "description": "ISBN identifier.",
               "type": [
                 "string",
                 "null"
               ]
             },
             "doi": {
+              "description": "DOI identifier without a URL prefix.",
               "type": [
                 "string",
                 "null"
               ]
             },
             "ads-bibcode": {
+              "description": "NASA ADS bibliographic identifier.",
               "type": [
                 "string",
                 "null"
               ]
             },
             "version": {
+              "description": "Version or revision identifier.",
               "type": [
                 "string",
                 "null"
               ]
             },
             "volume": {
+              "description": "Volume number shorthand.",
               "type": [
                 "string",
                 "null"
               ]
             },
             "issue": {
+              "description": "Issue number shorthand.",
               "type": [
                 "string",
                 "null"
               ]
             },
             "edition": {
+              "description": "Edition statement, such as `2nd` or `facsimile repr.`.",
               "type": [
                 "string",
                 "null"
               ]
             },
             "number": {
+              "description": "Generic document number shorthand.",
               "type": [
                 "string",
                 "null"
               ]
             },
             "part-number": {
+              "description": "Part number shorthand.",
               "type": [
                 "string",
                 "null"
               ]
             },
             "supplement-number": {
+              "description": "Supplement number shorthand.",
               "type": [
                 "string",
                 "null"
               ]
             },
             "printing-number": {
+              "description": "Printing or impression number shorthand.",
               "type": [
                 "string",
                 "null"
               ]
             },
             "numbering": {
+              "description": "Typed numbering identifiers for the work.",
               "type": "array",
               "items": {
                 "$ref": "#/$defs/Numbering"
               }
             },
             "genre": {
+              "description": "Free-text genre descriptor, preferably in canonical kebab-case form.",
               "type": [
                 "string",
                 "null"
               ]
             },
             "medium": {
+              "description": "Free-text medium descriptor, preferably in canonical kebab-case form.",
               "type": [
                 "string",
                 "null"
               ]
             },
             "archive": {
+              "description": "Archive or repository name.",
               "type": [
                 "string",
                 "null"
               ]
             },
             "archive-location": {
+              "description": "Shelfmark, call number, or other archive location.",
               "type": [
                 "string",
                 "null"
               ]
             },
             "archive-info": {
+              "description": "Structured archive and location metadata.",
               "anyOf": [
                 {
                   "$ref": "#/$defs/ArchiveInfo"
@@ -340,6 +376,7 @@
               ]
             },
             "eprint": {
+              "description": "Structured preprint-server identifier.",
               "anyOf": [
                 {
                   "$ref": "#/$defs/EprintInfo"
@@ -350,6 +387,7 @@
               ]
             },
             "keywords": {
+              "description": "Keywords or subject tags.",
               "type": [
                 "array",
                 "null"
@@ -359,6 +397,7 @@
               }
             },
             "original": {
+              "description": "Original publication for a reprint or translation, supplied as an ID or embedded reference.",
               "anyOf": [
                 {
                   "$ref": "#/$defs/WorkRelation"
@@ -369,6 +408,7 @@
               ]
             },
             "event": {
+              "description": "Event or performance associated with the work, supplied as an ID or embedded reference.",
               "anyOf": [
                 {
                   "$ref": "#/$defs/WorkRelation"
@@ -379,12 +419,14 @@
               ]
             },
             "status": {
+              "description": "Publication status, such as `forthcoming` or `in press`.",
               "type": [
                 "string",
                 "null"
               ]
             },
             "available-date": {
+              "description": "Date the work became or will become publicly available.",
               "anyOf": [
                 {
                   "$ref": "#/$defs/DateValue"
@@ -395,6 +437,7 @@
               ]
             },
             "copyright": {
+              "description": "Copyright year when it differs from the publication date.",
               "anyOf": [
                 {
                   "$ref": "#/$defs/DateValue"
@@ -405,6 +448,7 @@
               ]
             },
             "printing": {
+              "description": "Printing or impression date.",
               "anyOf": [
                 {
                   "$ref": "#/$defs/DateValue"
@@ -415,30 +459,35 @@
               ]
             },
             "size": {
+              "description": "Physical dimensions or format.",
               "type": [
                 "string",
                 "null"
               ]
             },
             "duration": {
+              "description": "Duration or running time.",
               "type": [
                 "string",
                 "null"
               ]
             },
             "references": {
+              "description": "Reference-list count or citation string.",
               "type": [
                 "string",
                 "null"
               ]
             },
             "scale": {
+              "description": "Cartographic scale for maps and globes.",
               "type": [
                 "string",
                 "null"
               ]
             },
             "pages": {
+              "description": "Page or page range rendered as part of the entry.",
               "anyOf": [
                 {
                   "$ref": "#/$defs/NumOrStr"
@@ -467,6 +516,7 @@
           "type": "object",
           "properties": {
             "id": {
+              "description": "Unique identifier for this reference.",
               "anyOf": [
                 {
                   "$ref": "#/$defs/RefID"
@@ -477,9 +527,11 @@
               ]
             },
             "type": {
+              "description": "Component subtype used by styles to select formatting.",
               "$ref": "#/$defs/MonographComponentType"
             },
             "title": {
+              "description": "Title of the component.",
               "anyOf": [
                 {
                   "$ref": "#/$defs/Title"
@@ -490,6 +542,7 @@
               ]
             },
             "author": {
+              "description": "Author or authors of the component.",
               "anyOf": [
                 {
                   "$ref": "#/$defs/Contributor"
@@ -500,6 +553,7 @@
               ]
             },
             "translator": {
+              "description": "Translator or translators of the component.",
               "anyOf": [
                 {
                   "$ref": "#/$defs/Contributor"
@@ -510,20 +564,24 @@
               ]
             },
             "contributors": {
+              "description": "Contributors with explicit roles, used for roles beyond the shorthand fields.",
               "type": "array",
               "items": {
                 "$ref": "#/$defs/ContributorEntry"
               }
             },
             "created": {
+              "description": "Date the component was created or originated.",
               "$ref": "#/$defs/DateValue",
               "default": ""
             },
             "issued": {
+              "description": "Publication date of the component.",
               "$ref": "#/$defs/DateValue",
               "default": ""
             },
             "container": {
+              "description": "Parent collection, supplied as a reference ID or embedded reference.",
               "anyOf": [
                 {
                   "$ref": "#/$defs/WorkRelation"
@@ -534,54 +592,63 @@
               ]
             },
             "volume": {
+              "description": "Volume number shorthand.",
               "type": [
                 "string",
                 "null"
               ]
             },
             "issue": {
+              "description": "Issue number shorthand.",
               "type": [
                 "string",
                 "null"
               ]
             },
             "edition": {
+              "description": "Edition statement.",
               "type": [
                 "string",
                 "null"
               ]
             },
             "number": {
+              "description": "Generic document number shorthand.",
               "type": [
                 "string",
                 "null"
               ]
             },
             "part-number": {
+              "description": "Part number shorthand.",
               "type": [
                 "string",
                 "null"
               ]
             },
             "supplement-number": {
+              "description": "Supplement number shorthand.",
               "type": [
                 "string",
                 "null"
               ]
             },
             "printing-number": {
+              "description": "Printing or impression number shorthand.",
               "type": [
                 "string",
                 "null"
               ]
             },
             "numbering": {
+              "description": "Typed numbering identifiers for the component.",
               "type": "array",
               "items": {
                 "$ref": "#/$defs/Numbering"
               }
             },
             "pages": {
+              "description": "Page or page range within the parent collection.",
               "anyOf": [
                 {
                   "$ref": "#/$defs/NumOrStr"
@@ -592,6 +659,7 @@
               ]
             },
             "url": {
+              "description": "URL where the component can be accessed.",
               "type": [
                 "string",
                 "null"
@@ -599,6 +667,7 @@
               "format": "uri"
             },
             "accessed": {
+              "description": "Date the URL was last accessed.",
               "anyOf": [
                 {
                   "$ref": "#/$defs/DateValue"
@@ -609,6 +678,7 @@
               ]
             },
             "language": {
+              "description": "BCP 47 language tag for the component.",
               "anyOf": [
                 {
                   "$ref": "#/$defs/LangID"
@@ -619,12 +689,14 @@
               ]
             },
             "field-languages": {
+              "description": "Per-field BCP 47 language overrides.",
               "type": "object",
               "additionalProperties": {
                 "$ref": "#/$defs/LangID"
               }
             },
             "note": {
+              "description": "Freeform note about the component.",
               "anyOf": [
                 {
                   "$ref": "#/$defs/RichText"
@@ -635,6 +707,7 @@
               ]
             },
             "abstract-text": {
+              "description": "Abstract or summary of the component.",
               "anyOf": [
                 {
                   "$ref": "#/$defs/RichText"
@@ -645,30 +718,35 @@
               ]
             },
             "doi": {
+              "description": "DOI identifier without a URL prefix.",
               "type": [
                 "string",
                 "null"
               ]
             },
             "genre": {
+              "description": "Free-text genre descriptor, preferably in canonical kebab-case form.",
               "type": [
                 "string",
                 "null"
               ]
             },
             "medium": {
+              "description": "Free-text medium descriptor, preferably in canonical kebab-case form.",
               "type": [
                 "string",
                 "null"
               ]
             },
             "status": {
+              "description": "Publication status, such as `forthcoming` or `in press`.",
               "type": [
                 "string",
                 "null"
               ]
             },
             "archive-info": {
+              "description": "Structured archive and location metadata.",
               "anyOf": [
                 {
                   "$ref": "#/$defs/ArchiveInfo"
@@ -679,6 +757,7 @@
               ]
             },
             "eprint": {
+              "description": "Structured preprint-server identifier.",
               "anyOf": [
                 {
                   "$ref": "#/$defs/EprintInfo"
@@ -689,6 +768,7 @@
               ]
             },
             "keywords": {
+              "description": "Keywords or subject tags.",
               "type": [
                 "array",
                 "null"
@@ -698,6 +778,7 @@
               }
             },
             "original": {
+              "description": "Original publication for a reprint or translation, supplied as an ID or embedded reference.",
               "anyOf": [
                 {
                   "$ref": "#/$defs/WorkRelation"
@@ -726,6 +807,7 @@
           "type": "object",
           "properties": {
             "id": {
+              "description": "Unique identifier for this reference.",
               "anyOf": [
                 {
                   "$ref": "#/$defs/RefID"
@@ -736,9 +818,11 @@
               ]
             },
             "type": {
+              "description": "Serial-component subtype used by styles to select formatting.",
               "$ref": "#/$defs/SerialComponentType"
             },
             "title": {
+              "description": "Title of the component.",
               "anyOf": [
                 {
                   "$ref": "#/$defs/Title"
@@ -749,6 +833,7 @@
               ]
             },
             "author": {
+              "description": "Author or authors of the component.",
               "anyOf": [
                 {
                   "$ref": "#/$defs/Contributor"
@@ -759,6 +844,7 @@
               ]
             },
             "translator": {
+              "description": "Translator or translators of the component.",
               "anyOf": [
                 {
                   "$ref": "#/$defs/Contributor"
@@ -769,20 +855,24 @@
               ]
             },
             "contributors": {
+              "description": "Contributors with explicit roles, used for roles beyond the shorthand fields.",
               "type": "array",
               "items": {
                 "$ref": "#/$defs/ContributorEntry"
               }
             },
             "created": {
+              "description": "Date the component was created or originated.",
               "$ref": "#/$defs/DateValue",
               "default": ""
             },
             "issued": {
+              "description": "Publication date of the component.",
               "$ref": "#/$defs/DateValue",
               "default": ""
             },
             "container": {
+              "description": "Parent serial, supplied as a reference ID or embedded reference.",
               "anyOf": [
                 {
                   "$ref": "#/$defs/WorkRelation"
@@ -793,54 +883,63 @@
               ]
             },
             "volume": {
+              "description": "Volume number shorthand.",
               "type": [
                 "string",
                 "null"
               ]
             },
             "issue": {
+              "description": "Issue number shorthand.",
               "type": [
                 "string",
                 "null"
               ]
             },
             "edition": {
+              "description": "Edition statement.",
               "type": [
                 "string",
                 "null"
               ]
             },
             "number": {
+              "description": "Generic document number shorthand.",
               "type": [
                 "string",
                 "null"
               ]
             },
             "part-number": {
+              "description": "Part number shorthand.",
               "type": [
                 "string",
                 "null"
               ]
             },
             "supplement-number": {
+              "description": "Supplement number shorthand.",
               "type": [
                 "string",
                 "null"
               ]
             },
             "printing-number": {
+              "description": "Printing or impression number shorthand.",
               "type": [
                 "string",
                 "null"
               ]
             },
             "numbering": {
+              "description": "Typed numbering identifiers for the component.",
               "type": "array",
               "items": {
                 "$ref": "#/$defs/Numbering"
               }
             },
             "url": {
+              "description": "URL where the component can be accessed.",
               "type": [
                 "string",
                 "null"
@@ -848,6 +947,7 @@
               "format": "uri"
             },
             "accessed": {
+              "description": "Date the URL was last accessed.",
               "anyOf": [
                 {
                   "$ref": "#/$defs/DateValue"
@@ -858,6 +958,7 @@
               ]
             },
             "language": {
+              "description": "BCP 47 language tag for the component.",
               "anyOf": [
                 {
                   "$ref": "#/$defs/LangID"
@@ -868,12 +969,14 @@
               ]
             },
             "field-languages": {
+              "description": "Per-field BCP 47 language overrides.",
               "type": "object",
               "additionalProperties": {
                 "$ref": "#/$defs/LangID"
               }
             },
             "note": {
+              "description": "Freeform note about the component.",
               "anyOf": [
                 {
                   "$ref": "#/$defs/RichText"
@@ -884,6 +987,7 @@
               ]
             },
             "abstract-text": {
+              "description": "Abstract or summary of the component.",
               "anyOf": [
                 {
                   "$ref": "#/$defs/RichText"
@@ -894,36 +998,42 @@
               ]
             },
             "doi": {
+              "description": "DOI identifier without a URL prefix.",
               "type": [
                 "string",
                 "null"
               ]
             },
             "ads-bibcode": {
+              "description": "NASA ADS bibliographic identifier.",
               "type": [
                 "string",
                 "null"
               ]
             },
             "pages": {
+              "description": "Page or page range within the parent serial.",
               "type": [
                 "string",
                 "null"
               ]
             },
             "genre": {
+              "description": "Free-text genre descriptor, preferably in canonical kebab-case form.",
               "type": [
                 "string",
                 "null"
               ]
             },
             "medium": {
+              "description": "Free-text medium descriptor, preferably in canonical kebab-case form.",
               "type": [
                 "string",
                 "null"
               ]
             },
             "archive-info": {
+              "description": "Structured archive and location metadata.",
               "anyOf": [
                 {
                   "$ref": "#/$defs/ArchiveInfo"
@@ -934,6 +1044,7 @@
               ]
             },
             "eprint": {
+              "description": "Structured preprint-server identifier.",
               "anyOf": [
                 {
                   "$ref": "#/$defs/EprintInfo"
@@ -944,6 +1055,7 @@
               ]
             },
             "keywords": {
+              "description": "Keywords or subject tags.",
               "type": [
                 "array",
                 "null"
@@ -953,18 +1065,21 @@
               }
             },
             "section": {
+              "description": "Section identifier within the serial.",
               "type": [
                 "string",
                 "null"
               ]
             },
             "status": {
+              "description": "Publication status, such as `forthcoming` or `in press`.",
               "type": [
                 "string",
                 "null"
               ]
             },
             "available-date": {
+              "description": "Date the component became or will become publicly available.",
               "anyOf": [
                 {
                   "$ref": "#/$defs/DateValue"
@@ -975,6 +1090,7 @@
               ]
             },
             "event": {
+              "description": "Event associated with the component, supplied as an ID or embedded reference.",
               "anyOf": [
                 {
                   "$ref": "#/$defs/WorkRelation"
@@ -985,12 +1101,14 @@
               ]
             },
             "duration": {
+              "description": "Duration or running time.",
               "type": [
                 "string",
                 "null"
               ]
             },
             "reviewed": {
+              "description": "Work being reviewed, supplied as a reference ID or embedded reference.",
               "anyOf": [
                 {
                   "$ref": "#/$defs/WorkRelation"
@@ -1001,6 +1119,7 @@
               ]
             },
             "original": {
+              "description": "Original publication for a reprint or translation, supplied as an ID or embedded reference.",
               "anyOf": [
                 {
                   "$ref": "#/$defs/WorkRelation"
@@ -1029,6 +1148,7 @@
           "type": "object",
           "properties": {
             "id": {
+              "description": "Unique identifier for this reference.",
               "anyOf": [
                 {
                   "$ref": "#/$defs/RefID"
@@ -1039,9 +1159,11 @@
               ]
             },
             "type": {
+              "description": "Collection subtype used by styles to select formatting.",
               "$ref": "#/$defs/CollectionType"
             },
             "title": {
+              "description": "Title of the collection.",
               "anyOf": [
                 {
                   "$ref": "#/$defs/Title"
@@ -1052,12 +1174,14 @@
               ]
             },
             "short-title": {
+              "description": "Short title used when a style requests an abbreviated form.",
               "type": [
                 "string",
                 "null"
               ]
             },
             "container": {
+              "description": "Parent work or series, supplied as a reference ID or embedded reference.",
               "anyOf": [
                 {
                   "$ref": "#/$defs/WorkRelation"
@@ -1068,6 +1192,7 @@
               ]
             },
             "editor": {
+              "description": "Editor or editors of the collection.",
               "anyOf": [
                 {
                   "$ref": "#/$defs/Contributor"
@@ -1078,6 +1203,7 @@
               ]
             },
             "translator": {
+              "description": "Translator or translators of the collection.",
               "anyOf": [
                 {
                   "$ref": "#/$defs/Contributor"
@@ -1088,20 +1214,24 @@
               ]
             },
             "contributors": {
+              "description": "Contributors with explicit roles, used for roles beyond the shorthand fields.",
               "type": "array",
               "items": {
                 "$ref": "#/$defs/ContributorEntry"
               }
             },
             "created": {
+              "description": "Date the collection was created or originated.",
               "$ref": "#/$defs/DateValue",
               "default": ""
             },
             "issued": {
+              "description": "Publication date of the collection.",
               "$ref": "#/$defs/DateValue",
               "default": ""
             },
             "publisher": {
+              "description": "Publisher of the collection.",
               "anyOf": [
                 {
                   "$ref": "#/$defs/Publisher"
@@ -1112,54 +1242,63 @@
               ]
             },
             "volume": {
+              "description": "Volume number shorthand.",
               "type": [
                 "string",
                 "null"
               ]
             },
             "issue": {
+              "description": "Issue number shorthand.",
               "type": [
                 "string",
                 "null"
               ]
             },
             "edition": {
+              "description": "Edition statement.",
               "type": [
                 "string",
                 "null"
               ]
             },
             "number": {
+              "description": "Generic document number shorthand.",
               "type": [
                 "string",
                 "null"
               ]
             },
             "part-number": {
+              "description": "Part number shorthand.",
               "type": [
                 "string",
                 "null"
               ]
             },
             "supplement-number": {
+              "description": "Supplement number shorthand.",
               "type": [
                 "string",
                 "null"
               ]
             },
             "printing-number": {
+              "description": "Printing or impression number shorthand.",
               "type": [
                 "string",
                 "null"
               ]
             },
             "numbering": {
+              "description": "Typed numbering identifiers for the collection.",
               "type": "array",
               "items": {
                 "$ref": "#/$defs/Numbering"
               }
             },
             "url": {
+              "description": "URL where the collection can be accessed.",
               "type": [
                 "string",
                 "null"
@@ -1167,6 +1306,7 @@
               "format": "uri"
             },
             "accessed": {
+              "description": "Date the URL was last accessed.",
               "anyOf": [
                 {
                   "$ref": "#/$defs/DateValue"
@@ -1177,6 +1317,7 @@
               ]
             },
             "language": {
+              "description": "BCP 47 language tag for the collection.",
               "anyOf": [
                 {
                   "$ref": "#/$defs/LangID"
@@ -1187,12 +1328,14 @@
               ]
             },
             "field-languages": {
+              "description": "Per-field BCP 47 language overrides.",
               "type": "object",
               "additionalProperties": {
                 "$ref": "#/$defs/LangID"
               }
             },
             "note": {
+              "description": "Freeform note about the collection.",
               "anyOf": [
                 {
                   "$ref": "#/$defs/RichText"
@@ -1203,12 +1346,14 @@
               ]
             },
             "isbn": {
+              "description": "ISBN identifier.",
               "type": [
                 "string",
                 "null"
               ]
             },
             "event": {
+              "description": "Event associated with the collection, supplied as an ID or embedded reference.",
               "anyOf": [
                 {
                   "$ref": "#/$defs/WorkRelation"
@@ -1219,6 +1364,7 @@
               ]
             },
             "keywords": {
+              "description": "Keywords or subject tags.",
               "type": [
                 "array",
                 "null"
@@ -1246,6 +1392,7 @@
           "type": "object",
           "properties": {
             "id": {
+              "description": "Unique identifier for this reference.",
               "anyOf": [
                 {
                   "$ref": "#/$defs/RefID"
@@ -1256,9 +1403,11 @@
               ]
             },
             "type": {
+              "description": "Serial subtype used by styles to select formatting.",
               "$ref": "#/$defs/SerialType"
             },
             "title": {
+              "description": "Title of the serial.",
               "anyOf": [
                 {
                   "$ref": "#/$defs/Title"
@@ -1269,12 +1418,14 @@
               ]
             },
             "short-title": {
+              "description": "Short title used when a style requests an abbreviated form.",
               "type": [
                 "string",
                 "null"
               ]
             },
             "container": {
+              "description": "Parent work or series, supplied as a reference ID or embedded reference.",
               "anyOf": [
                 {
                   "$ref": "#/$defs/WorkRelation"
@@ -1285,6 +1436,7 @@
               ]
             },
             "editor": {
+              "description": "Editor or editors of the serial.",
               "anyOf": [
                 {
                   "$ref": "#/$defs/Contributor"
@@ -1295,12 +1447,14 @@
               ]
             },
             "contributors": {
+              "description": "Contributors with explicit roles, used for roles beyond the shorthand field.",
               "type": "array",
               "items": {
                 "$ref": "#/$defs/ContributorEntry"
               }
             },
             "publisher": {
+              "description": "Publisher of the serial.",
               "anyOf": [
                 {
                   "$ref": "#/$defs/Publisher"
@@ -1311,6 +1465,7 @@
               ]
             },
             "url": {
+              "description": "URL where the serial can be accessed.",
               "type": [
                 "string",
                 "null"
@@ -1318,6 +1473,7 @@
               "format": "uri"
             },
             "accessed": {
+              "description": "Date the URL was last accessed.",
               "anyOf": [
                 {
                   "$ref": "#/$defs/DateValue"
@@ -1328,6 +1484,7 @@
               ]
             },
             "language": {
+              "description": "BCP 47 language tag for the serial.",
               "anyOf": [
                 {
                   "$ref": "#/$defs/LangID"
@@ -1338,12 +1495,14 @@
               ]
             },
             "field-languages": {
+              "description": "Per-field BCP 47 language overrides.",
               "type": "object",
               "additionalProperties": {
                 "$ref": "#/$defs/LangID"
               }
             },
             "note": {
+              "description": "Freeform note about the serial.",
               "anyOf": [
                 {
                   "$ref": "#/$defs/RichText"
@@ -1354,6 +1513,7 @@
               ]
             },
             "issn": {
+              "description": "ISSN identifier.",
               "type": [
                 "string",
                 "null"
@@ -2257,6 +2417,7 @@
           "type": "object",
           "properties": {
             "id": {
+              "description": "Unique identifier for this reference.",
               "anyOf": [
                 {
                   "$ref": "#/$defs/RefID"
@@ -2267,6 +2428,7 @@
               ]
             },
             "title": {
+              "description": "Title of the classic work.",
               "anyOf": [
                 {
                   "$ref": "#/$defs/Title"
@@ -2277,6 +2439,7 @@
               ]
             },
             "container": {
+              "description": "Parent work or collection, supplied as a reference ID or embedded reference.",
               "anyOf": [
                 {
                   "$ref": "#/$defs/WorkRelation"
@@ -2287,6 +2450,7 @@
               ]
             },
             "original": {
+              "description": "Original work or edition, supplied as a reference ID or embedded reference.",
               "anyOf": [
                 {
                   "$ref": "#/$defs/WorkRelation"
@@ -2297,6 +2461,7 @@
               ]
             },
             "author": {
+              "description": "Author or authors of the work.",
               "anyOf": [
                 {
                   "$ref": "#/$defs/Contributor"
@@ -2307,6 +2472,7 @@
               ]
             },
             "editor": {
+              "description": "Editor or editors of this edition.",
               "anyOf": [
                 {
                   "$ref": "#/$defs/Contributor"
@@ -2317,6 +2483,7 @@
               ]
             },
             "translator": {
+              "description": "Translator or translators of this edition.",
               "anyOf": [
                 {
                   "$ref": "#/$defs/Contributor"
@@ -2327,62 +2494,73 @@
               ]
             },
             "volume": {
+              "description": "Volume number shorthand.",
               "type": [
                 "string",
                 "null"
               ]
             },
             "issue": {
+              "description": "Issue number shorthand.",
               "type": [
                 "string",
                 "null"
               ]
             },
             "edition": {
+              "description": "Edition statement.",
               "type": [
                 "string",
                 "null"
               ]
             },
             "number": {
+              "description": "Generic document number shorthand.",
               "type": [
                 "string",
                 "null"
               ]
             },
             "part-number": {
+              "description": "Part number shorthand.",
               "type": [
                 "string",
                 "null"
               ]
             },
             "supplement-number": {
+              "description": "Supplement number shorthand.",
               "type": [
                 "string",
                 "null"
               ]
             },
             "printing-number": {
+              "description": "Printing or impression number shorthand.",
               "type": [
                 "string",
                 "null"
               ]
             },
             "numbering": {
+              "description": "Typed numbering identifiers for the work.",
               "type": "array",
               "items": {
                 "$ref": "#/$defs/Numbering"
               }
             },
             "created": {
+              "description": "Date the work was created or originated.",
               "$ref": "#/$defs/DateValue",
               "default": ""
             },
             "issued": {
+              "description": "Publication date of this edition.",
               "$ref": "#/$defs/DateValue",
               "default": ""
             },
             "publisher": {
+              "description": "Publisher of this edition.",
               "anyOf": [
                 {
                   "$ref": "#/$defs/Publisher"
@@ -2393,6 +2571,7 @@
               ]
             },
             "url": {
+              "description": "URL where the work can be accessed.",
               "type": [
                 "string",
                 "null"
@@ -2400,6 +2579,7 @@
               "format": "uri"
             },
             "accessed": {
+              "description": "Date the URL was last accessed.",
               "anyOf": [
                 {
                   "$ref": "#/$defs/DateValue"
@@ -2410,6 +2590,7 @@
               ]
             },
             "language": {
+              "description": "BCP 47 language tag for this edition.",
               "anyOf": [
                 {
                   "$ref": "#/$defs/LangID"
@@ -2420,12 +2601,14 @@
               ]
             },
             "field-languages": {
+              "description": "Per-field BCP 47 language overrides.",
               "type": "object",
               "additionalProperties": {
                 "$ref": "#/$defs/LangID"
               }
             },
             "note": {
+              "description": "Freeform note about the work.",
               "anyOf": [
                 {
                   "$ref": "#/$defs/RichText"
@@ -2436,6 +2619,7 @@
               ]
             },
             "keywords": {
+              "description": "Keywords or subject tags.",
               "type": [
                 "array",
                 "null"
@@ -3320,6 +3504,7 @@
           "type": "object",
           "properties": {
             "id": {
+              "description": "Unique identifier for this reference.",
               "anyOf": [
                 {
                   "$ref": "#/$defs/RefID"
@@ -3330,10 +3515,12 @@
               ]
             },
             "type": {
+              "description": "Audiovisual subtype used by styles to select formatting.",
               "$ref": "#/$defs/AudioVisualType",
               "default": "film"
             },
             "title": {
+              "description": "Title of the audiovisual work.",
               "anyOf": [
                 {
                   "$ref": "#/$defs/Title"
@@ -3344,26 +3531,31 @@
               ]
             },
             "short-title": {
+              "description": "Short title used when a style requests an abbreviated form.",
               "type": [
                 "string",
                 "null"
               ]
             },
             "contributors": {
+              "description": "Contributors with explicit roles, such as director or performer.",
               "type": "array",
               "items": {
                 "$ref": "#/$defs/ContributorEntry"
               }
             },
             "created": {
+              "description": "Date the work was created or produced.",
               "$ref": "#/$defs/DateValue",
               "default": ""
             },
             "issued": {
+              "description": "Release or publication date.",
               "$ref": "#/$defs/DateValue",
               "default": ""
             },
             "original": {
+              "description": "Original work adapted by this production, supplied as an ID or embedded reference.",
               "anyOf": [
                 {
                   "$ref": "#/$defs/WorkRelation"
@@ -3374,6 +3566,7 @@
               ]
             },
             "language": {
+              "description": "BCP 47 language tag for the work.",
               "anyOf": [
                 {
                   "$ref": "#/$defs/LangID"
@@ -3384,12 +3577,14 @@
               ]
             },
             "genre": {
+              "description": "Free-text genre descriptor, preferably in canonical kebab-case form.",
               "type": [
                 "string",
                 "null"
               ]
             },
             "container": {
+              "description": "Parent series or collection, supplied as a reference ID or embedded reference.",
               "anyOf": [
                 {
                   "$ref": "#/$defs/WorkRelation"
@@ -3400,6 +3595,7 @@
               ]
             },
             "event": {
+              "description": "Event or performance associated with the work, supplied as an ID or embedded reference.",
               "anyOf": [
                 {
                   "$ref": "#/$defs/WorkRelation"
@@ -3410,6 +3606,7 @@
               ]
             },
             "numbering": {
+              "description": "Typed numbering identifiers, such as season or episode numbers.",
               "type": "array",
               "items": {
                 "$ref": "#/$defs/Numbering"
@@ -3423,6 +3620,7 @@
               ]
             },
             "publisher": {
+              "description": "Publisher, studio, network, or production company.",
               "anyOf": [
                 {
                   "$ref": "#/$defs/Publisher"
@@ -3433,24 +3631,28 @@
               ]
             },
             "medium": {
+              "description": "Medium or delivery format.",
               "type": [
                 "string",
                 "null"
               ]
             },
             "dimensions": {
+              "description": "Physical dimensions or format.",
               "type": [
                 "string",
                 "null"
               ]
             },
             "platform": {
+              "description": "Platform or service where the work was distributed.",
               "type": [
                 "string",
                 "null"
               ]
             },
             "url": {
+              "description": "URL where the work can be accessed.",
               "type": [
                 "string",
                 "null"
@@ -3458,6 +3660,7 @@
               "format": "uri"
             },
             "accessed": {
+              "description": "Date the URL was last accessed.",
               "anyOf": [
                 {
                   "$ref": "#/$defs/DateValue"
@@ -3468,12 +3671,14 @@
               ]
             },
             "field-languages": {
+              "description": "Per-field BCP 47 language overrides.",
               "type": "object",
               "additionalProperties": {
                 "$ref": "#/$defs/LangID"
               }
             },
             "note": {
+              "description": "Freeform note about the work.",
               "anyOf": [
                 {
                   "$ref": "#/$defs/RichText"
