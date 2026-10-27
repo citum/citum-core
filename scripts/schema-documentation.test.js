@@ -13,6 +13,8 @@ const CITATION_SCHEMA_PATH = path.join(ROOT, 'docs/schemas/citation.json');
 const SERVER_SCHEMA_PATH = path.join(ROOT, 'docs/schemas/server.json');
 const REGISTRY_SCHEMA_PATH = path.join(ROOT, 'docs/schemas/registry.json');
 const ABBREV_SCHEMA_PATH = path.join(ROOT, 'docs/schemas/abbrev-map.json');
+const STYLE_SCHEMA_PATH = path.join(ROOT, 'docs/schemas/style.json');
+const LOCALE_SCHEMA_PATH = path.join(ROOT, 'docs/schemas/locale.json');
 const GUIDE_PATH = path.join(ROOT, 'docs/guides/BIBLIOGRAPHY_DATA.md');
 const CITATION_SERVER_GUIDE_PATH = path.join(
     ROOT,
@@ -21,6 +23,10 @@ const CITATION_SERVER_GUIDE_PATH = path.join(
 const AUXILIARY_GUIDE_PATH = path.join(
     ROOT,
     'docs/guides/REGISTRY_AND_AUXILIARY_SCHEMAS.md'
+);
+const STYLE_LOCALE_GUIDE_PATH = path.join(
+    ROOT,
+    'docs/guides/STYLE_AND_LOCALE_SCHEMAS.md'
 );
 const FIELD_REFERENCE_PATH = path.join(
     ROOT,
@@ -99,12 +105,12 @@ function schemaValidator(schema) {
     return ajv.compile(schema);
 }
 
-function assertValidBibliography(validate, value, label) {
+function assertValidSchema(validate, value, label) {
     const valid = validate(value);
     assert.equal(
         valid,
         true,
-        `${label} must validate against bib.json:\n${JSON.stringify(validate.errors, null, 2)}`
+        `${label} must validate against its published schema:\n${JSON.stringify(validate.errors, null, 2)}`
     );
 }
 
@@ -150,7 +156,7 @@ test('bibliography guide YAML blocks validate against the published schema', () 
 
     const validate = bibliographyValidator();
     blocks.forEach((block, index) => {
-        assertValidBibliography(validate, yaml.load(block), `guide YAML block ${index + 1}`);
+        assertValidSchema(validate, yaml.load(block), `guide YAML block ${index + 1}`);
     });
 });
 
@@ -162,7 +168,7 @@ test('data-model fixtures validate against the published schema', () => {
     const validate = bibliographyValidator();
     for (const file of files) {
         const value = yaml.load(fs.readFileSync(path.join(examplesDir, file), 'utf8'));
-        assertValidBibliography(validate, value, file);
+        assertValidSchema(validate, value, file);
     }
 });
 
@@ -194,7 +200,7 @@ test('citation and server integration examples validate against published schema
     assert.equal(responseBlocks.length, 2, 'expected one response for each RPC example');
 
     const validateCitation = schemaValidator(loadSchema(CITATION_SCHEMA_PATH));
-    assertValidBibliography(
+    assertValidSchema(
         validateCitation,
         yaml.load(citationBlocks[0]),
         'citation guide YAML block'
@@ -210,7 +216,7 @@ test('citation and server integration examples validate against published schema
             $defs: server.$defs,
             ...server[method],
         };
-        assertValidBibliography(
+        assertValidSchema(
             schemaValidator(methodSchema),
             request.params,
             `${method} params example`
@@ -253,12 +259,12 @@ test('registry and abbreviation-map guide examples validate against published sc
     const validateRegistry = schemaValidator(loadSchema(REGISTRY_SCHEMA_PATH));
     const validateAbbreviations = schemaValidator(loadSchema(ABBREV_SCHEMA_PATH));
 
-    assertValidBibliography(
+    assertValidSchema(
         validateRegistry,
         yaml.load(registryBlocks[0]),
         'registry guide YAML block'
     );
-    assertValidBibliography(
+    assertValidSchema(
         validateAbbreviations,
         yaml.load(abbreviationBlocks[0]),
         'abbreviation-map guide YAML block'
@@ -301,4 +307,42 @@ test('auxiliary guide identifies type-map as generated data and links its refere
     assert.match(markdown, /BIBLATEX_MAPPING\.md/);
     assert.match(markdown, /CSL_JSON_MAPPING\.md/);
     assert.match(markdown, /just schema-gen/);
+});
+
+test('style and locale guide examples validate against published schemas', () => {
+    const markdown = fs.readFileSync(STYLE_LOCALE_GUIDE_PATH, 'utf8');
+    const blocks = [...markdown.matchAll(/```yaml\n([\s\S]*?)```/g)].map(
+        (match) => match[1]
+    );
+    const styleBlocks = blocks.filter((block) => block.includes('# schema: style'));
+    const localeBlocks = blocks.filter((block) => block.includes('# schema: locale'));
+
+    assert.equal(styleBlocks.length, 1, 'expected one complete style example');
+    assert.equal(localeBlocks.length, 1, 'expected one complete locale example');
+    assertValidSchema(
+        schemaValidator(loadSchema(STYLE_SCHEMA_PATH)),
+        yaml.load(styleBlocks[0]),
+        'style guide YAML block'
+    );
+    assertValidSchema(
+        schemaValidator(loadSchema(LOCALE_SCHEMA_PATH)),
+        yaml.load(localeBlocks[0]),
+        'locale guide YAML block'
+    );
+});
+
+test('style and locale schemas expose effective public descriptions', () => {
+    assert.deepEqual(undocumentedProperties(loadSchema(STYLE_SCHEMA_PATH)), []);
+    assert.deepEqual(undocumentedProperties(loadSchema(LOCALE_SCHEMA_PATH)), []);
+});
+
+test('style and locale guide links generated schemas and author references', () => {
+    const markdown = fs.readFileSync(STYLE_LOCALE_GUIDE_PATH, 'utf8');
+
+    assert.match(markdown, /\.\.\/schemas\/style\.json/);
+    assert.match(markdown, /\.\.\/schemas\/locale\.json/);
+    assert.match(markdown, /style-authoring\/start\.html/);
+    assert.match(markdown, /style-authoring\/locales\.html/);
+    assert.match(markdown, /style validate/);
+    assert.match(markdown, /locale lint/);
 });

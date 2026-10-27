@@ -361,24 +361,28 @@
           "type": "object",
           "properties": {
             "masculine": {
+              "description": "Masculine grammatical-gender form.",
               "type": [
                 "string",
                 "null"
               ]
             },
             "feminine": {
+              "description": "Feminine grammatical-gender form.",
               "type": [
                 "string",
                 "null"
               ]
             },
             "neuter": {
+              "description": "Neuter grammatical-gender form.",
               "type": [
                 "string",
                 "null"
               ]
             },
             "common": {
+              "description": "Common or gender-unspecified form.",
               "type": [
                 "string",
                 "null"
@@ -409,24 +413,28 @@
           "type": "object",
           "properties": {
             "masculine": {
+              "description": "Masculine grammatical-gender form.",
               "type": [
                 "string",
                 "null"
               ]
             },
             "feminine": {
+              "description": "Feminine grammatical-gender form.",
               "type": [
                 "string",
                 "null"
               ]
             },
             "neuter": {
+              "description": "Neuter grammatical-gender form.",
               "type": [
                 "string",
                 "null"
               ]
             },
             "common": {
+              "description": "Common or gender-unspecified form.",
               "type": [
                 "string",
                 "null"

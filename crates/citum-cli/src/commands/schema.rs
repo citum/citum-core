@@ -195,6 +195,7 @@ fn set_property_description(object: &mut serde_json::Value, property: &str, desc
         && let Some(field) = properties
             .get_mut(property)
             .and_then(serde_json::Value::as_object_mut)
+        && !field.contains_key("description")
     {
         field.insert(
             "description".to_string(),

@@ -567,10 +567,22 @@ fn inspect_gender_keys(map: &Mapping) -> Result<(bool, bool), String> {
 #[cfg(feature = "schema")]
 fn gender_slot_schema_properties() -> serde_json::Value {
     serde_json::json!({
-        "masculine": { "type": ["string", "null"] },
-        "feminine": { "type": ["string", "null"] },
-        "neuter": { "type": ["string", "null"] },
-        "common": { "type": ["string", "null"] }
+        "masculine": {
+            "description": "Masculine grammatical-gender form.",
+            "type": ["string", "null"]
+        },
+        "feminine": {
+            "description": "Feminine grammatical-gender form.",
+            "type": ["string", "null"]
+        },
+        "neuter": {
+            "description": "Neuter grammatical-gender form.",
+            "type": ["string", "null"]
+        },
+        "common": {
+            "description": "Common or gender-unspecified form.",
+            "type": ["string", "null"]
+        }
     })
 }
 

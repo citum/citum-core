@@ -230,8 +230,14 @@ impl JsonSchema for WrapConfig {
                     "type": "object",
                     "properties": {
                         "punctuation": generator.subschema_for::<WrapPunctuation>(),
-                        "inner-prefix": { "type": ["string", "null"] },
-                        "inner-suffix": { "type": ["string", "null"] },
+                        "inner-prefix": {
+                            "description": "Optional text inserted after the opening punctuation and before the rendered content.",
+                            "type": ["string", "null"]
+                        },
+                        "inner-suffix": {
+                            "description": "Optional text inserted after the rendered content and before the closing punctuation.",
+                            "type": ["string", "null"]
+                        },
                     },
                     "required": ["punctuation"],
                     "additionalProperties": false,
@@ -1599,7 +1605,10 @@ pub struct TemplateMessage {
 #[serde(untagged)]
 pub enum MessageArgSource {
     /// A literal string argument.
-    Literal { literal: String },
+    Literal {
+        /// Literal string passed unchanged to the locale message argument.
+        literal: String,
+    },
     /// The canonical reference-type key used for MF2 selection.
     ReferenceType {
         #[serde(rename = "reference-type")]
@@ -1965,6 +1974,7 @@ impl JsonSchema for DelimiterPunctuation {
                     "required": ["mark"],
                     "properties": {
                         "mark": {
+                            "description": "Semantic punctuation mark to render with locale-aware punctuation rules.",
                             "type": "string",
                             "enum": [
                                 "comma",

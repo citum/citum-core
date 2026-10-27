@@ -719,8 +719,8 @@
           "type": "object",
           "properties": {
             "field": {
-              "type": "string",
-              "description": "Custom reference field name used as a bibliography sort key."
+              "description": "Custom reference field name used as a bibliography sort key.",
+              "type": "string"
             }
           },
           "required": [
@@ -1250,18 +1250,18 @@
               "$ref": "#/$defs/WrapPunctuation"
             },
             "inner-prefix": {
+              "description": "Optional text inserted after the opening punctuation and before the rendered content.",
               "type": [
                 "string",
                 "null"
-              ],
-              "description": "Optional text inserted after the opening punctuation and before the rendered content."
+              ]
             },
             "inner-suffix": {
+              "description": "Optional text inserted after the rendered content and before the closing punctuation.",
               "type": [
                 "string",
                 "null"
-              ],
-              "description": "Optional text inserted after the rendered content and before the closing punctuation."
+              ]
             }
           },
           "required": [
@@ -1291,6 +1291,7 @@
           "type": "object",
           "properties": {
             "mark": {
+              "description": "Semantic punctuation mark to render with locale-aware punctuation rules.",
               "type": "string",
               "enum": [
                 "comma",
@@ -1299,8 +1300,7 @@
                 "period",
                 "parentheses",
                 "brackets"
-              ],
-              "description": "Semantic punctuation mark to render with locale-aware punctuation rules."
+              ]
             }
           },
           "additionalProperties": false,
@@ -2870,8 +2870,8 @@
           "type": "object",
           "properties": {
             "literal": {
-              "type": "string",
-              "description": "Literal string passed unchanged to the locale message argument."
+              "description": "Literal string passed unchanged to the locale message argument.",
+              "type": "string"
             }
           },
           "required": [
