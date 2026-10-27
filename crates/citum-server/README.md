@@ -14,6 +14,12 @@ bibliography methods are convenience methods for smaller workflows. The session
 API (`open_session` and friends) supports stateful incremental editing and is
 enabled by the default `session` feature.
 
+For a task-oriented application walkthrough, see the public
+[citations and JSON-RPC integration guide](https://docs.citum.org/guides/citation-and-server.html).
+The published [`citation.json`](https://docs.citum.org/schemas/citation.json)
+and [`server.json`](https://docs.citum.org/schemas/server.json) files provide
+editor completion and request validation.
+
 ## Install
 
 ```sh
