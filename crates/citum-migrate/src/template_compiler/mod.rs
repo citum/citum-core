@@ -12,7 +12,7 @@ use crate::ir::{ItemType, Node, Variable};
 use citum_schema::template::{
     ContributorForm, ContributorRole, DateForm, DateVariable, NumberVariable, Rendering,
     SimpleVariable, TemplateComponent, TemplateContributor, TemplateDate, TemplateGroup,
-    TemplateNumber, TemplateTitle, TemplateVariable, TitleType,
+    TemplateGroupSelect, TemplateNumber, TemplateTitle, TemplateVariable, TitleType,
 };
 use indexmap::IndexMap;
 use std::sync::OnceLock;

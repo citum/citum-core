@@ -17,8 +17,35 @@ impl TemplateCompiler {
             Node::Date(date) => self.compile_date(date),
             Node::Variable(var) => self.compile_variable(var),
             Node::Term(term) => self.compile_term(term),
+            Node::OrderedFallback(fallback) => self.compile_ordered_fallback(fallback),
             _ => None,
         }
+    }
+
+    fn compile_ordered_fallback(
+        &self,
+        fallback: &crate::ir::OrderedFallbackBlock,
+    ) -> Option<TemplateComponent> {
+        let mut candidates = Vec::with_capacity(fallback.candidates.len());
+        for nodes in &fallback.candidates {
+            let mut components = self.compile(nodes);
+            let candidate = match components.len() {
+                0 => return None,
+                1 => components.pop()?,
+                _ => TemplateComponent::Group(super::TemplateGroup {
+                    group: components,
+                    select: super::TemplateGroupSelect::All,
+                    ..Default::default()
+                }),
+            };
+            candidates.push(candidate);
+        }
+
+        Some(TemplateComponent::Group(super::TemplateGroup {
+            group: candidates,
+            select: super::TemplateGroupSelect::First,
+            ..Default::default()
+        }))
     }
 
     /// Compile a Names block into a Contributor component.

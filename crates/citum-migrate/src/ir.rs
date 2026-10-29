@@ -168,11 +168,15 @@ pub struct Info {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(tag = "type", rename_all = "kebab-case")]
 pub enum Node {
-    Text { value: String },
+    Text {
+        value: String,
+    },
     Variable(VariableBlock),
     Date(DateBlock),
     Names(NamesBlock),
     Group(GroupBlock),
+    /// Ordered output candidates produced from a proven legacy fallback tree.
+    OrderedFallback(OrderedFallbackBlock),
     Condition(ConditionBlock),
     Term(TermBlock),
 }
@@ -207,6 +211,16 @@ pub struct GroupBlock {
     pub delimiter: Option<String>,
     #[serde(flatten)]
     pub formatting: FormattingOptions,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub source_order: Option<usize>,
+}
+
+/// Ordered IR candidates that compile to a `select: first` template group.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct OrderedFallbackBlock {
+    /// Candidate node lists in evaluation order.
+    pub candidates: Vec<Vec<Node>>,
+    /// Earliest source position among the candidate nodes.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub source_order: Option<usize>,
 }

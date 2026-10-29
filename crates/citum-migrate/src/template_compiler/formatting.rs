@@ -224,6 +224,7 @@ pub(super) fn extract_source_order(node: &Node) -> Option<usize> {
         Node::Date(d) => d.source_order,
         Node::Names(n) => n.source_order,
         Node::Group(g) => g.source_order,
+        Node::OrderedFallback(fallback) => fallback.source_order,
         Node::Term(t) => t.source_order,
         _ => None,
     };
@@ -235,6 +236,7 @@ pub(super) fn extract_source_order(node: &Node) -> Option<usize> {
                 Node::Date(d) => format!("Date({:?})", d.variable),
                 Node::Names(n) => format!("Names({:?})", n.variables),
                 Node::Group(_) => "Group".to_string(),
+                Node::OrderedFallback(_) => "OrderedFallback".to_string(),
                 Node::Text { value } => format!("Text({value})"),
                 Node::Condition(_) => "Condition".to_string(),
                 Node::Term(t) => format!("Term({:?})", t.term),

@@ -37,6 +37,24 @@ fn literal_text(value: &str) -> CslNode {
     })
 }
 
+fn variable_text(variable: &str) -> CslNode {
+    CslNode::Text(Text {
+        value: None,
+        variable: Some(variable.to_string()),
+        macro_name: None,
+        term: None,
+        form: None,
+        prefix: None,
+        suffix: None,
+        quotes: None,
+        text_case: None,
+        strip_periods: None,
+        plural: None,
+        macro_call_order: None,
+        formatting: Formatting::default(),
+    })
+}
+
 fn choose_branch(position: Option<&str>, children: Vec<CslNode>) -> ChooseBranch {
     ChooseBranch {
         match_mode: None,
@@ -69,6 +87,26 @@ fn choose_branch_with_conditions(
     }
 }
 
+fn doi_url_choose() -> Choose {
+    Choose {
+        if_branch: choose_branch_with_conditions(
+            None,
+            None,
+            Some("DOI"),
+            None,
+            vec![variable_text("DOI")],
+        ),
+        else_if_branches: vec![choose_branch_with_conditions(
+            None,
+            None,
+            Some("URL"),
+            None,
+            vec![variable_text("URL"), variable_text("accessed")],
+        )],
+        else_branch: None,
+    }
+}
+
 fn group(children: Vec<CslNode>) -> CslNode {
     CslNode::Group(Group {
         delimiter: None,
@@ -85,6 +123,11 @@ fn collect_text_values<'a>(nodes: &'a [ir::Node], output: &mut Vec<&'a str>) {
         match node {
             ir::Node::Text { value } => output.push(value.as_str()),
             ir::Node::Group(group) => collect_text_values(&group.children, output),
+            ir::Node::OrderedFallback(fallback) => {
+                for candidate in &fallback.candidates {
+                    collect_text_values(candidate, output);
+                }
+            }
             ir::Node::Condition(condition) => {
                 collect_text_values(&condition.then_branch, output);
                 for branch in &condition.else_if_branches {
@@ -483,6 +526,65 @@ fn map_choose_prefers_else_branch_for_uncertain_dates() {
         .expect("uncertain-date choose should map");
 
     assert_eq!(text_values(std::slice::from_ref(&mapped)), vec!["CERTAIN"]);
+}
+
+#[test]
+fn map_choose_recognizes_supported_doi_url_match_modes() {
+    for match_mode in [None, Some("all"), Some("any")] {
+        let mut choose = doi_url_choose();
+        choose.if_branch.match_mode = match_mode.map(ToString::to_string);
+        choose.else_if_branches[0].match_mode = match_mode.map(ToString::to_string);
+
+        let mapped = Upsampler::new()
+            .map_choose(&choose)
+            .expect("supported DOI-to-URL fallback should map");
+
+        let ir::Node::OrderedFallback(fallback) = mapped else {
+            panic!("expected an ordered fallback");
+        };
+        assert_eq!(fallback.candidates.len(), 2);
+        assert_eq!(fallback.candidates[0].len(), 1);
+        assert_eq!(fallback.candidates[1].len(), 2);
+    }
+}
+
+#[test]
+fn map_choose_leaves_doi_url_near_matches_as_conditions() {
+    let mut extra_branch = doi_url_choose();
+    extra_branch
+        .else_if_branches
+        .push(choose_branch_with_conditions(
+            None,
+            None,
+            Some("ISBN"),
+            None,
+            vec![variable_text("ISBN")],
+        ));
+
+    let mut with_else = doi_url_choose();
+    with_else.else_branch = Some(vec![literal_text("fallback")]);
+
+    let mut match_none = doi_url_choose();
+    match_none.if_branch.match_mode = Some("none".to_string());
+
+    let mut mixed_predicate = doi_url_choose();
+    mixed_predicate.if_branch.type_ = Some("article-journal".to_string());
+
+    let mut missing_guarded_output = doi_url_choose();
+    missing_guarded_output.else_if_branches[0].children = vec![literal_text("Online")];
+
+    for choose in [
+        extra_branch,
+        with_else,
+        match_none,
+        mixed_predicate,
+        missing_guarded_output,
+    ] {
+        let mapped = Upsampler::new()
+            .map_choose(&choose)
+            .expect("near-match should retain generic condition migration");
+        assert!(matches!(mapped, ir::Node::Condition(_)));
+    }
 }
 
 #[test]

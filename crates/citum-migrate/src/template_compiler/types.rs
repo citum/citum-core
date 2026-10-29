@@ -39,6 +39,11 @@ impl TemplateCompiler {
                         Self::collect_types_recursive(else_nodes, types);
                     }
                 }
+                Node::OrderedFallback(fallback) => {
+                    for candidate in &fallback.candidates {
+                        Self::collect_types_recursive(candidate, types);
+                    }
+                }
                 _ => {}
             }
         }

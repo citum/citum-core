@@ -53,6 +53,14 @@ impl Compressor {
                     group.children = self.compress_nodes(group.children);
                     compressed.push(ir::Node::Group(group));
                 }
+                ir::Node::OrderedFallback(mut fallback) => {
+                    fallback.candidates = fallback
+                        .candidates
+                        .into_iter()
+                        .map(|candidate| self.compress_nodes(candidate))
+                        .collect();
+                    compressed.push(ir::Node::OrderedFallback(fallback));
+                }
                 _ => compressed.push(node),
             }
         }

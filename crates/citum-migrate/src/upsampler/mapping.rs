@@ -352,6 +352,38 @@ impl Upsampler {
             .collect()
     }
 
+    fn map_doi_url_fallback(&self, choose: &legacy::Choose) -> Option<ir::Node> {
+        let [url_branch] = choose.else_if_branches.as_slice() else {
+            return None;
+        };
+        if choose.else_branch.is_some()
+            || !branch_is_single_variable_fallback(&choose.if_branch, "DOI")
+            || !branch_is_single_variable_fallback(url_branch, "URL")
+            || !nodes_render_variable(&choose.if_branch.children, "DOI")
+            || !nodes_render_variable(&url_branch.children, "URL")
+        {
+            return None;
+        }
+
+        let candidates = vec![
+            self.upsample_nodes(&choose.if_branch.children),
+            self.upsample_nodes(&url_branch.children),
+        ];
+        if candidates.iter().any(Vec::is_empty) {
+            return None;
+        }
+        let source_order = candidates
+            .iter()
+            .flatten()
+            .filter_map(ir_node_source_order)
+            .min();
+
+        Some(ir::Node::OrderedFallback(ir::OrderedFallbackBlock {
+            candidates,
+            source_order,
+        }))
+    }
+
     fn map_negated_else_if_fallback(&self, branch: &legacy::ChooseBranch) -> Option<Vec<ir::Node>> {
         (branch.match_mode.as_deref() == Some("none") && branch.type_.is_some())
             .then(|| self.upsample_nodes(&branch.children))
@@ -393,6 +425,10 @@ impl Upsampler {
 
     /// Convert a legacy conditional tree into a Citum condition or fallback node.
     pub(super) fn map_choose(&self, c: &legacy::Choose) -> Option<ir::Node> {
+        if let Some(node) = self.map_doi_url_fallback(c) {
+            return Some(node);
+        }
+
         // Handle is-uncertain-date condition specially: prefer else branch since most dates
         // aren't uncertain. Full EDTF support would handle this dynamically at render time.
         if let Some(node) = self.map_uncertain_date_choose(c) {
@@ -754,5 +790,55 @@ impl Upsampler {
             Some("symbol") => citum::locale::TermForm::Symbol,
             _ => citum::locale::TermForm::Long,
         }
+    }
+}
+
+fn branch_is_single_variable_fallback(branch: &legacy::ChooseBranch, variable: &str) -> bool {
+    let match_supported = matches!(branch.match_mode.as_deref(), None | Some("all" | "any"));
+    let tests_one_variable = branch
+        .variable
+        .as_deref()
+        .is_some_and(|value| value.split_whitespace().eq([variable]));
+
+    match_supported
+        && tests_one_variable
+        && branch.type_.is_none()
+        && branch.is_numeric.is_none()
+        && branch.is_uncertain_date.is_none()
+        && branch.locator.is_none()
+        && branch.position.is_none()
+        && !branch.children.is_empty()
+}
+
+fn nodes_render_variable(nodes: &[LNode], variable: &str) -> bool {
+    nodes.iter().any(|node| match node {
+        LNode::Text(text) => text.variable.as_deref() == Some(variable),
+        LNode::Group(group) => nodes_render_variable(&group.children, variable),
+        LNode::Choose(choose) => {
+            nodes_render_variable(&choose.if_branch.children, variable)
+                || choose
+                    .else_if_branches
+                    .iter()
+                    .any(|branch| nodes_render_variable(&branch.children, variable))
+                || choose
+                    .else_branch
+                    .as_deref()
+                    .is_some_and(|branch| nodes_render_variable(branch, variable))
+        }
+        LNode::Names(names) => nodes_render_variable(&names.children, variable),
+        LNode::Substitute(substitute) => nodes_render_variable(&substitute.children, variable),
+        _ => false,
+    })
+}
+
+fn ir_node_source_order(node: &ir::Node) -> Option<usize> {
+    match node {
+        ir::Node::Variable(variable) => variable.source_order,
+        ir::Node::Date(date) => date.source_order,
+        ir::Node::Names(names) => names.source_order,
+        ir::Node::Group(group) => group.source_order,
+        ir::Node::OrderedFallback(fallback) => fallback.source_order,
+        ir::Node::Term(term) => term.source_order,
+        ir::Node::Text { .. } | ir::Node::Condition(_) => None,
     }
 }
