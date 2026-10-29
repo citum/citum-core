@@ -49,6 +49,21 @@ test('oracle-fast.js is wired to the same strict bibliography gate as oracle.js,
   assert.equal(fastBibliographyComparisonMatches('apa-7th', comparison), true);
 });
 
+test('strict bibliography matching cannot override a raw-markup leak', () => {
+  const comparison = compareText(
+    'New York：Bantam Dell Publishing Group，1988.',
+    '<span class="nocase">New York</span>：Bantam Dell Publishing Group，1988.'
+  );
+
+  assert.equal(comparison.expected, comparison.actual);
+  assert.equal(comparison.rawMarkupLeak, true);
+  assert.equal(
+    fastBibliographyComparisonMatches('gb-t-7714-2025-numeric', comparison),
+    false
+  );
+  assert.equal(fastBibliographyComparisonMatches('apa-7th', comparison), false);
+});
+
 test('oracle-fast similarity pairing marks unmatched outputs as metric-ineligible', () => {
   const pairs = matchBibliographyEntries(
     ['Alpha bibliography record'],

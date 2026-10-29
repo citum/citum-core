@@ -1,7 +1,7 @@
 ---
 # csl26-g9lb
 title: Oracle's normalizeText strips HTML tags, blind to raw-markup-leak regressions
-status: todo
+status: completed
 type: bug
 priority: normal
 tags:
@@ -9,7 +9,7 @@ tags:
     - tooling
     - fidelity
 created_at: 2026-07-25T12:18:16Z
-updated_at: 2026-07-25T12:18:34Z
+updated_at: 2026-10-29T14:25:18Z
 ---
 
 Discovered while verifying csl26-6eoi (raw citeproc HTML leaking into rendered output).
@@ -33,3 +33,12 @@ Add a raw-HTML-tag assertion to the fidelity pipeline (e.g. in report-core.js or
 dedicated check) that fails if citum's *un-normalized* bibliography/citation output
 contains `<[a-z]+[^>]*>` -- run before normalizeText() strips it, so a future
 regression of this class of bug is actually caught.
+
+
+## Summary of Changes
+
+- Detect literal HTML-like tags in unnormalized Citum oracle output.
+- Make raw markup an unconditional compatibility and exact-parity failure while preserving normalized diagnostics.
+- Propagate rawMarkupLeak through standard and fast oracle records and detailed bibliography issues.
+- Add regression coverage for expected-side transport markup, tag shapes, mathematical text, escaped markup, and strict matching paths.
+- Validated oracle and report-core suites; the APA workflow retains its pre-existing 45/46 bibliography result and ordering mismatch.

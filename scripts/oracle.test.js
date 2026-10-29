@@ -19,7 +19,9 @@ const {
   resolveAuthoredStylePath,
 } = require('./oracle');
 const {
+  comparisonPasses,
   compareText,
+  hasRawHtmlTag,
   parseComponents,
   splitCitationIntoItemSegments,
   compareCitationComponents,
@@ -377,6 +379,57 @@ test('registered divergence adjustments recompute the bibliography passed/failed
 
   assert.equal(adjusted.adjusted.bibliography.passed, 2);
   assert.equal(adjusted.adjusted.bibliography.failed, 0);
+});
+
+test('registered divergences cannot override raw-markup failures', () => {
+  const rawResults = {
+    citations: {
+      total: 1,
+      passed: 0,
+      failed: 1,
+      entries: [{
+        id: 'gbt-latin-cite',
+        oracle: '(New York，1988)',
+        citum: '(New York, 1988)',
+        match: false,
+        rawMarkupLeak: true,
+      }],
+    },
+    bibliography: {
+      total: 1,
+      passed: 0,
+      failed: 1,
+      entries: [{
+        id: 'gbt-latin-book',
+        oracle: 'New York：Bantam Dell Publishing Group，1988.',
+        citum: 'New York: Bantam Dell Publishing Group, 1988.',
+        match: false,
+        rawMarkupLeak: true,
+      }],
+    },
+  };
+  const testItems = {
+    'gbt-latin-book': { id: 'gbt-latin-book', type: 'book', language: 'en-US' },
+  };
+  const testCitations = [{
+    id: 'gbt-latin-cite',
+    items: [{ id: 'gbt-latin-book' }],
+  }];
+
+  const adjusted = attachRegisteredDivergenceAdjustments(
+    rawResults,
+    [],
+    [],
+    testItems,
+    testCitations
+  );
+
+  assert.equal(adjusted.adjusted.citations.entries[0].match, false);
+  assert.equal(adjusted.adjusted.citations.entries[0].appliedDivergence, null);
+  assert.equal(adjusted.adjusted.bibliography.entries[0].match, false);
+  assert.equal(adjusted.adjusted.bibliography.entries[0].appliedDivergence, null);
+  assert.equal(adjusted.adjusted.citations.failed, 1);
+  assert.equal(adjusted.adjusted.bibliography.failed, 1);
 });
 
 test('registered divergence adjustments keep heuristic-unpaired rows outside compatibility totals', () => {
@@ -1377,6 +1430,72 @@ test('compareText does not report a case mismatch for a pure trailing-punctuatio
   );
   assert.equal(comparison.caseMismatch, false);
   assert.equal(comparison.match, true, 'similarity fallback still applies for non-strict styles');
+});
+
+test('compareText keeps citeproc markup transport-only on the expected side', () => {
+  const comparison = compareText('<i>Title</i>.', 'Title.');
+
+  assert.equal(comparison.rawMarkupLeak, false);
+  assert.equal(comparison.match, true);
+  assert.equal(comparison.exactMatch, true);
+});
+
+test('compareText rejects literal HTML leaked by Citum before normalization', () => {
+  const comparison = compareText(
+    'Title.',
+    '<span class="nocase">Title</span>.'
+  );
+
+  assert.equal(comparison.rawMarkupLeak, true);
+  assert.equal(comparison.match, false);
+  assert.equal(comparison.exactMatch, false);
+  assert.equal(comparison.exactAdjudication, 'unresolved');
+  assert.equal(comparison.similarity, 1, 'normalized similarity remains diagnostic');
+});
+
+test('raw HTML detection recognizes supported citeproc tag shapes', () => {
+  const leakedTags = [
+    '<i>title</i>',
+    '<b class="strong">title</b>',
+    '<span class="nocase">title</span>',
+    '<sc>title</sc>',
+    '<sup>2</sup>',
+    '<sub>2</sub>',
+  ];
+
+  for (const leaked of leakedTags) {
+    assert.equal(hasRawHtmlTag(leaked), true, leaked);
+  }
+  assert.equal(hasRawHtmlTag('orphaned </span> tag'), true);
+});
+
+test('raw HTML detection does not misclassify mathematical comparisons', () => {
+  const comparison = compareText('For 1 < x > 0.', 'For 1 < x > 0.');
+
+  assert.equal(hasRawHtmlTag('For 1 < x > 0.'), false);
+  assert.equal(comparison.rawMarkupLeak, false);
+  assert.equal(comparison.match, true);
+});
+
+test('escaped markup remains visible text rather than a raw tag', () => {
+  const comparison = compareText(
+    'Title.',
+    '&lt;span class="nocase"&gt;Title&lt;/span&gt;.'
+  );
+
+  assert.equal(comparison.rawMarkupLeak, false);
+  assert.equal(comparison.match, false);
+  assert.equal(comparison.exactMatch, false);
+});
+
+test('raw-markup veto overrides a later strict citation match', () => {
+  const comparison = compareText(
+    'Smith (2020)',
+    '<span class="nocase">Smith</span> (2020)'
+  );
+
+  assert.equal(comparison.expected, comparison.actual);
+  assert.equal(comparisonPasses(comparison, true), false);
 });
 
 test('compareText keeps estimated-date brackets visible to exact parity', () => {

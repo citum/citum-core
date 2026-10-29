@@ -27,6 +27,7 @@ const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 const {
+  comparisonPasses,
   compareText,
   normalizeText,
   parseComponents,
@@ -282,9 +283,12 @@ function run() {
     const comparison = compareText(snapshot.citations[cite.id] || '', citum.citations[cite.id] || '', {
       caseSensitive: opts.caseSensitive,
     });
-    const match = equivalentCitationText(comparison.expected, comparison.actual, cite.id, {
-      caseSensitive: opts.caseSensitive,
-    });
+    const match = comparisonPasses(
+      comparison,
+      equivalentCitationText(comparison.expected, comparison.actual, cite.id, {
+        caseSensitive: opts.caseSensitive,
+      })
+    );
     if (match) rawResults.citations.passed++; else rawResults.citations.failed++;
 
     // Always run real component detection (matching or not) -- citation
@@ -308,6 +312,7 @@ function run() {
       exactCitum: comparison.exactActual,
       exactMatch: comparison.exactMatch,
       exactAdjudication: comparison.exactAdjudication,
+      rawMarkupLeak: comparison.rawMarkupLeak,
       match,
       caseMismatch: comparison.caseMismatch,
       components: itemComparison.segmented
@@ -337,6 +342,7 @@ function run() {
       exactCitum: null,
       exactMatch: null,
       exactAdjudication: 'not-comparable',
+      rawMarkupLeak: false,
       match: pair.compatibilityEligible ? false : null,
       caseMismatch: false,
       pairingMethod: pair.pairingMethod,
@@ -377,7 +383,15 @@ function run() {
       entryResult.exactCitum = comparison.exactActual;
       entryResult.exactMatch = comparison.exactMatch;
       entryResult.exactAdjudication = comparison.exactAdjudication;
+      entryResult.rawMarkupLeak = comparison.rawMarkupLeak;
       entryResult.caseMismatch = comparison.caseMismatch;
+      if (comparison.rawMarkupLeak) {
+        entryResult.issues.push({
+          component: 'output',
+          issue: 'raw_markup_leak',
+          detail: 'Citum output contains a literal HTML-like tag',
+        });
+      }
       if (bibliographyComparisonMatches(styleName, comparison, opts.caseSensitive)) {
         entryResult.match = true;
         rawResults.bibliography.passed++;
@@ -398,7 +412,7 @@ function run() {
             entryResult.ordering = { oracle: oOrder, citum: cOrder };
             rawResults.orderingIssues++;
           }
-          entryResult.issues = [...differences];
+          entryResult.issues = [...entryResult.issues, ...differences];
           for (const [key, count] of Object.entries(
             differences.reduce((acc, d) => { acc[`${d.component}:${d.issue}`] = (acc[`${d.component}:${d.issue}`] || 0) + 1; return acc; }, {})
           )) {

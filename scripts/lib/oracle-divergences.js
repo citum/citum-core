@@ -705,6 +705,14 @@ function explainCitationMismatchFromDiv017(citationEntry, citationFixture, testI
 
 function buildAdjustedOracleResult(rawResults, testCitations, testItems, divergenceInfo, div005Rule, div008Info, div009Rule, div010Rule, div011Rule, div017Rule) {
   const adjustedCitationEntries = (rawResults.citations?.entries || []).map((entry, index) => {
+    if (entry.rawMarkupLeak) {
+      return {
+        ...entry,
+        rawMatch: entry.match,
+        match: false,
+        appliedDivergence: null,
+      };
+    }
     const div004Adjustment = explainCitationMismatchFromDiv004(
       entry,
       testCitations[index],
@@ -746,6 +754,14 @@ function buildAdjustedOracleResult(rawResults, testCitations, testItems, diverge
   const adjustedCitationPassed = adjustedCitationEntries.filter((entry) => entry.match).length;
   const adjustedCitationTotal = rawResults.citations?.total || adjustedCitationEntries.length;
   const adjustedBibliographyEntries = (rawResults.bibliography?.entries || []).map((entry) => {
+    if (entry.rawMarkupLeak) {
+      return {
+        ...entry,
+        rawMatch: entry.match,
+        match: false,
+        appliedDivergence: null,
+      };
+    }
     if (entry.match === null) {
       return {
         ...entry,
