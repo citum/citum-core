@@ -28,6 +28,7 @@ const yaml = require('js-yaml');
 const { execFileSync, execSync } = require('child_process');
 const { bibliographyIdsForRenderedRows } = require('./lib/citeproc-bibliography');
 const {
+  comparisonPasses,
   compareText,
   normalizeText,
   parseComponents,
@@ -793,12 +794,15 @@ function matchBibliographyEntries(oracleBib, citumBib, oracleIds = [], citumIds 
 
 function bibliographyComparisonMatches(styleName, comparison, caseSensitive = true) {
   if (!STRICT_BIBLIOGRAPHY_STYLES.has(styleName)) {
-    return comparison.match;
+    return comparisonPasses(comparison);
   }
   if (caseSensitive) {
-    return comparison.expected === comparison.actual;
+    return comparisonPasses(comparison, comparison.expected === comparison.actual);
   }
-  return comparison.expected.toLowerCase() === comparison.actual.toLowerCase();
+  return comparisonPasses(
+    comparison,
+    comparison.expected.toLowerCase() === comparison.actual.toLowerCase()
+  );
 }
 
 function runOracle(cliOptions = parseArgs()) {
@@ -902,11 +906,12 @@ function runOracle(cliOptions = parseArgs()) {
       const comparison = compareText(oracle.citations[id] || '', citum.citations[id] || '', {
         caseSensitive: cliOptions.caseSensitive,
       });
-      const match = STRICT_CITATION_IDS.has(id)
+      const policyMatch = STRICT_CITATION_IDS.has(id)
         ? equivalentCitationText(comparison.expected, comparison.actual, id, {
           caseSensitive: cliOptions.caseSensitive,
         })
         : comparison.match;
+      const match = comparisonPasses(comparison, policyMatch);
       if (match) {
         rawResults.citations.passed++;
       } else {
@@ -941,6 +946,7 @@ function runOracle(cliOptions = parseArgs()) {
         exactCitum: comparison.exactActual,
         exactMatch: comparison.exactMatch,
         exactAdjudication: comparison.exactAdjudication,
+        rawMarkupLeak: comparison.rawMarkupLeak,
         match,
         caseMismatch: comparison.caseMismatch,
         components,
@@ -974,6 +980,7 @@ function runOracle(cliOptions = parseArgs()) {
       exactCitum: null,
       exactMatch: null,
       exactAdjudication: 'not-comparable',
+      rawMarkupLeak: false,
       match: pair.compatibilityEligible ? false : null,
       caseMismatch: false,
       pairingMethod: pair.pairingMethod,
@@ -1015,7 +1022,15 @@ function runOracle(cliOptions = parseArgs()) {
       entryResult.exactCitum = comparison.exactActual;
       entryResult.exactMatch = comparison.exactMatch;
       entryResult.exactAdjudication = comparison.exactAdjudication;
+      entryResult.rawMarkupLeak = comparison.rawMarkupLeak;
       entryResult.caseMismatch = comparison.caseMismatch;
+      if (comparison.rawMarkupLeak) {
+        entryResult.issues.push({
+          component: 'output',
+          issue: 'raw_markup_leak',
+          detail: 'Citum output contains a literal HTML-like tag',
+        });
+      }
       const match = bibliographyComparisonMatches(
         styleName,
         comparison,
@@ -1052,16 +1067,13 @@ function runOracle(cliOptions = parseArgs()) {
             rawResults.orderingIssues++;
           }
 
-          entryResult.issues = [...differences, ...orderIssues];
+          entryResult.issues = [...entryResult.issues, ...differences, ...orderIssues];
 
           // Track component issues for summary
           for (const diff of differences) {
             const key = `${diff.component}:${diff.issue}`;
             rawResults.componentSummary[key] = (rawResults.componentSummary[key] || 0) + 1;
           }
-        } else {
-          // No reference data found - skip component analysis
-          entryResult.issues = [];
         }
       }
     }

@@ -84,6 +84,32 @@ function normalizeExactText(text) {
 }
 
 /**
+ * Return true when renderer output contains a literal HTML-like tag.
+ *
+ * Citum's oracle transport is plain text/Djot, so tags on the Citum side are
+ * leaked source markup rather than renderer-owned formatting. Requiring a
+ * letter immediately after `<` (or `</`) avoids treating mathematical text
+ * such as `a < b > c` as markup.
+ *
+ * @param {string} text
+ * @returns {boolean}
+ */
+function hasRawHtmlTag(text) {
+  return /<\/?[A-Za-z][A-Za-z0-9:-]*(?:\s[^<>]*?)?\s*\/?>/.test(String(text ?? ''));
+}
+
+/**
+ * Apply the raw-markup veto after a caller's normal matching policy.
+ *
+ * @param {{ rawMarkupLeak?: boolean }} comparison
+ * @param {boolean} policyMatch
+ * @returns {boolean}
+ */
+function comparisonPasses(comparison, policyMatch = comparison.match) {
+  return comparison.rawMarkupLeak !== true && policyMatch;
+}
+
+/**
  * Tokenize normalized text for order/punctuation-tolerant similarity checks.
  *
  * Similarity intentionally remains case-insensitive so punctuation/order
@@ -162,6 +188,7 @@ function isCaseOnlyMismatch(leftText, rightText) {
  *   exactActual: string,
  *   exactMatch: boolean,
  *   exactAdjudication: 'matched' | 'unresolved',
+ *   rawMarkupLeak: boolean,
  *   expected: string,
  *   actual: string,
  *   match: boolean,
@@ -174,9 +201,10 @@ function compareText(expectedText, actualText, options = {}) {
   const similarityThreshold = options.similarityThreshold ?? 0.60;
   const rawExpected = String(expectedText ?? '');
   const rawActual = String(actualText ?? '');
+  const rawMarkupLeak = hasRawHtmlTag(rawActual);
   const exactExpected = normalizeExactText(rawExpected);
   const exactActual = normalizeExactText(rawActual);
-  const exactMatch = exactExpected === exactActual;
+  const exactMatch = !rawMarkupLeak && exactExpected === exactActual;
   const expected = normalizeText(rawExpected);
   const actual = normalizeText(rawActual);
   const parity = {
@@ -186,7 +214,19 @@ function compareText(expectedText, actualText, options = {}) {
     exactActual,
     exactMatch,
     exactAdjudication: exactMatch ? 'matched' : 'unresolved',
+    rawMarkupLeak,
   };
+
+  if (rawMarkupLeak) {
+    return {
+      ...parity,
+      expected,
+      actual,
+      match: false,
+      caseMismatch: false,
+      similarity: textSimilarity(expected, actual),
+    };
+  }
 
   if (expected === actual) {
     return { ...parity, expected, actual, match: true, caseMismatch: false, similarity: 1 };
@@ -876,7 +916,9 @@ function compareComponents(oracleComp, citumComp, _refData) {
 }
 
 module.exports = {
+  comparisonPasses,
   compareText,
+  hasRawHtmlTag,
   normalizeExactText,
   normalizeText,
   isCaseOnlyMismatch,
