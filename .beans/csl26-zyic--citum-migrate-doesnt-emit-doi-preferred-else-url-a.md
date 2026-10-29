@@ -1,11 +1,11 @@
 ---
 # csl26-zyic
 title: citum-migrate doesn't emit DOI-preferred-else-URL access fallback
-status: todo
+status: in-progress
 type: task
 priority: high
 created_at: 2026-09-10T13:48:18Z
-updated_at: 2026-09-10T13:48:18Z
+updated_at: 2026-10-29T15:11:57Z
 parent: csl26-ccdt
 ---
 
@@ -37,3 +37,14 @@ Two possible fixes, needing a decision before more style-by-style hand patches:
 2. Extend citum-migrate itself to recognize this specific <choose><if DOI>...<else-if URL>...</choose> idiom and emit a select: first group directly. This is the real fix but is a converter change, which per CLAUDE.md needs its own spec in docs/specs/ before implementation -- not done in this bean.
 
 Each remaining style needs the same individual verification PR #1273 did for ASME (real .csl idiom confirmed, honest post-fix ceiling checked against fixture residue, not just the grep signature) before assuming the fix applies -- some fraction of these 14 will have secondary unrelated bugs (title-case, quote-routing, missing fields) that cap how many rows can actually flip, exactly like ASME's own remaining 36 failures.
+
+
+## Implementation
+
+Specification: `docs/specs/CSL_DOI_URL_FALLBACK_MIGRATION.md`
+
+- [x] Specify the narrow DOI-to-URL recognition contract
+- [ ] Add ordered-fallback IR and compiler support
+- [ ] Cover accepted and rejected migration shapes
+- [ ] Record targeted style migration evidence
+- [ ] Pass the Rust pre-commit gate
