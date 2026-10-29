@@ -1,7 +1,7 @@
 # CSL DOI-to-URL fallback migration specification
 
-**Status:** Draft
-**Version:** 1.0
+**Status:** Active
+**Version:** 1.1
 **Date:** 2026-10-29
 **Supersedes:** None
 **Related:** `docs/specs/GROUP_SELECT.md`,
@@ -77,19 +77,21 @@ behavior is required.
 
 ## Acceptance Criteria
 
-- [ ] The exact DOI-then-URL shape emits one `select: first` group in source
+- [x] The exact DOI-then-URL shape emits one `select: first` group in source
       order.
-- [ ] A multi-component URL branch remains one atomic fallback candidate.
-- [ ] Citation and bibliography compilation preserve the same fallback
+- [x] A multi-component URL branch remains one atomic fallback candidate.
+- [x] Citation and bibliography compilation preserve the same fallback
       structure.
-- [ ] Extra branches, an `else`, `match="none"`, mixed predicates, and branches
+- [x] Extra branches, an `else`, `match="none"`, mixed predicates, and branches
       that do not render their tested variable stay on the generic conditional
       path.
-- [ ] Targeted migration tests cover the accepted shape and every rejected
+- [x] Targeted migration tests cover the accepted shape and every rejected
       near-match.
-- [ ] Migration checks for IEEE, APA, and Harvard Cite Them Right report their
+- [x] Migration checks for IEEE, APA, and Harvard Cite Them Right report their
       before-and-after fidelity results without committed style regeneration.
 
 ## Changelog
 
 - v1.0 (2026-10-29): Initial draft.
+- v1.1 (2026-10-29): Activated after implementing ordered fallback migration
+  and its regression coverage.

@@ -167,6 +167,11 @@ fn count_ir_nodes(nodes: &[CNode]) -> usize {
                     count += count_ir_nodes(e);
                 }
             }
+            CNode::OrderedFallback(fallback) => {
+                for candidate in &fallback.candidates {
+                    count += count_ir_nodes(candidate);
+                }
+            }
             _ => {}
         }
     }

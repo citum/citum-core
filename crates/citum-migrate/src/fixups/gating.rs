@@ -19,7 +19,7 @@ use citum_schema::{
     locale::GeneralTerm,
     template::{
         ContributorRole, DateVariable, DelimiterPunctuation, SimpleVariable, TemplateComponent,
-        TemplateGroup, TitleType, TypeSelector,
+        TemplateGroup, TemplateGroupSelect, TitleType, TypeSelector,
     },
 };
 
@@ -93,7 +93,8 @@ const WEB_TYPES: &[&str] = &["webpage", "post", "post-weblog"];
 /// citeproc-js renders url and the `accessed` term/date only when
 /// `type="webpage post post-weblog"`. The converter flattens the wrapping
 /// `<if type="webpage">` gate into the base template, so url and accessed
-/// leak into every entry type. This fixup restores the gate:
+/// leak into every entry type. This fixup restores the gate while preserving
+/// explicit DOI-to-URL ordered fallbacks emitted by the XML converter:
 ///
 /// - **Base and non-web type-templates** (`webpage`, `post`, `post-weblog`
 ///   absent from the selector): url variable, accessed date, and bare
@@ -143,6 +144,10 @@ fn strip_url_accessed(template: &mut Vec<TemplateComponent>) {
         // Recurse into groups so nested url/accessed are also cleaned.
         let mut component = component;
         if let TemplateComponent::Group(ref mut group) = component {
+            if is_doi_url_fallback(group) {
+                out.push(component);
+                continue;
+            }
             strip_url_accessed(&mut group.group);
             // If the group is now empty after stripping, omit it entirely.
             if group.group.is_empty() {
@@ -153,6 +158,30 @@ fn strip_url_accessed(template: &mut Vec<TemplateComponent>) {
     }
 
     *template = out;
+}
+
+fn is_doi_url_fallback(group: &TemplateGroup) -> bool {
+    group.select == TemplateGroupSelect::First
+        && group.group.len() == 2
+        && group
+            .group
+            .first()
+            .is_some_and(|candidate| component_contains_variable(candidate, SimpleVariable::Doi))
+        && group
+            .group
+            .get(1)
+            .is_some_and(|candidate| component_contains_variable(candidate, SimpleVariable::Url))
+}
+
+fn component_contains_variable(component: &TemplateComponent, variable: SimpleVariable) -> bool {
+    match component {
+        TemplateComponent::Variable(candidate) => candidate.variable == variable,
+        TemplateComponent::Group(group) => group
+            .group
+            .iter()
+            .any(|component| component_contains_variable(component, variable.clone())),
+        _ => false,
+    }
 }
 
 fn is_url_variable(component: &TemplateComponent) -> bool {
@@ -359,6 +388,26 @@ mod tests {
         })
     }
 
+    fn doi_url_fallback() -> TemplateComponent {
+        use citum_schema::template::TemplateVariable;
+
+        TemplateComponent::Group(TemplateGroup {
+            group: vec![
+                TemplateComponent::Variable(TemplateVariable {
+                    variable: SimpleVariable::Doi,
+                    ..Default::default()
+                }),
+                TemplateComponent::Group(TemplateGroup {
+                    group: vec![url_variable(), accessed_date()],
+                    select: TemplateGroupSelect::All,
+                    ..Default::default()
+                }),
+            ],
+            select: TemplateGroupSelect::First,
+            ..Default::default()
+        })
+    }
+
     #[test]
     fn given_base_template_with_url_and_accessed_when_gated_then_all_stripped() {
         // jar-style base: issued_date, url_variable, accessed_term, accessed_date
@@ -377,6 +426,17 @@ mod tests {
             matches!(&base[0], TemplateComponent::Date(d) if d.date == DateVariable::Issued),
             "remaining component should be the issued date"
         );
+    }
+
+    #[test]
+    fn given_doi_url_fallback_when_gated_then_atomic_fallback_is_preserved() {
+        let fallback = doi_url_fallback();
+        let mut base = vec![fallback.clone()];
+        let mut type_templates = indexmap::IndexMap::new();
+
+        gate_web_only_url_accessed(&mut base, &mut type_templates);
+
+        assert_eq!(base, vec![fallback]);
     }
 
     #[test]

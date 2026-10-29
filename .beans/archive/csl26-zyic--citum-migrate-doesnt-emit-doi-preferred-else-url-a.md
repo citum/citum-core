@@ -1,11 +1,11 @@
 ---
 # csl26-zyic
 title: citum-migrate doesn't emit DOI-preferred-else-URL access fallback
-status: in-progress
+status: completed
 type: task
 priority: high
 created_at: 2026-09-10T13:48:18Z
-updated_at: 2026-10-29T15:11:57Z
+updated_at: 2026-10-29T19:52:45Z
 parent: csl26-ccdt
 ---
 
@@ -44,7 +44,9 @@ Each remaining style needs the same individual verification PR #1273 did for ASM
 Specification: `docs/specs/CSL_DOI_URL_FALLBACK_MIGRATION.md`
 
 - [x] Specify the narrow DOI-to-URL recognition contract
-- [ ] Add ordered-fallback IR and compiler support
-- [ ] Cover accepted and rejected migration shapes
-- [ ] Record targeted style migration evidence
-- [ ] Pass the Rust pre-commit gate
+- [x] Add ordered-fallback IR and compiler support
+- [x] Cover accepted and rejected migration shapes
+- [x] Record targeted style migration evidence
+- [x] Pass the Rust pre-commit gate
+
+Summary: Added a narrow DOI-then-URL ordered-fallback IR and compiler path, preserved multi-component branches and final URL gating, and stabilized normalized group selectors used by type-variant diffs. Focused accepted/rejected tests pass. Oracle results: IEEE unchanged at 20/20 citations and 36/47 bibliography (exact 14 and 0); APA unchanged at 20/20 and 45/46 (exact 19 and 29); Harvard unchanged at 20/20 citations and improved from 39/47 to 46/47 bibliography (exact 19 and 0), with ITEM-20 as the remaining bibliography compatibility failure. Rust smell audit and just pre-commit pass; no style YAML was regenerated.

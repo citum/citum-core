@@ -613,11 +613,48 @@ fn normalize_variant_suppress(
             TemplateVariant::Diff(diff) => {
                 for add in &mut diff.add {
                     normalize_component_suppress(&mut add.component);
+                    if let Some(before) = add.before.as_mut() {
+                        normalize_selector_suppress(before);
+                    }
+                    if let Some(after) = add.after.as_mut() {
+                        normalize_selector_suppress(after);
+                    }
+                }
+                for modify in &mut diff.modify {
+                    normalize_selector_suppress(&mut modify.match_selector);
+                }
+                for remove in &mut diff.remove {
+                    normalize_selector_suppress(&mut remove.match_selector);
                 }
                 // Do not normalize `modify.rendering.suppress`: `false` can be
                 // the meaningful diff that re-enables a base-suppressed anchor.
             }
         }
+    }
+}
+
+fn normalize_selector_suppress(selector: &mut citum_schema::template::TemplateComponentSelector) {
+    for value in selector.fields.values_mut() {
+        normalize_selector_value_suppress(value);
+    }
+}
+
+fn normalize_selector_value_suppress(value: &mut serde_json::Value) {
+    match value {
+        serde_json::Value::Array(values) => {
+            for value in values {
+                normalize_selector_value_suppress(value);
+            }
+        }
+        serde_json::Value::Object(fields) => {
+            if fields.get("suppress") == Some(&serde_json::Value::Bool(false)) {
+                fields.remove("suppress");
+            }
+            for value in fields.values_mut() {
+                normalize_selector_value_suppress(value);
+            }
+        }
+        _ => {}
     }
 }
 
@@ -650,7 +687,8 @@ mod tests {
             TitleRendering, TitlesConfig, classified_ref_types,
         },
         template::{
-            ContributorForm, ContributorRole, TemplateGroup, TemplateTitle, TemplateVariable,
+            ContributorForm, ContributorRole, TemplateGroup, TemplateGroupSelect, TemplateTitle,
+            TemplateVariable,
         },
     };
     use rstest::rstest;
@@ -1150,6 +1188,37 @@ mod tests {
             panic!("webpage variant should be a diff");
         };
         assert_eq!(diff.add[0].component.rendering().suppress, None);
+    }
+
+    #[test]
+    fn group_selectors_track_suppress_normalization() {
+        let mut visible_url = url();
+        visible_url.rendering_mut().suppress = Some(false);
+        let anchor = TemplateComponent::Group(TemplateGroup {
+            group: vec![visible_url],
+            select: TemplateGroupSelect::First,
+            ..TemplateGroup::default()
+        });
+        let mut type_variants = indexmap::IndexMap::new();
+        type_variants.insert(
+            TypeSelector::Single("book".to_string()),
+            TemplateVariant::Full(vec![primary_title(None), anchor.clone()]),
+        );
+        let style = Style {
+            bibliography: Some(BibliographySpec {
+                template: Some(vec![anchor].into()),
+                type_variants: Some(type_variants),
+                ..BibliographySpec::default()
+            }),
+            ..Style::default()
+        };
+
+        let refined = refine_style(style);
+
+        assert!(
+            refined.try_into_resolved().is_ok(),
+            "normalized group anchors should still resolve variant diffs"
+        );
     }
 
     #[test]
