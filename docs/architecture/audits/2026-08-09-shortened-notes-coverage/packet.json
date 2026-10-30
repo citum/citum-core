@@ -115,7 +115,7 @@
     ],
     "manifest": {
       "path": "docs/architecture/audits/2026-08-09-shortened-notes-coverage/manifest.yaml",
-      "sha256": "59642e9d27715795d6c688b1f9641bedf003798364374e74edf71fe08dede7b9"
+      "sha256": "d7ce02e997c14e71b41868bf03d11c8c6146d931e79677227b85b70d05e88cf4"
     },
     "relevance": {
       "default": "relevant",
@@ -146,7 +146,7 @@
       "coverageMode": "inferred-structural",
       "evidence": "resolved-style",
       "provider": "citum-cli",
-      "providerVersion": "citum 0.83.0"
+      "providerVersion": "citum 0.84.0"
     },
     "schema": "citum.style-coverage-audit-manifest/v1",
     "source": {
@@ -159,28 +159,28 @@
         {
           "id": "chicago-shortened-notes-bibliography",
           "path": "crates/citum-schema-style/embedded/styles/chicago-shortened-notes-bibliography.yaml",
-          "sha256": "420e8086e9358d49c8764267f63ad0b8cfcf1a8bdf5d2977ae1cc517bc2cbfee"
+          "sha256": "5df66a6a59d9eda4b04d30c45c16b935c7e5e263d2798d7fc37663545fbb15e4"
         },
         {
           "id": "chicago-shortened-notes-bibliography-core",
           "path": "crates/citum-schema-style/embedded/styles/chicago-shortened-notes-bibliography-core.yaml",
-          "sha256": "d5068f99c13e56b509c9441daa18564cabfb9220c9963f08e366c09611049417"
+          "sha256": "273e19c00e91eb0790a07f6de7c8b5dfec866afecdcaa21cc6c484fffdd77e2c"
         },
         {
           "id": "chicago-notes-18th",
           "path": "crates/citum-schema-style/embedded/styles/chicago-notes-18th.yaml",
-          "sha256": "350d6bc19088a776231f0c526353eb07a198800e1d19059cd2ba088d0dc52fe5"
+          "sha256": "df840a68f305d181353ee887b1953583adedb718bb9ef3d30b8ba4079c5747d5"
         },
         {
           "id": "chicago-18-base",
           "path": "crates/citum-schema-style/embedded/styles/chicago-18-base.yaml",
-          "sha256": "2c81c230bf0b8f84a3aa0ac8548367d20a3022bae3a95f3240930eeea8c621c4"
+          "sha256": "05e9994fc8ef327a6e35ff9eb371546da95493bb5d32e379206370a8a0aba1fb"
         }
       ],
       "id": "chicago-shortened-notes-bibliography",
       "path": "crates/citum-schema-style/embedded/styles/chicago-shortened-notes-bibliography.yaml",
-      "resolvedSha256": "bb09d55e3cb7f4d2088b01fa4f8da09b8357219ddc92fa9f66d1c1f53b7610f5",
-      "sha256": "420e8086e9358d49c8764267f63ad0b8cfcf1a8bdf5d2977ae1cc517bc2cbfee"
+      "resolvedSha256": "f5485dccd2bd8db6ecbbd4e2afb4b02a17edbe47ecd90f89664e721388ecb9e7",
+      "sha256": "5df66a6a59d9eda4b04d30c45c16b935c7e5e263d2798d7fc37663545fbb15e4"
     },
     "surfaces": [
       "bibliography",
