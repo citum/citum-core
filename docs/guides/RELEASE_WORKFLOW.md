@@ -38,7 +38,7 @@ When code merges to `main`, the `detect` job:
 
 The `release-pr` job then:
 1. Waits for any active release-PR update to finish
-2. Recreates `release/next` from the latest `origin/main`
+2. Fetches `main` after acquiring the concurrency lock, then recreates `release/next` from that remote tip
 3. Recalculates the bump level and schema status from that checkout
 4. Bumps all crate versions via `cargo-release`
 5. Updates schema versions and regenerates schema files
@@ -52,6 +52,17 @@ All release levels (`patch`, `minor`, pre-1.0-capped `major`) use this same `rel
 A schema release changes the `version` field in every shipped style. The release workflow passes `--update-manifest` to `scripts/refresh-style-coverage-audits.js` for that case so registered audit manifests record the new style hashes. Releases without a schema bump retain strict manifest checking.
 
 Coverage-audit generation is not allowed to strand the release PR. If generation fails, the workflow still pushes the release commits and updates the PR. The final workflow step then reports the audit failure and exits with an error. The PR remains visible for diagnosis but cannot be treated as ready until its checks pass.
+
+The post-lock fetch is required even though the workflow initially checks out the repository. A queued run retains the merge event's original commit, so using that checkout directly can make an older event replace a release branch that already contains newer merges.
+
+## Dependency security monitoring
+
+Dependency security uses two complementary channels:
+
+1. GitHub vulnerability alerts and Dependabot security updates detect advisories from the GitHub Advisory Database and can open remediation pull requests.
+2. `.github/workflows/dependency-security.yml` runs daily and on manual dispatch, enforcing RustSec advisories plus the repository's license, ban, and source policy.
+
+Pull-request CI continues to run the same Cargo security checks when Rust dependency inputs change. The scheduled workflow ensures newly published advisories are detected even when no Rust pull request is open.
 
 ## Tag and Publish (Future)
 
@@ -91,6 +102,10 @@ To enable the release pipeline, ensure:
    - Add `CARGO_REGISTRY_TOKEN` to repo secrets
    - Token should have publish scopes for the crates.io registry
    - Only enable publishing step when ready (currently disabled)
+
+4. **Dependency Security**:
+   - Enable vulnerability alerts and Dependabot security updates
+   - Keep the daily `Dependency Security` workflow active
 
 ## Crate Visibility
 

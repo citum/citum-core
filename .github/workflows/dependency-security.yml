@@ -1,0 +1,29 @@
+name: Dependency Security
+
+permissions:
+  contents: read
+
+on:
+  schedule:
+    - cron: "17 9 * * *"
+  workflow_dispatch:
+
+jobs:
+  audit:
+    name: Dependency Audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6.0.3
+        with:
+          persist-credentials: false
+
+      - name: Install dependency security tools
+        uses: taiki-e/install-action@9bcaee1dcae34154180f412e2fa69355a7cda9f6  # v2.82.6
+        with:
+          tool: cargo-audit,cargo-deny
+
+      - name: Check RustSec advisories
+        run: cargo audit --deny warnings --no-yanked
+
+      - name: Check dependency policy
+        run: cargo deny check advisories licenses bans sources

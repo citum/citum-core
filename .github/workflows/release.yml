@@ -113,7 +113,13 @@ jobs:
       - name: Create release branch from latest main
         if: steps.config.outputs.create_pr == 'true'
         run: |
-          git checkout -B "${{ steps.config.outputs.branch }}" origin/main
+          # This job may have waited behind a newer merge's release run. Refresh
+          # main only after acquiring the job-level concurrency lock so an older
+          # pull_request event cannot overwrite release/next with stale history.
+          git fetch --force origin \
+            "+refs/heads/main:refs/remotes/origin/main"
+          git checkout -B "${{ steps.config.outputs.branch }}" \
+            refs/remotes/origin/main
           git submodule update --init --recursive
 
       - name: Refresh release inputs from latest main

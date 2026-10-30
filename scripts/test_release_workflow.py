@@ -17,6 +17,9 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parent.parent
 WORKFLOW_PATH = REPO_ROOT / ".github/workflows/release.yml"
 CI_WORKFLOW_PATH = REPO_ROOT / ".github/workflows/ci.yml"
+DEPENDENCY_SECURITY_WORKFLOW_PATH = (
+    REPO_ROOT / ".github/workflows/dependency-security.yml"
+)
 RELEASE_CONFIG_PATH = REPO_ROOT / "release.toml"
 SCHEMA_LIB = REPO_ROOT / "crates/citum-schema-style/src/version.rs"
 INSTALL_SCRIPT = REPO_ROOT / "scripts/install.sh"
@@ -32,6 +35,9 @@ class ReleaseWorkflowTests(unittest.TestCase):
     def setUpClass(cls) -> None:
         cls.workflow = WORKFLOW_PATH.read_text(encoding="utf-8")
         cls.ci_workflow = CI_WORKFLOW_PATH.read_text(encoding="utf-8")
+        cls.dependency_security_workflow = (
+            DEPENDENCY_SECURITY_WORKFLOW_PATH.read_text(encoding="utf-8")
+        )
         cls.release_config = RELEASE_CONFIG_PATH.read_text(encoding="utf-8")
         cls.install_script = INSTALL_SCRIPT.read_text(encoding="utf-8")
         cls.publish_crates_script = PUBLISH_CRATES_SCRIPT.read_text(encoding="utf-8")
@@ -137,16 +143,32 @@ class ReleaseWorkflowTests(unittest.TestCase):
         )
 
     def test_release_pr_regenerates_from_latest_main_and_refreshes_inference(self) -> None:
+        fetch = self.release_pr.index(
+            '"+refs/heads/main:refs/remotes/origin/main"'
+        )
         checkout = self.release_pr.index(
-            'git checkout -B "${{ steps.config.outputs.branch }}" origin/main'
+            'git checkout -B "${{ steps.config.outputs.branch }}"'
         )
         infer = self.release_pr.index("- name: Refresh release inputs from latest main")
         semver = self.release_pr.index("- name: Semver safety check")
+        self.assertLess(fetch, checkout)
         self.assertLess(checkout, infer)
         self.assertLess(infer, semver)
+        self.assertIn("refs/remotes/origin/main", self.release_pr)
         self.assertIn("if: steps.infer.outputs.code-changed == 'true'", self.release_pr)
         self.assertIn('LEVEL="${{ steps.infer.outputs.level }}"', self.release_pr)
         self.assertIn("if: steps.infer.outputs.schema-changed == 'true'", self.release_pr)
+
+    def test_dependency_security_runs_daily_and_on_manual_dispatch(self) -> None:
+        workflow = self.dependency_security_workflow
+        self.assertIn('cron: "17 9 * * *"', workflow)
+        self.assertRegex(workflow, r"\n  workflow_dispatch:\s*\n")
+        self.assertIn("permissions:\n  contents: read", workflow)
+        self.assertIn("cargo audit --deny warnings --no-yanked", workflow)
+        self.assertIn(
+            "cargo deny check advisories licenses bans sources",
+            workflow,
+        )
 
     def test_release_pr_commits_registry_pins_before_clean_worktree_audits(self) -> None:
         """Coverage baselines must run after release-only registry edits are committed."""
