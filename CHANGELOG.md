@@ -5,6 +5,56 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.84.0] - 2026-10-30
+
+### Bug Fixes
+
+**ci**
+
+- Harden release and security checks ([`84232f9`](https://github.com/citum/citum-core/commit/84232f904eb155f443688175b9b81d9c78d11a7f))
+
+
+**migrate**
+
+- Preserve DOI-to-URL fallback ([`d75ecd9`](https://github.com/citum/citum-core/commit/d75ecd99c33b93190a8c39c52928b577c49a3c13))
+
+
+**scripts**
+
+- Detect raw markup leaks ([`bd0fa01`](https://github.com/citum/citum-core/commit/bd0fa0119fe8e11eff908ef948afdcde879e47e9))
+
+
+**security**
+
+- Refresh audited dependency lockfile ([`1cbb2fb`](https://github.com/citum/citum-core/commit/1cbb2fb544064f4c7a0788e7b82c9e148509276c))
+
+- Update pulldown-cmark to 0.13.5 ([`fd5eba9`](https://github.com/citum/citum-core/commit/fd5eba9ee7e2087520bacc3c6f2505ec28f65a62))
+
+
+**styles**
+
+- Address MHRA book bibliography issues ([`5a79fa2`](https://github.com/citum/citum-core/commit/5a79fa28c2c757859e925f8948369630c602c054))
+
+
+
+### Documentation
+
+**schema**
+
+- Improve bibliography authoring ([`3f4efe5`](https://github.com/citum/citum-core/commit/3f4efe5d4e1685a7b63e633aaf6c6d9dc0e93543))
+
+- Document auxiliary schemas ([`28c1c04`](https://github.com/citum/citum-core/commit/28c1c047a4e76ae7c41b10bfbde4fcdaa35022c9))
+
+- Add citation/server integration docs ([`5f7e770`](https://github.com/citum/citum-core/commit/5f7e770b555ded3fb9adfc86d8abc9a669345675))
+
+- Improve style and locale authoring ([`1428140`](https://github.com/citum/citum-core/commit/142814031f3a076e94dbbbb480f5379c1026c58f))
+
+
+**spec**
+
+- Define DOI-to-URL migration ([`22f0492`](https://github.com/citum/citum-core/commit/22f0492289f3386ec58391253ed1ba0cd03238d4))
+
+
 ## [0.83.0] - 2026-10-08
 
 ### Bug Fixes
