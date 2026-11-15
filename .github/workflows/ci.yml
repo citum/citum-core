@@ -77,6 +77,8 @@ jobs:
 
       - name: Run repository hygiene (alint)
         uses: asamarts/alint@9a341559646a0a128957a0f70671e0835fb38dcb  # v0.13.0
+        with:
+          version: "v0.22.1"
 
   hygiene-beans:
     name: Hygiene Checks — Beans

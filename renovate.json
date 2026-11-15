@@ -4,7 +4,13 @@
   "enabledManagers": ["cargo", "github-actions"],
   "schedule": ["before 6am on monday"],
   "prConcurrentLimit": 5,
+  "osvVulnerabilityAlerts": true,
+  "lockFileMaintenance": {
+    "enabled": true,
+    "schedule": ["before 6am"]
+  },
   "semanticCommits": "enabled",
+  "semanticCommitScope": "tooling",
   "commitMessageAction": "update",
   "commitBody": "",
   "commitBodyTable": false,
@@ -12,7 +18,6 @@
     "enabled": true,
     "labels": ["security"],
     "schedule": ["at any time"],
-    "prPriority": 10,
     "groupName": null
   },
   "packageRules": [
@@ -21,7 +26,6 @@
       "groupName": "cargo deps",
       "groupSlug": "cargo-deps",
       "semanticCommitType": "chore",
-      "semanticCommitScope": "deps",
       "commitMessageTopic": "cargo deps",
       "commitMessageExtra": ""
     },

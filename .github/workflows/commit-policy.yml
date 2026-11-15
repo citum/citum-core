@@ -20,5 +20,7 @@ jobs:
 
       - name: Validate accepted commit messages
         uses: asamarts/alint@9a341559646a0a128957a0f70671e0835fb38dcb  # v0.13.0
+        with:
+          version: "v0.22.1"
         env:
           ALINT_BASE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
