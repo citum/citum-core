@@ -80,8 +80,6 @@
                 <pre><code>cargo add citum-engine</code></pre>
             </div>
             <p style="margin-top: 1rem; color: var(--citum-muted); font-size: 0.92rem;">
-                Until the crates.io publish lands, depend on it from git:
-                <code>citum-engine = { git = "https://github.com/citum/citum-core" }</code>.
                 The engine pulls in the schema, EDTF, and resolver-API crates transitively; for most callers
                 <code>citum-engine</code> is the only direct dependency you need.
             </p>
@@ -212,9 +210,10 @@ let citations = vec![
         items: vec![CitationOccurrenceItem {
             id: "smith2010".to_string(),
             locator: None, prefix: None, suffix: None, integral_name_state: None,
+            org_abbreviation_state: None,
         }],
         mode: None, note_number: None, suppress_author: None, grouped: None,
-        prefix: None, suffix: None,
+        prefix: None, suffix: None, sentence_start: None,
     },
     // ...one entry per citation in document order
 ];
@@ -226,6 +225,9 @@ let result = format_document(FormatDocumentRequest {
     refs,                              // from step 3
     citations,
     document_options: None,
+    style_overrides: None,
+    nocite: Vec::new(),
+    bibliography_blocks: Vec::new(),
 })?;
 
 for cite in &result.formatted_citations {
@@ -274,8 +276,8 @@ println!("\n{}", result.bibliography.content);</code></pre>
                     A runnable copy of steps 3 and 4 lives in
                     <a href="fixtures/rust-library/">fixtures/rust-library/</a>: a self-contained crate with
                     <code>Cargo.toml</code>, <code>src/main.rs</code>, <code>apa-7th.yaml</code>, and
-                    <code>references-native.json</code>. Drop the workspace path-dep override into
-                    <code>Cargo.toml</code> while the crates.io publish is pending, then <code>cargo run</code>.
+                    <code>references-native.json</code>. From that directory, run <code>cargo run</code>
+                    to build against the published engine crate and format the sample citations.
                 </p>
             </div>
             <p>

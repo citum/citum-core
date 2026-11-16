@@ -8,8 +8,6 @@ publish = false
 # surrounding citum-core workspace as a member.
 [workspace]
 
-# Until the crates.io publish lands, swap this for:
-#   citum-engine = { git = "https://github.com/citum/citum-core" }
 [dependencies]
-citum-engine = "0.50"
+citum-engine = "0.84"
 serde_json = "1"

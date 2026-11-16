@@ -8,8 +8,8 @@ use std::error::Error;
 use std::fs;
 
 use citum_engine::{
-    format_document, CitationOccurrence, CitationOccurrenceItem, FormatDocumentRequest,
-    OutputFormatKind, RefsInput, StyleInput,
+    CitationOccurrence, CitationOccurrenceItem, FormatDocumentRequest, OutputFormatKind, RefsInput,
+    StyleInput, format_document,
 };
 
 fn main() -> Result<(), Box<dyn Error>> {
@@ -20,9 +20,8 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     // 2. Load references in Citum's native JSON format. RefsInput::Json accepts
     //    the inline reference map. For BibLaTeX or CSL-JSON inputs, convert first.
-    let refs_json: serde_json::Value = serde_json::from_str(&fs::read_to_string(
-        "references-native.json",
-    )?)?;
+    let refs_json: serde_json::Value =
+        serde_json::from_str(&fs::read_to_string("references-native.json")?)?;
     let refs = RefsInput::Json(refs_json);
 
     // 3. Describe the citations in document order. Your own pipeline owns the
@@ -37,7 +36,9 @@ fn main() -> Result<(), Box<dyn Error>> {
                 prefix: None,
                 suffix: None,
                 integral_name_state: None,
+                org_abbreviation_state: None,
             }],
+            sentence_start: None,
             mode: None,
             note_number: None,
             suppress_author: None,
@@ -53,7 +54,9 @@ fn main() -> Result<(), Box<dyn Error>> {
                 prefix: None,
                 suffix: None,
                 integral_name_state: None,
+                org_abbreviation_state: None,
             }],
+            sentence_start: None,
             mode: None,
             note_number: None,
             suppress_author: None,
@@ -72,6 +75,9 @@ fn main() -> Result<(), Box<dyn Error>> {
         refs,
         citations,
         document_options: None,
+        style_overrides: None,
+        nocite: Vec::new(),
+        bibliography_blocks: Vec::new(),
     })?;
 
     // 5. Substitute into your document. Here we just print.
