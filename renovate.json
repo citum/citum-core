@@ -12,7 +12,7 @@
   "semanticCommits": "enabled",
   "semanticCommitScope": "tooling",
   "commitMessageAction": "update",
-  "commitBody": "",
+  "commitBody": "Update dependencies and lock files managed by Renovate.",
   "commitBodyTable": false,
   "vulnerabilityAlerts": {
     "enabled": true,
