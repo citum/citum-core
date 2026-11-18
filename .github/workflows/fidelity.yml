@@ -112,6 +112,13 @@ jobs:
       - name: Install script dependencies
         run: npm install --prefix scripts
 
+      # Report integration tests resolve the default-feature Citum binary via
+      # Cargo. Build before Node starts each test's timeout so cold caches do
+      # not turn compilation time into a report test failure.
+      - name: Build Citum for corpus-aware script tests
+        if: ${{ steps.fidelity-scope.outputs.mode == 'all' }}
+        run: cargo build --locked --bin citum
+
       - name: Run corpus-aware script tests
         if: ${{ steps.fidelity-scope.outputs.mode == 'all' }}
         run: node --test --test-timeout=300000 scripts/oracle.test.js scripts/report-core.test.js scripts/check-core-quality.test.js scripts/oracle-yaml.test.js
