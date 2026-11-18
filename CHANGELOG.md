@@ -5,6 +5,32 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.85.0] - 2026-11-18
+
+### Bug Fixes
+
+**ci**
+
+- Restore dependency update automation ([`65f08cb`](https://github.com/citum/citum-core/commit/65f08cb2dd13bbf3c7dbca577dd6ef9475b1b789))
+
+- Build before fidelity script tests ([`c45c571`](https://github.com/citum/citum-core/commit/c45c571740ee415956df595b7d1bbd6b2f2933d6))
+
+
+**docs**
+
+- Update rust library example ([`4749919`](https://github.com/citum/citum-core/commit/47499192a114eaf94edff3fffadd9f262a4c7e0d))
+
+
+**security**
+
+- Patch vulnerable dependencies ([`dda3a6d`](https://github.com/citum/citum-core/commit/dda3a6da57261b7a190a230140240345ab232746))
+
+
+**tooling**
+
+- Add renovate commit bodies ([`5e47c23`](https://github.com/citum/citum-core/commit/5e47c239fcf00c0db6eecdb1adaa726382fb4728))
+
+
 ## [0.84.0] - 2026-10-30
 
 ### Bug Fixes
