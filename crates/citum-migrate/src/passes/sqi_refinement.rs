@@ -7,7 +7,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 
 use crate::{
     passes::suppression::normalize_visible_suppress,
-    template_diff::{TypeTemplateMap, build_type_variants},
+    template_diff::{TypeTemplateMap, TypeVariantMap, build_type_variants},
 };
 use citum_schema::{
     BibliographySpec, CitationSpec, Style, TemplateVariant,
@@ -17,18 +17,17 @@ use citum_schema::{
     },
     template::{
         NameOrder, Rendering, TemplateComponent, TemplateContributor, TemplateTitle, TitleType,
-        TypeSelector,
+        TypeSelector, resolve_local_template_variants,
     },
 };
 
-/// Refine a fully assembled style for compact, maintainable serialization.
+/// Refine an assembled style for compact serialization while preserving resolvable variants.
 #[must_use]
 pub fn refine_style(mut style: Style) -> Style {
     let candidates = HoistCandidates::from_style(&style);
-    encode_bibliography_type_variants(&mut style);
+    let full_bibliography_variants = encode_bibliography_type_variants(&mut style);
     hoist_common_contributor_and(&mut style, candidates);
-    prune_style_against_options(&mut style);
-    normalize_serialized_suppress_markers(&mut style);
+    normalize_style_templates(&mut style, full_bibliography_variants);
     style
 }
 
@@ -164,20 +163,13 @@ fn collect_contributors<'a>(
     }
 }
 
-fn encode_bibliography_type_variants(style: &mut Style) {
-    let Some(bibliography) = style.bibliography.as_mut() else {
-        return;
-    };
-    let Some(base_template) = bibliography
+fn encode_bibliography_type_variants(style: &mut Style) -> Option<TypeVariantMap> {
+    let bibliography = style.bibliography.as_mut()?;
+    let base_template = bibliography
         .template
         .as_ref()
-        .and_then(TemplateVariant::as_template)
-    else {
-        return;
-    };
-    let Some(type_variants) = bibliography.type_variants.as_ref() else {
-        return;
-    };
+        .and_then(TemplateVariant::as_template)?;
+    let type_variants = bibliography.type_variants.as_ref()?;
     let all_variants_full = type_variants
         .values()
         .all(|variant| matches!(variant, TemplateVariant::Full(_)));
@@ -186,24 +178,21 @@ fn encode_bibliography_type_variants(style: &mut Style) {
             all_variants_full,
             "SQI refinement expects post-assembly bibliography variants to enter as Full templates"
         );
-        return;
+        return None;
     }
 
-    let Some(type_variants) = bibliography.type_variants.take() else {
-        return;
-    };
     let mut type_templates = TypeTemplateMap::new();
     for (selector, variant) in type_variants {
-        let TemplateVariant::Full(template) = variant else {
-            continue;
-        };
-        if template.as_slice() != base_template {
-            type_templates.insert(selector, template);
+        if let Some(template) = variant.as_template()
+            && template != base_template
+        {
+            type_templates.insert(selector.clone(), template.to_vec());
         }
     }
 
-    bibliography.type_variants =
+    let encoded =
         (!type_templates.is_empty()).then(|| build_type_variants(base_template, type_templates));
+    std::mem::replace(&mut bibliography.type_variants, encoded)
 }
 
 fn hoist_common_contributor_and(style: &mut Style, candidates: HoistCandidates) {
@@ -266,10 +255,14 @@ fn set_bibliography_contributor_and(bibliography: &mut BibliographySpec, and: An
         .and = Some(and);
 }
 
-fn prune_style_against_options(style: &mut Style) {
+fn normalize_style_templates(
+    style: &mut Style,
+    full_bibliography_variants: Option<TypeVariantMap>,
+) {
     let global_options = style.options.clone().unwrap_or_default();
     if let Some(citation) = style.citation.as_mut() {
         prune_citation_spec(citation, &global_options);
+        normalize_citation_suppress(citation);
     }
     if let Some(bibliography) = style.bibliography.as_mut() {
         let effective_options = bibliography.options.as_ref().map_or_else(
@@ -286,9 +279,44 @@ fn prune_style_against_options(style: &mut Style) {
                 TitleDefaultContext::Default,
                 &effective_options,
             );
+            normalize_visible_suppress(template);
         }
-        prune_type_variants(bibliography.type_variants.as_mut(), &effective_options);
+        normalize_bibliography_variants(bibliography, &effective_options);
+
+        // Group selectors include their serialized children, which option pruning
+        // can change in the default template or in an extended variant.
+        if let Some(full_variants) = full_bibliography_variants
+            && bibliography.type_variants.as_ref().is_some_and(|variants| {
+                variants
+                    .values()
+                    .any(|variant| matches!(variant, TemplateVariant::Diff(_)))
+            })
+            && !bibliography_variants_resolve(bibliography)
+        {
+            bibliography.type_variants = Some(full_variants);
+            normalize_bibliography_variants(bibliography, &effective_options);
+        }
     }
+}
+
+fn normalize_bibliography_variants(
+    bibliography: &mut BibliographySpec,
+    options: &citum_schema::options::Config,
+) {
+    prune_type_variants(bibliography.type_variants.as_mut(), options);
+    normalize_variant_suppress(bibliography.type_variants.as_mut());
+}
+
+fn bibliography_variants_resolve(bibliography: &BibliographySpec) -> bool {
+    let mut probe = Style {
+        bibliography: Some(BibliographySpec {
+            template: bibliography.template.clone(),
+            type_variants: bibliography.type_variants.clone(),
+            ..BibliographySpec::default()
+        }),
+        ..Style::default()
+    };
+    resolve_local_template_variants(&mut probe).is_ok()
 }
 
 fn prune_citation_spec(spec: &mut CitationSpec, inherited_options: &citum_schema::options::Config) {
@@ -560,22 +588,6 @@ fn inherited_name_order_matches(
             NameOrder::FamilyFirst
         ) | (Some(DisplayAsSort::First), NameOrder::FamilyFirstOnly)
     )
-}
-
-fn normalize_serialized_suppress_markers(style: &mut Style) {
-    if let Some(citation) = style.citation.as_mut() {
-        normalize_citation_suppress(citation);
-    }
-    if let Some(bibliography) = style.bibliography.as_mut() {
-        if let Some(template) = bibliography
-            .template
-            .as_mut()
-            .and_then(TemplateVariant::as_template_mut)
-        {
-            normalize_visible_suppress(template);
-        }
-        normalize_variant_suppress(bibliography.type_variants.as_mut());
-    }
 }
 
 fn normalize_citation_suppress(spec: &mut CitationSpec) {
@@ -1214,10 +1226,65 @@ mod tests {
         };
 
         let refined = refine_style(style);
-
+        let variant = refined
+            .bibliography
+            .as_ref()
+            .and_then(|bibliography| bibliography.type_variants.as_ref())
+            .and_then(|variants| variants.get(&TypeSelector::Single("book".into())));
+        assert!(matches!(variant, Some(TemplateVariant::Diff(_))));
         assert!(
             refined.try_into_resolved().is_ok(),
             "normalized group anchors should still resolve variant diffs"
+        );
+    }
+
+    #[test]
+    fn group_anchor_pruned_by_options_falls_back_to_full_variant() {
+        use citum_schema::{options::BibliographyOptions, template::DelimiterPunctuation};
+
+        let mut title = primary_title(None);
+        title.rendering_mut().emph = Some(true);
+        let anchor = TemplateComponent::Group(TemplateGroup {
+            group: vec![title],
+            ..TemplateGroup::default()
+        });
+        let publisher = TemplateComponent::Variable(TemplateVariable {
+            variable: citum_schema::template::SimpleVariable::Publisher,
+            ..TemplateVariable::default()
+        });
+        let book = TypeSelector::Single("book".into());
+        let style = Style {
+            bibliography: Some(BibliographySpec {
+                options: Some(BibliographyOptions {
+                    titles: Some(TitlesConfig {
+                        default: Some(TitleRendering {
+                            emph: Some(true),
+                            ..TitleRendering::default()
+                        }),
+                        ..TitlesConfig::default()
+                    }),
+                    separator: Some(DelimiterPunctuation::Custom(" | ".into())),
+                    ..BibliographyOptions::default()
+                }),
+                template: Some(vec![anchor.clone()].into()),
+                type_variants: Some(indexmap::IndexMap::from([(
+                    book,
+                    TemplateVariant::Full(vec![anchor, publisher]),
+                )])),
+                ..BibliographySpec::default()
+            }),
+            ..Style::default()
+        };
+
+        let refined = refine_style(style);
+        let yaml = serde_yaml::to_string(&refined).expect("style should serialize");
+        let emitted: Style = serde_yaml::from_str(&yaml).expect("emitted YAML should parse");
+        let resolved = emitted
+            .try_into_resolved()
+            .expect("variant should resolve after pruning the grouped title's emphasis");
+        assert_eq!(
+            Processor::new(resolved, one_book_bibliography()).render_bibliography(),
+            "_The Structure of Scientific Revolutions_ | University of Chicago Press"
         );
     }
 
