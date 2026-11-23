@@ -26,8 +26,9 @@ serde = { version = "1.0", features = ["derive"] }
 serde_yaml = { package = "serde_yaml_ng", version = "0.10" }
 indexmap = { version = "2", features = ["serde"] }
 wasm-bindgen = { version = "0.2", optional = true }
-specta = { version = "2.0.0-rc.23", features = ["collect"], optional = true }
-specta-typescript = { version = "0.0.10", optional = true }
+specta = { version = "2.0.0-rc.28", features = ["collect"], optional = true }
+specta-serde = { version = "0.0.15", optional = true }
+specta-typescript = { version = "0.0.15", optional = true }
 
 [features]
 # Standard ICU-backed build (native or WASM)
@@ -41,7 +42,7 @@ small-wasm = ["wasm"]
 
 legacy-convert = ["dep:csl_legacy", "citum-schema/legacy-convert"]
 bindings = ["citum-schema/bindings"]
-typescript = ["dep:specta", "dep:specta-typescript", "bindings"]
+typescript = ["dep:specta", "dep:specta-serde", "dep:specta-typescript", "bindings"]
 
 [lints]
 workspace = true

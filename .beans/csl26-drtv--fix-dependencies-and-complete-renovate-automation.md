@@ -5,7 +5,7 @@ status: in-progress
 type: bug
 priority: high
 created_at: 2026-11-14T17:01:18Z
-updated_at: 2026-11-23T15:38:58Z
+updated_at: 2026-11-23T21:12:39Z
 ---
 
 Patch four affected lockfile packages and repair Renovate configuration and future update coverage.
@@ -47,9 +47,21 @@ Pinned alint v0.22.1 installation succeeded with SHA-256 verification and no lat
 - [x] Upgrade gix to 0.91.0 and remove the affected heapless 0.8.0 from the workspace lockfile.
 - [x] Update url to 2.5.9 in the workspace and fuzz lockfiles.
 - [x] Verify both lockfiles with cargo audit and pass cargo deny.
-- [ ] Verify the hosted dependency audit on main after merge.
+- [x] Verify the hosted dependency audit on main after merge.
 
 The gix upgrade resolves faster-hex 2.0.0 without its optional heapless
 dependency. Remove the existing RUSTSEC-2026-0186 exception from both
 audit configurations because the lockfile already contains a patched
 memmap2 release.
+
+
+## Cargo bundle compatibility
+
+- [x] Restore dependency resolution for the Typst, reqwest and Specta upgrades.
+- [x] Verify embedded Deno parity with the updated runtime.
+- [x] Generate and type-check TypeScript declarations using the public exporter.
+- [x] Compile a one-page PDF and verify the retained Typst source.
+- [ ] Verify the repaired Cargo bundle in hosted PR checks.
+
+The post-merge dependency audit passed on main at 429d7969 in run
+45214241231. The superseded URL update in PR #1318 is closed.

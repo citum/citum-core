@@ -13,7 +13,7 @@ serde_json = "1.0"
 serde_yaml = { package = "serde_yaml_ng", version = "0.10" }
 ciborium = "0.2"
 schemars = { version = "1.2.1", features = ["derive", "url2", "indexmap2"], optional = true }
-specta = { version = "2.0.0-rc.23", features = ["derive"], optional = true }
+specta = { version = "2.0.0-rc.28", features = ["derive"], optional = true }
 csl-legacy = { workspace = true, optional = true }
 indexmap = { version = "2", features = ["serde"] }
 citum-schema-data = { workspace = true }
@@ -30,11 +30,12 @@ default = []
 icu = []
 legacy-convert = ["dep:csl-legacy", "citum-schema-data/legacy-convert"]
 schema = ["dep:schemars", "citum-schema-data/schema"]
-bindings = ["dep:specta", "citum-schema-data/bindings"]
+# Schemars registers the serde rename metadata used by the Specta exporter.
+bindings = ["dep:specta", "citum-schema-data/bindings", "schema"]
 
 [dev-dependencies]
 criterion = { version = "0.8", features = ["html_reports"] }
-rstest = "0.26"
+rstest = "0.29"
 
 [[bench]]
 name = "formats"

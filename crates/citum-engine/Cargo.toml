@@ -51,7 +51,7 @@ parallel = ["dep:rayon"]
 criterion = { version = "0.8", features = ["html_reports"] }
 citum-io = { path = "../citum-io" }
 citum-resolver-api = { workspace = true }
-rstest = "0.26"
+rstest = "0.29"
 tempfile = "3.8"
 tracing.workspace = true
 url = { version = "2.5", features = ["serde"] }
