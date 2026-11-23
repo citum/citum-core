@@ -5,7 +5,7 @@ status: in-progress
 type: bug
 priority: high
 created_at: 2026-11-14T17:01:18Z
-updated_at: 2026-11-14T17:50:13Z
+updated_at: 2026-11-23T15:38:58Z
 ---
 
 Patch four affected lockfile packages and repair Renovate configuration and future update coverage.
@@ -40,3 +40,16 @@ PR #1309 passed all applicable CI checks on ca5496c7, but code scanning reported
 The documentation hygiene run failed before linting because the SHA-pinned alint action defaults its binary to latest, which calls an unauthenticated GitHub releases API and received HTTP 403. Pin both alint consumers to binary v0.22.1, matching the earlier successful CI run, so installation skips that lookup. Fold the setup-node annotation correction and installer fix into the original implementation commit as requested.
 
 Pinned alint v0.22.1 installation succeeded with SHA-256 verification and no latest-release API request. Its repository check passed all 29 rules. Actionlint passed all changed workflows. Online zizmor found no issues in the new validator workflow; the two existing workflows have identical baseline findings before and after the version input changes (42 each, zero introduced).
+
+
+## November 23 RustSec follow-up
+
+- [x] Upgrade gix to 0.91.0 and remove the affected heapless 0.8.0 from the workspace lockfile.
+- [x] Update url to 2.5.9 in the workspace and fuzz lockfiles.
+- [x] Verify both lockfiles with cargo audit and pass cargo deny.
+- [ ] Verify the hosted dependency audit on main after merge.
+
+The gix upgrade resolves faster-hex 2.0.0 without its optional heapless
+dependency. Remove the existing RUSTSEC-2026-0186 exception from both
+audit configurations because the lockfile already contains a patched
+memmap2 release.
