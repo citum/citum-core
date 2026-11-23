@@ -11,34 +11,36 @@ use std::path::Path;
 
 use typst::diag::{FileError, FileResult, SourceDiagnostic};
 use typst::ecow::EcoVec;
-use typst::foundations::Bytes;
-use typst::layout::PagedDocument;
-use typst::syntax::{FileId, Source, VirtualPath};
+use typst::foundations::{Bytes, Datetime, Duration};
+use typst::syntax::{FileId, RootedPath, Source, VirtualPath, VirtualRoot};
 use typst::text::{Font, FontBook};
 use typst::utils::LazyHash;
 use typst::{Library, LibraryExt, World, compile};
-use typst_kit::fonts::{FontSearcher, FontSlot};
+use typst_kit::fonts::{FontStore, embedded, system};
 
 struct TypstWorld {
     library: LazyHash<Library>,
-    book: LazyHash<FontBook>,
     main: FileId,
     source: Source,
-    fonts: Vec<FontSlot>,
+    fonts: FontStore,
 }
 
 impl TypstWorld {
     fn new(source: &str) -> Result<Self, Box<dyn Error>> {
-        let fonts = FontSearcher::new().include_system_fonts(true).search();
-        let main = FileId::new_fake(VirtualPath::new("/main.typ"));
+        let mut fonts = FontStore::new();
+        fonts.extend(system());
+        fonts.extend(embedded());
+        let main = FileId::unique(RootedPath::new(
+            VirtualRoot::Project,
+            VirtualPath::new("/main.typ")?,
+        ));
         let source = Source::new(main, source.to_string());
 
         Ok(Self {
             library: LazyHash::new(Library::default()),
-            book: LazyHash::new(fonts.book),
             main,
             source,
-            fonts: fonts.fonts,
+            fonts,
         })
     }
 }
@@ -49,7 +51,7 @@ impl World for TypstWorld {
     }
 
     fn book(&self) -> &LazyHash<FontBook> {
-        &self.book
+        self.fonts.book()
     }
 
     fn main(&self) -> FileId {
@@ -60,9 +62,7 @@ impl World for TypstWorld {
         if id == self.main {
             Ok(self.source.clone())
         } else {
-            Err(FileError::NotFound(
-                id.vpath().as_rootless_path().to_path_buf(),
-            ))
+            Err(FileError::NotFound(id.vpath().get_without_slash().into()))
         }
     }
 
@@ -70,17 +70,15 @@ impl World for TypstWorld {
         if id == self.main {
             Ok(Bytes::new(self.source.text().as_bytes().to_vec()))
         } else {
-            Err(FileError::NotFound(
-                id.vpath().as_rootless_path().to_path_buf(),
-            ))
+            Err(FileError::NotFound(id.vpath().get_without_slash().into()))
         }
     }
 
     fn font(&self, index: usize) -> Option<Font> {
-        self.fonts.get(index).and_then(FontSlot::get)
+        self.fonts.font(index)
     }
 
-    fn today(&self, _offset: Option<i64>) -> Option<typst::foundations::Datetime> {
+    fn today(&self, _offset: Option<Duration>) -> Option<Datetime> {
         None
     }
 }
@@ -94,7 +92,7 @@ fn format_diagnostics(
     for warning in warnings {
         lines.push(format!("warning: {}", warning.message));
         for hint in warning.hints {
-            lines.push(format!("hint: {hint}"));
+            lines.push(format!("hint: {}", hint.v));
         }
     }
 
@@ -102,7 +100,7 @@ fn format_diagnostics(
         for error in errors {
             lines.push(format!("error: {}", error.message));
             for hint in error.hints {
-                lines.push(format!("hint: {hint}"));
+                lines.push(format!("hint: {}", hint.v));
             }
         }
     }
@@ -140,7 +138,7 @@ pub fn compile_document_to_pdf(
     }
 
     let world = TypstWorld::new(source)?;
-    let warned = compile::<PagedDocument>(&world);
+    let warned = compile(&world);
     let warnings = warned.warnings.clone();
     let document = match warned.output {
         Ok(document) => document,
@@ -155,7 +153,12 @@ pub fn compile_document_to_pdf(
             .into_iter()
             .map(|error| {
                 let mut lines = vec![format!("error: {}", error.message)];
-                lines.extend(error.hints.into_iter().map(|hint| format!("hint: {hint}")));
+                lines.extend(
+                    error
+                        .hints
+                        .into_iter()
+                        .map(|hint| format!("hint: {}", hint.v)),
+                );
                 lines.join("\n")
             })
             .collect::<Vec<_>>()

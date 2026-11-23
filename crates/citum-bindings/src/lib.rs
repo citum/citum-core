@@ -545,6 +545,8 @@ where
 ///
 /// Writes a `.d.ts` file to `out_path` containing type definitions for all
 /// annotated public schema types (references, citations, bibliography input).
+/// Types with different serialization and deserialization shapes are exported
+/// as separate definitions.
 ///
 /// Typically called via `citum bindings --out-dir <dir>`, which writes
 /// to `<out-dir>/citum.d.ts`.
@@ -561,10 +563,10 @@ pub fn export_typescript(out_path: &std::path::Path) -> Result<(), specta_typesc
     };
     use citum_schema::reference::{Contributor, InputReference};
     use citum_schema::{Citation, InputBibliography};
-    use specta::TypeCollection;
-    use specta_typescript::Typescript;
+    use specta::Types;
+    use specta_typescript::{Typescript, define, semantic::Configuration};
 
-    let types = TypeCollection::default()
+    let types = Types::default()
         .register::<InputReference>()
         .register::<InputBibliography>()
         .register::<Citation>()
@@ -575,5 +577,13 @@ pub fn export_typescript(out_path: &std::path::Path) -> Result<(), specta_typesc
         .register::<LocatorValue>()
         .register::<Contributor>();
 
-    Typescript::default().export_to(out_path, &types)
+    // JSON numbers are JavaScript numbers when read by TypeScript consumers.
+    let json_numbers = Configuration::empty().define::<serde_json::Number>(
+        |_| define("number").into(),
+        None,
+        None,
+    );
+    let types = json_numbers.apply_types(&types);
+
+    Typescript::default().export_to(out_path, &types, specta_serde::PhasesFormat)
 }

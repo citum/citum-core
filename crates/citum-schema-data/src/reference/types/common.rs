@@ -599,7 +599,8 @@ pub type FieldLanguageMap = HashMap<String, LangID>;
 #[serde(untagged)]
 pub enum NumOrStr {
     /// A numeric value.
-    Number(i64),
+    // The TypeScript exporter describes the number produced by JSON.parse.
+    Number(#[cfg_attr(feature = "bindings", specta(type = f64))] i64),
     /// A string value.
     Str(String),
 }
