@@ -264,7 +264,7 @@ struct ResolveContext<'a> {
 
 enum EmbeddedRuntimeState {
     Uninitialized,
-    Ready(EmbeddedTemplateRuntime),
+    Ready(Box<EmbeddedTemplateRuntime>),
     Failed,
 }
 
@@ -558,7 +558,7 @@ fn embedded_runtime<'a>(
 ) -> Option<&'a mut EmbeddedTemplateRuntime> {
     if matches!(ctx.embedded_runtime, EmbeddedRuntimeState::Uninitialized) {
         ctx.embedded_runtime = match EmbeddedTemplateRuntime::new(ctx.workspace_root) {
-            Ok(runtime) => EmbeddedRuntimeState::Ready(runtime),
+            Ok(runtime) => EmbeddedRuntimeState::Ready(Box::new(runtime)),
             Err(err) => {
                 tracing::debug!("  [template_resolver] Embedded runtime unavailable: {err}");
                 EmbeddedRuntimeState::Failed
@@ -567,7 +567,7 @@ fn embedded_runtime<'a>(
     }
 
     match &mut ctx.embedded_runtime {
-        EmbeddedRuntimeState::Ready(runtime) => Some(runtime),
+        EmbeddedRuntimeState::Ready(runtime) => Some(runtime.as_mut()),
         EmbeddedRuntimeState::Failed | EmbeddedRuntimeState::Uninitialized => None,
     }
 }

@@ -8,11 +8,28 @@ use deno_core::{JsRuntime, RuntimeOptions, serde_v8, v8};
 use serde::Serialize;
 use std::fs;
 use std::path::Path;
+use std::sync::OnceLock;
+use tokio::runtime::{Builder, Runtime};
 
 const EMBEDDED_RUNTIME_BUNDLE: &str = include_str!("../js/embedded-template-runtime.js");
 const EMBEDDED_FIXTURES_GLOBAL: &str = "__CITUM_TEMPLATE_TEST_ITEMS";
 const EMBEDDED_HELDOUT_GLOBAL: &str = "__CITUM_TEMPLATE_HELDOUT_ITEMS";
 const EMBEDDED_LOCALE_GLOBAL: &str = "__CITUM_TEMPLATE_LOCALE_XML";
+
+fn v8_task_runtime() -> Result<&'static Runtime, MigrateError> {
+    // Deno captures the current Tokio handle when creating an isolate. Use one
+    // worker to drive V8's delayed tasks even during synchronous migration.
+    static RUNTIME: OnceLock<std::io::Result<Runtime>> = OnceLock::new();
+    RUNTIME
+        .get_or_init(|| {
+            Builder::new_multi_thread()
+                .worker_threads(1)
+                .enable_time()
+                .build()
+        })
+        .as_ref()
+        .map_err(|err| MigrateError::Runtime(format!("failed to start the V8 task runtime: {err}")))
+}
 
 /// Which embedded fixture set a reference-rendering call targets.
 ///
@@ -52,6 +69,7 @@ pub(crate) struct EmbeddedTemplateRuntime {
 
 impl EmbeddedTemplateRuntime {
     pub(crate) fn new(workspace_root: &Path) -> Result<Self, MigrateError> {
+        let _task_context = v8_task_runtime()?.enter();
         let mut runtime = JsRuntime::new(RuntimeOptions::default());
         runtime
             .execute_script("<embedded-template-runtime>", EMBEDDED_RUNTIME_BUNDLE)

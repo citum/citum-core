@@ -17,7 +17,8 @@ tracing.workspace = true
 csl-legacy = { workspace = true }
 citum-schema = { workspace = true }
 citum-engine = { workspace = true }
-deno_core = "0.400.0"
+deno_core = "0.413.0"
+tokio = { version = "1", features = ["rt-multi-thread", "time"] }
 indexmap = "2.13.0"
 roxmltree = "0.21"
 serde_json = "1.0"
@@ -26,7 +27,7 @@ serde = { version = "1.0", features = ["derive"] }
 dhat = { version = "0.3", optional = true }
 
 [dev-dependencies]
-rstest = "0.26"
+rstest = "0.29"
 
 [features]
 default = []
