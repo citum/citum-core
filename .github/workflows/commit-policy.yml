@@ -19,7 +19,7 @@ jobs:
           persist-credentials: false
 
       - name: Validate accepted commit messages
-        uses: asamarts/alint@9a341559646a0a128957a0f70671e0835fb38dcb  # v0.13.0
+        uses: asamarts/alint@465e70c48ec13774c8cb3bb58856b58b71e3a93d  # v0.23.0
         with:
           version: "v0.22.1"
         env:

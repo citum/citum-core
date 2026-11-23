@@ -29,7 +29,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803  # v6
         with:
           fetch-depth: 1
           persist-credentials: false
@@ -38,23 +38,23 @@ jobs:
         run: git submodule update --init --depth 1 styles-legacy tests/csl-test-suite
 
       - name: Set up Rust
-        uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8  # stable
+        uses: dtolnay/rust-toolchain@39008827e6b4319a349e9a42dfc90579dd25f1ca  # stable
 
       - name: Install mold linker and sccache
         run: sudo apt-get update && sudo apt-get install -y mold sccache
 
       - name: Install cargo-nextest
-        uses: taiki-e/install-action@0fd46367812ee04360509b4169d9f659d6892bb2  # v2
+        uses: taiki-e/install-action@fe3acb53a98b62c772db35de75ce0e4595e7ca8c  # v2
         with:
           tool: cargo-nextest
 
       - name: Set up Node
-        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e  # v6
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38  # v6
         with:
           node-version: "22"
 
       - name: Cache Rust (dependencies + sccache)
-        uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32  # v2
+        uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0  # v2
         with:
           shared-key: "citum-core-rust"
           cache-workspace-crates: true
