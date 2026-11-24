@@ -128,7 +128,7 @@ dependencies = [
 
 [[package]]
 name = "citum-edtf"
-version = "0.84.0"
+version = "0.84.1"
 dependencies = [
  "serde",
  "winnow",
@@ -136,7 +136,7 @@ dependencies = [
 
 [[package]]
 name = "citum-engine"
-version = "0.84.0"
+version = "0.84.1"
 dependencies = [
  "citum-edtf",
  "citum-refs",
@@ -170,7 +170,7 @@ dependencies = [
 
 [[package]]
 name = "citum-refs"
-version = "0.84.0"
+version = "0.84.1"
 dependencies = [
  "biblatex",
  "ciborium",
@@ -186,7 +186,7 @@ dependencies = [
 
 [[package]]
 name = "citum-resolver-api"
-version = "0.84.0"
+version = "0.84.1"
 dependencies = [
  "serde_json",
  "thiserror",
@@ -194,7 +194,7 @@ dependencies = [
 
 [[package]]
 name = "citum-schema"
-version = "0.84.0"
+version = "0.84.1"
 dependencies = [
  "citum-schema-data",
  "citum-schema-style",
@@ -202,7 +202,7 @@ dependencies = [
 
 [[package]]
 name = "citum-schema-data"
-version = "0.84.0"
+version = "0.84.1"
 dependencies = [
  "citum-edtf",
  "csl-legacy",
@@ -215,7 +215,7 @@ dependencies = [
 
 [[package]]
 name = "citum-schema-style"
-version = "0.84.0"
+version = "0.84.1"
 dependencies = [
  "ciborium",
  "cid",
@@ -271,7 +271,7 @@ dependencies = [
 
 [[package]]
 name = "csl-legacy"
-version = "0.84.0"
+version = "0.84.1"
 dependencies = [
  "indexmap 2.14.2",
  "roxmltree",
